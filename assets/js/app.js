@@ -2323,11 +2323,13 @@ function applyDemo() {
    검색 · 북마크 · 사건 관리 · 맵 관리 · 알림
    ============================================================ */
 const GICON = {
-  search:   '<svg viewBox="0 0 16 16" class="ic"><circle cx="7" cy="7" r="4.6" stroke="currentColor" stroke-width="1.3" fill="none"/><path d="M10.4 10.4L14 14" stroke="currentColor" stroke-width="1.3"/></svg>',
-  bookmark: '<svg viewBox="0 0 16 16" class="ic"><path fill="currentColor" fill-rule="evenodd" d="M3.8 2.2h8.4v11.6l-4.2-3.4-4.2 3.4zM8 3.6l.73 1.69 1.84.18-1.38 1.22.4 1.79L8 7.55l-1.59.93.4-1.79-1.38-1.22 1.84-.18z"/></svg>',
-  cases:    '<svg viewBox="0 0 16 16" class="ic"><path fill="currentColor" fill-rule="evenodd" d="M4.2 2.4h7.6a.6.6 0 01.6.6v10a.6.6 0 01-.6.6H4.2a.6.6 0 01-.6-.6V3a.6.6 0 01.6-.6zM5.6 4.7h4.9v1.15H5.6z"/></svg>',
-  map:      '<svg viewBox="0 0 16 16" class="ic"><path fill="currentColor" d="M2.6 8.4L5.9 7.1v7.1L2.6 15.4zM10.1 8.9l3.3-1.8v7.1l-3.3 1.2zM6.6 9.9q.7.7 1.4 1.2v3.1l-1.4-.5z"/><path fill="currentColor" fill-rule="evenodd" d="M8 .9a3.35 3.35 0 013.35 3.35c0 2.4-3.35 5.7-3.35 5.7S4.65 6.65 4.65 4.25A3.35 3.35 0 018 .9zm0 2.15a1.2 1.2 0 100 2.4 1.2 1.2 0 000-2.4z"/></svg>',
-  alarm:    '<svg viewBox="0 0 16 16" class="ic"><path d="M8 2c2.2 0 3.6 1.6 3.6 3.7 0 2.6.9 3.6 1.3 4.1H3.1c.4-.5 1.3-1.5 1.3-4.1C4.4 3.6 5.8 2 8 2z" stroke="currentColor" stroke-width="1.3" fill="none" stroke-linejoin="round"/><path d="M6.5 12.2a1.6 1.6 0 003 0" stroke="currentColor" stroke-width="1.2" fill="none"/></svg>'
+  /* LNB·주요 아이콘은 Figma 에서 실제 추출한 것(assets/icons/*.svg → icons.css mask)을 쓴다.
+     이전에는 손으로 그린 인라인 SVG 였다. */
+  search:   '<i class="i i-lnb-search"></i>',
+  bookmark: '<i class="i i-lnb-bookmark"></i>',
+  cases:    '<i class="i i-lnb-case"></i>',
+  map:      '<i class="i i-lnb-map"></i>',
+  alarm:    '<i class="i i-bell"></i>'
 };
 const GNB_ITEMS = [
   { k: '',         ic: 'search',   t: '검색' },

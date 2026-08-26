@@ -2366,3 +2366,27 @@ body.aidock-on .main-row > .preview{flex:0 0 300px;width:300px}
 .cmp-head{background:var(--bg-1)}
 .dt-multi,.cmp-grid{background:var(--bg-0)}
 .mv-tile.empty,.cmp-tile.empty{background:var(--bg-1)}
+
+/* ============================================================
+   메뉴 화면(북마크·사건관리·맵관리) : 상단 탭바 제거
+   사양서 Bookmark_001_01 / Map_001 목업에 탭바가 없다.
+   탭은 검색 화면 전용(검색 탭 = 기본 탭, 상세 진입 시 새 탭)이라 메뉴 화면엔 해당 없음.
+   ============================================================ */
+.tabbar.menu-on{display:none}
+
+/* --- 북마크 카드 : 시안(Bookmark_001_01) 실측 반영 ---
+   목록 패널 1084 · 2열 → 카드 ≈529 · 썸네일 ≈240×135 (기존 132×78 로 절반이라 카드가 비어 보였다) */
+.bmk-thumb{width:240px;height:135px;flex:0 0 240px;border-radius:4px}
+.bmk-card{gap:12px;padding:10px}
+.bmk-meta{padding-top:4px}
+.bmk-place{font-size:13px;margin-bottom:5px}
+.bmk-sub{font-size:12px;margin-bottom:6px}
+.bmk-time{font-size:11px;line-height:1.6}
+/* 영상 길이 태그는 썸네일 우하단 (시안) */
+.bmk-dur{left:auto;right:6px;bottom:6px}
+
+/* Figma 추출 아이콘 사이즈 보정 */
+.tabbar #btnHistory .hist-ic{width:20px;height:20px;flex:0 0 20px}
+.lnb .bx .i{width:20px;height:20px}
+.mn-searchbox .sic .i,.mode-panel .ta-search .i{width:16px;height:16px}
+#btnAlarmTop .i-bell{width:16px;height:16px}
