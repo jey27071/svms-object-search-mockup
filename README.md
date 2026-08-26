@@ -1,7 +1,25 @@
-# SVMS 대상 검색 — HTML 워킹 목업
+# SVMS 동선 추적 검색 — HTML 워킹 목업
 
-> 저장소: https://github.com/jey27071/svms-object-search-mockup (Private)
+> **🔗 배포 URL : https://jey27071.github.io/svms-object-search-mockup/**
+> 저장소: https://github.com/jey27071/svms-object-search-mockup (**Public**)
 > 이어서 작업할 땐 **`_handoff/SVMS-대상검색-목업-핸드오프.md`** 부터 읽으세요.
+
+## 배포 (GitHub Pages)
+
+**`main` 에 푸시하면 1~2분 내 위 URL에 자동 반영된다.** 빌드·서버 불필요한 정적 파일이라 별도 설정이 없다.
+
+```bash
+git add -A && git commit -m "..." && git push origin main
+```
+
+- 소스: `main` 브랜치 **루트**(`/`) · HTTPS 강제
+- 딥링크 그대로 사용 : `https://jey27071.github.io/svms-object-search-mockup/#demo=result`
+- 상태 확인 : `gh api repos/jey27071/svms-object-search-mockup/pages --jq .status` → `built`
+- 푸시 후에는 **URL로 실제 렌더링까지 확인**할 것 (로컬 `file://` 과 달리 대소문자·경로에 엄격)
+
+⚠️ **저장소와 배포 URL 모두 공개 상태다.** 인증이 없으므로 링크를 아는 사람은 누구나 접근한다.
+비공개가 필요하면 Pages 를 끄거나(`gh api -X DELETE .../pages`) 비밀번호 보호가 되는 호스팅으로 옮겨야 한다.
+(GitHub Pages 무료 플랜은 Public 저장소만 지원)
 
 ## AI 유무 2개 버전 + GUI 정밀 정합 (2026-08-26)
 

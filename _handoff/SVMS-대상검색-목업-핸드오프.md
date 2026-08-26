@@ -9,7 +9,9 @@
 
 | 항목 | 값 |
 |---|---|
-| 저장소 | **https://github.com/jey27071/svms-object-search-mockup** (Private) |
+| 저장소 | **https://github.com/jey27071/svms-object-search-mockup** (**Public**) |
+| **배포 URL** | **https://jey27071.github.io/svms-object-search-mockup/** (GitHub Pages · main 루트) |
+| 배포 방법 | **`main` 에 푸시하면 1~2분 내 자동 반영.** 수정할 때마다 푸시하는 것이 이 프로젝트의 약속이다 |
 | 브랜치 | `main` |
 | 클론 | `git clone https://github.com/jey27071/svms-object-search-mockup.git` |
 | 로컬 경로(작업 PC · Windows) | `C:\Users\S-1\svms-object-search-mockup\` |
