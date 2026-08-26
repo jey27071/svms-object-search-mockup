@@ -7,7 +7,10 @@ const el = (tag, cls, html) => { const n = document.createElement(tag); if (cls)
 /* GUI 카드 표기 : 2026-06-30 14:52 (초 제거) */
 const fmtT  = t => t.replace(/:\d{2}$/, '');
 const fmtTS = t => t.replace(' ', ' ');
-const simCls = v => v >= 90 ? 'hi' : v >= 80 ? 'mid' : 'low';
+/* 유사도 Chip 구간별 컬러 (사양서 v0.5 항목) — GUI 검색 결과 화면 실측으로 확정.
+   98·97·93% = 초록(#3fbe7e) / 87·84·78·72·64% = 주황(#e88038) → 경계 90, **2구간**.
+   결과 영역 전체를 스캔해도 배지 색은 이 두 가지뿐이라 기존 3구간(<80 노랑)은 잘못이었다. */
+const simCls = v => v >= 90 ? 'hi' : 'mid';
 const colorHex = k => (COLORS.find(c => c.k === k) || {}).hex || '#666';
 
 /* 아이콘 — Figma export SVG를 CSS mask로 렌더 (.i / .i-*), 나머지는 기존 인라인 유지 */
@@ -1493,6 +1496,11 @@ const SET_IC = {
   check: '<svg viewBox="0 0 16 16" class="ic"><path d="M3.2 8.4l3.2 3.2 6.4-7" stroke="currentColor" stroke-width="1.4" fill="none" stroke-linecap="round"/></svg>'
 };
 
+/* AI 입력창 `+` = 첨부파일 (사양서 v0.5) */
+document.addEventListener('click', e => {
+  if (e.target.closest('[data-aiplus]')) { e.preventDefault(); pickAiFiles(); }
+});
+
 /* 알림 벨 — 사양서 : 선택 시 알림 팝업 노출 (핸들러가 아예 없었다) */
 if ($('#btnAlarmTop')) $('#btnAlarmTop').onclick = e => {
   e.stopPropagation();
@@ -1747,6 +1755,55 @@ function openObjMenu(e, slot) {
    재생 속도 / 구간 길이 / 반복 재생 (메인 + 서브메뉴 2종)
    ※ Description 텍스트에는 0.75 가 빠져 있으나 스토리보드 목업에는 있어 목업 기준으로 넣음
    ============================================================ */
+/* ============================================================
+   AI 입력창 첨부파일 — 사양서 v0.5 (AI Agent_001_01 · 1-3 첨부파일 버튼)
+   `+` → 파일 탐색기. 이미지는 **썸네일 미리보기**, 일반 파일은 **카드**(파일명 말줄임 + 용량 + 확장자).
+   카드 우측 상단 ✕ 로 즉시 제거.
+   ============================================================ */
+S.aiFiles = [];
+const fmtBytes = n => n < 1024 ? n + 'B'
+  : n < 1048576 ? (n / 1024).toFixed(0) + 'KB' : (n / 1048576).toFixed(1) + 'MB';
+
+function renderAiFiles() {
+  $$('.aim-files').forEach(box => {
+    if (!S.aiFiles.length) { box.innerHTML = ''; box.hidden = true; return; }
+    box.hidden = false;
+    box.innerHTML = S.aiFiles.map((f, i) => f.img
+      ? `<span class="af-thumb" title="${f.name}"><img src="${f.img}" alt="">
+           <button class="x" data-afx="${i}" title="제거">✕</button></span>`
+      : `<span class="af-file" title="${f.name}">
+           <i class="af-ext">${f.ext}</i>
+           <span class="af-nm">${f.name}</span><span class="af-sz">${f.size}</span>
+           <button class="x" data-afx="${i}" title="제거">✕</button></span>`).join('');
+    $$('[data-afx]', box).forEach(b => b.onclick = e => {
+      e.stopPropagation(); S.aiFiles.splice(+b.dataset.afx, 1); renderAiFiles();
+    });
+  });
+}
+
+function pickAiFiles() {
+  let inp = $('#aiFileInput');
+  if (!inp) {
+    inp = document.createElement('input');
+    inp.type = 'file'; inp.multiple = true; inp.id = 'aiFileInput'; inp.hidden = true;
+    document.body.appendChild(inp);
+    inp.onchange = () => {
+      [...inp.files].forEach(f => {
+        const ext = (f.name.split('.').pop() || '').toUpperCase();
+        const rec = { name: f.name, size: fmtBytes(f.size), ext, img: null };
+        S.aiFiles.push(rec);
+        if (/^image\//.test(f.type)) {
+          const r = new FileReader();
+          r.onload = e => { rec.img = e.target.result; renderAiFiles(); };
+          r.readAsDataURL(f);
+        }
+      });
+      renderAiFiles(); inp.value = '';
+    };
+  }
+  inp.click();
+}
+
 function renderSetMenu() {
   let box = $('#dtSetMenu');
   if (!box) {
@@ -3728,8 +3785,9 @@ S.aiType = 'C';   /* 사양서 v0.6 : AI 에이전트 배치 A(팝업) · B(레�
       </div>
       <div class="aim-scroll" id="aimScroll"></div>
       <div class="aim-input">
+        <div class="aim-files" hidden></div>
         <textarea id="aimQ" placeholder="찾으시는 내용을 자유롭게 물어보세요."></textarea>
-        <div class="aim-row"><button class="plus" title="첨부">+</button>
+        <div class="aim-row"><button class="plus" data-aiplus title="첨부파일">+</button>
           <button class="aim-send" id="aimSend" title="전송">↑</button></div>
       </div>
     </div>`;
@@ -3805,8 +3863,9 @@ runSearch = function (keep) { _runSearchA(keep); buildFilters(S.mode); renderTex
     <div class="aim-body">
       <div class="aim-scroll"></div>
       <div class="aim-input">
+        <div class="aim-files" hidden></div>
         <textarea class="aim-q" placeholder="찾으시는 내용을 자유롭게 물어보세요."></textarea>
-        <div class="aim-row"><button class="plus" title="첨부">+</button>
+        <div class="aim-row"><button class="plus" data-aiplus title="첨부파일">+</button>
           <button class="aim-send" title="전송">↑</button></div>
       </div>
     </div>
@@ -3950,7 +4009,7 @@ function applyLayout() {
      검색을 실행해 진입 블록이 접힌 뒤에만 브레드크럼으로 바뀐다. */
   const head = $('#sideHead');
   let crumb = $('#sideCrumb');
-  const crumbOn = (S.layout === 'b' && !S.bPick && !!S.searched);
+  const crumbOn = (S.layout === 'b' && !S.bPick && (!!S.searched || S.mode === 'aim'));
   if (crumbOn) {
     if (!crumb) {
       crumb = document.createElement('span');
@@ -3984,11 +4043,14 @@ function applyLayout() {
         <button class="go" title="AI 에이전트 열기"><i class="i-ai"></i></button>
       </div>
       <div class="lb" style="margin-top:16px">일반 검색</div>`;
-    if (!aiOff) $('#bAi').onclick = () => toggleAiFloat(true);
-    /* 일반 검색 칩에서 AI 검색 제외 */
+    /* 좌측 `AI 검색` 진입은 **좌측 패널의 AI 대화**로 전환한다.
+       우측 AI 에이전트 패널은 윈도우 크롬의 AI 버튼 전용이며 서로 독립이다.
+       (사양서 : AI Agent_001_01 진입경로 = 패널 영역 상단 사이드바 버튼) */
+    if (!aiOff) $('#bAi').onclick = () => { S.bPick = false; switchMode('aim'); applyLayout(); };
+    /* 일반 검색 칩에서 AI 검색 제외 — 단, aim 모드 자체는 위 AI 검색 박스로 진입 가능하므로
+       모드를 강제로 되돌리지 않는다 */
     chips.classList.add('b-chips');
     $$('#modeRail button').forEach(b => { b.hidden = (b.dataset.mode === 'aim'); });
-    if (S.mode === 'aim') switchMode('text');
   } else {
     if (bwrap) bwrap.remove();
     chips.classList.remove('b-chips');
@@ -3997,7 +4059,7 @@ function applyLayout() {
   }
   /* B안 : 검색을 실행하면 진입 블록(AI 검색·일반 검색 칩)을 접고 조건+필터만 남긴다.
      헤더 브레드크럼의 ✕ 로 다시 검색 유형 선택 상태로 돌아간다. */
-  const hideIntro = (S.layout === 'b' && !S.bPick && !!S.searched);
+  const hideIntro = (S.layout === 'b' && !S.bPick && (!!S.searched || S.mode === 'aim'));
   chips.hidden = hideIntro;
   if (bwrap) bwrap.hidden = hideIntro;
   if (typeof renderRecentBlk === 'function') renderRecentBlk();

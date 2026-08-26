@@ -2390,3 +2390,34 @@ body.aidock-on .main-row > .preview{flex:0 0 300px;width:300px}
 .lnb .bx .i{width:20px;height:20px}
 .mn-searchbox .sic .i,.mode-panel .ta-search .i{width:16px;height:16px}
 #btnAlarmTop .i-bell{width:16px;height:16px}
+
+/* 대상 카드 썸네일 — 시안 실측 : 영상 카드와 같은 높이(135), 폭만 좁다(160)
+   (기존 64×78 이 남아 있어 대상 카드만 작고 카드 높이가 들쭉날쭉했다) */
+.bmk-card.obj .bmk-thumb{width:160px;flex:0 0 160px;height:135px}
+
+/* ============================================================
+   AI 입력창 첨부파일 트레이 — 사양서 v0.5 (AI Agent_001_01 · 1-3)
+   이미지 = 썸네일 미리보기 / 일반 파일 = 카드(파일명 말줄임 + 용량 + 확장자) + ✕
+   ============================================================ */
+.aim-files{display:flex;flex-wrap:wrap;gap:6px;padding:8px 10px 0}
+.aim-files .af-thumb{position:relative;width:44px;height:44px;border-radius:6px;overflow:hidden;
+  border:1px solid var(--ln-border);flex:0 0 auto}
+.aim-files .af-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.aim-files .af-file{
+  position:relative;display:inline-flex;align-items:center;gap:6px;max-width:180px;
+  height:44px;padding:0 22px 0 8px;border-radius:6px;
+  background:var(--bg-3);border:1px solid var(--ln-border)
+}
+.aim-files .af-ext{
+  font-style:normal;font-size:8.5px;font-weight:700;letter-spacing:.2px;
+  padding:2px 4px;border-radius:3px;background:var(--primary);color:#fff;flex:0 0 auto
+}
+.aim-files .af-nm{font-size:11px;color:var(--tx-secondary);overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.aim-files .af-sz{font-size:10px;color:var(--tx-helper);flex:0 0 auto}
+.aim-files .x{
+  position:absolute;right:2px;top:2px;width:14px;height:14px;border-radius:50%;border:0;cursor:pointer;
+  background:rgba(0,0,0,.6);color:#fff;font-size:8px;line-height:1;display:flex;
+  align-items:center;justify-content:center;padding:0
+}
+.aim-files .x:hover{background:var(--st-mid)}
