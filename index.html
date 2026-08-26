@@ -2,13 +2,25 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<title>SVMS — 대상 검색 (Working Mockup)</title>
+<title>SVMS — 동선 추적 검색 (Working Mockup)</title>
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
 <link rel="stylesheet" href="assets/css/icons.css">
 <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
+
+<!-- AI 심볼 스파클 그라디언트 정의 — 로딩 애니메이션(.ai-load)이 참조한다.
+     좌표는 심볼 원본(ic_에스원AI심볼)의 userSpace 값 그대로. -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <linearGradient id="aiSpSm" x1="1.97204" y1="5.54991" x2="1.97204" y2="9.49392" gradientUnits="userSpaceOnUse">
+    <stop stop-color="#1690E8"/><stop offset="1" stop-color="#C452EC"/></linearGradient>
+  <linearGradient id="aiSpMd" x1="10.0266" y1="-3.58407" x2="0.797304" y2="10.4324" gradientUnits="userSpaceOnUse">
+    <stop offset="0.38" stop-color="#1690E8"/><stop offset="0.55" stop-color="#C452EC"/>
+    <stop offset="0.69" stop-color="#F52F67"/><stop offset="0.86" stop-color="#F89303"/></linearGradient>
+  <linearGradient id="aiSpLg" x1="7.77741" y1="5.66085" x2="7.77741" y2="13.3335" gradientUnits="userSpaceOnUse">
+    <stop stop-color="#1690E8"/><stop offset="1" stop-color="#C452EC"/></linearGradient>
+</defs></svg>
 
 <div class="app" id="app">
 
@@ -20,7 +32,7 @@
       <button class="win-btn"><i class="i i-16 i-winhome"></i></button>
     </div>
     <div class="win-tabs">
-      <div class="win-tab on"><i class="i i-16 i-search"></i><span>대상 검색</span></div>
+      <div class="win-tab on"><i class="i i-16 i-search"></i><span>동선 추적 검색</span></div>
       <button class="win-tab add"><i class="i i-12 i-plus"></i></button>
     </div>
     <div class="win-r">
@@ -52,10 +64,10 @@
       <div class="side-body">
         <!-- 검색 유형 레일 -->
         <nav class="mode-chips" id="modeRail">
-          <button data-mode="aim" data-tip="AI 검색">AI 검색</button>
-          <button data-mode="text" class="on" data-tip="텍스트 검색">텍스트</button>
-          <button data-mode="image" data-tip="이미지 검색">이미지</button>
+          <button data-mode="aim" class="on" data-tip="AI 검색">AI 검색</button>
+          <button data-mode="text" data-tip="텍스트 검색">텍스트</button>
           <button data-mode="car" data-tip="차량번호 검색">차량번호</button>
+          <button data-mode="image" data-tip="이미지 검색">이미지</button>
           <button data-mode="person" data-tip="등록 인물 검색">등록인물</button>
           <button data-mode="algo" data-tip="지능형 알고리즘 검색">지능형 알고리즘</button>
         </nav>
@@ -64,7 +76,7 @@
         <div class="mode-panels" id="modePanels">
 
           <!-- 1) 텍스트 검색 -->
-          <section class="mode-panel on" data-panel="text">
+          <section class="mode-panel" data-panel="text">
             <div class="panel-top">
               <span class="panel-label">텍스트 검색</span>
               <div class="select sm" id="textOptSelect" data-value="자연어">
@@ -181,7 +193,7 @@
       <div class="ai-body" id="aiBody">
         <div class="chat" id="chat"></div>
         <div class="chat-input">
-          <textarea id="aiInput" placeholder="AI agents에게 물어보세요"></textarea>
+          <textarea id="aiInput" placeholder="찾으시는 내용을 자유롭게 물어보세요."></textarea>
           <button class="btn-icon attach" title="첨부">
             <svg viewBox="0 0 16 16" class="ic"><path d="M11.5 6.5l-4.6 4.6a2.2 2.2 0 01-3.1-3.1l5.3-5.3a1.5 1.5 0 012.1 2.1l-5.2 5.2a.7.7 0 01-1-1l4.6-4.6" stroke="currentColor" stroke-width="1.1" fill="none"/></svg>
           </button>
@@ -198,10 +210,15 @@
     <!-- ---- 콘텐츠 : 탭바 + 결과 ---- -->
     <div class="shell-main" id="shellMain">
 
+    <!-- 콘텐츠 행 : [탭바+워크스페이스] + 원본 영상(전체 높이)  — GUI 정합 260826 -->
+    <div class="main-row" id="mainRow">
+    <div class="content-col" id="contentCol">
+
     <div class="tabbar">
-      <button class="btn-icon" id="btnHistory" title="검색 히스토리"><i class="i i-history"></i></button>
       <div class="tabs" id="tabs"></div>
       <button class="tab-add" id="btnTabAdd" title="새 검색 탭"><i class="i i-12 i-plus"></i></button>
+      <!-- 시안(4307:27829)은 시계형이 아니라 ic_목록(리스트형) 이다 -->
+      <button class="tb-history" id="btnHistory" title="검색 히스토리"><svg viewBox="0 0 20 20" class="ic hist-ic" aria-hidden="true"><circle cx="4.2" cy="5.6" r="1.05" fill="currentColor"/><circle cx="4.2" cy="10" r="1.05" fill="currentColor"/><circle cx="4.2" cy="14.4" r="1.05" fill="currentColor"/><path d="M7.8 5.6h8M7.8 10h8M7.8 14.4h8" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" fill="none"/></svg><span>히스토리</span></button>
     </div>
 
     <div class="workspace" id="workspace">
@@ -238,12 +255,6 @@
         </div>
       </div>
     </main>
-
-    <!-- ---- 우: 원본 영상 ---- -->
-    <aside class="preview" id="preview">
-      <div class="preview-head">원본 영상</div>
-      <div class="preview-list" id="previewList"></div>
-    </aside>
 
     <!-- ---- 단일 대상 상세 ---- -->
     <section class="detail" id="detail" hidden>
@@ -283,28 +294,34 @@
               <button class="btn-icon" data-area="line" title="영역 검색 — 선"><svg viewBox="0 0 16 16" class="ic"><path d="M2 14L14 2M4 11l2 2M7 8l2 2M10 5l2 2" stroke="currentColor" stroke-width="1.3" fill="none"/></svg></button>
             </div>
             <div class="grp c">
-              <button class="btn-icon" title="처음"><svg viewBox="0 0 16 16" class="ic"><path d="M4 3v10M13 3L6 8l7 5z" fill="currentColor"/></svg></button>
+              <button class="btn-icon" id="dtPrevClip" title="이전 영상"><svg viewBox="0 0 16 16" class="ic"><path d="M4 3v10M13 3L6 8l7 5z" fill="currentColor"/></svg></button>
               <button class="btn-icon" title="10초 뒤로"><svg viewBox="0 0 16 16" class="ic"><path d="M8 3.5a5 5 0 105 5" stroke="currentColor" stroke-width="1.3" fill="none"/><path d="M8 1.2v4.6L5 3.5z" fill="currentColor"/></svg></button>
               <button class="btn-icon" title="배속 뒤로"><svg viewBox="0 0 16 16" class="ic"><path d="M8 3v10L2 8zM14 3v10L8 8z" fill="currentColor"/></svg></button>
               <button class="btn-icon play" id="dtPlay" title="재생"><svg viewBox="0 0 16 16" class="ic"><path d="M4 2.5l9 5.5-9 5.5z" fill="currentColor"/></svg></button>
               <button class="btn-icon" title="일시정지"><svg viewBox="0 0 16 16" class="ic"><path d="M4.5 3h2.5v10H4.5zM9 3h2.5v10H9z" fill="currentColor"/></svg></button>
               <button class="btn-icon" title="배속 앞으로"><svg viewBox="0 0 16 16" class="ic"><path d="M8 3v10l6-5zM2 3v10l6-5z" fill="currentColor"/></svg></button>
               <button class="btn-icon" title="10초 앞으로"><svg viewBox="0 0 16 16" class="ic"><path d="M8 3.5a5 5 0 11-5 5" stroke="currentColor" stroke-width="1.3" fill="none"/><path d="M8 1.2v4.6L11 3.5z" fill="currentColor"/></svg></button>
-              <button class="btn-icon" title="끝"><svg viewBox="0 0 16 16" class="ic"><path d="M12 3v10M3 3l7 5-7 5z" fill="currentColor"/></svg></button>
-              <button class="btn-icon" title="음량"><svg viewBox="0 0 16 16" class="ic"><path d="M3 6h2.5L9 3v10L5.5 10H3z" fill="currentColor"/><path d="M11 6a3 3 0 010 4" stroke="currentColor" stroke-width="1.2" fill="none"/></svg></button>
+              <button class="btn-icon" id="dtNextClip" title="다음 영상"><svg viewBox="0 0 16 16" class="ic"><path d="M12 3v10M3 3l7 5-7 5z" fill="currentColor"/></svg></button>
+              <!-- 사양서 2-6) 음량 : 호버 시 슬라이더 노출 · 선택 시 음소거 토글 -->
+              <span class="vol-wrap" id="dtVolWrap">
+                <button class="btn-icon" id="dtVol" title="음량"><svg viewBox="0 0 16 16" class="ic" id="dtVolIc"><path d="M3 6h2.5L9 3v10L5.5 10H3z" fill="currentColor"/><path d="M11 6a3 3 0 010 4" stroke="currentColor" stroke-width="1.2" fill="none"/></svg></button>
+                <input type="range" class="vol-slider" id="dtVolRange" min="0" max="100" value="70">
+              </span>
             </div>
             <div class="grp r" id="dtTools">
-              <button class="btn-icon on" data-tool="obj" title="대상 표시"><svg viewBox="0 0 16 16" class="ic"><circle cx="6" cy="6" r="2.6" stroke="currentColor" stroke-width="1.2" fill="none"/><path d="M2 14c0-2.4 1.8-3.6 4-3.6M11 8.5l3 3M14 8.5l-3 3" stroke="currentColor" stroke-width="1.2" fill="none"/></svg></button>
-              <button class="btn-icon" data-tool="path" title="이동 경로"><svg viewBox="0 0 16 16" class="ic"><path d="M3 13c0-4 4-2 4-5S11 3 13 4" stroke="currentColor" stroke-width="1.3" fill="none"/><circle cx="3" cy="13" r="1.4" fill="currentColor"/><circle cx="13" cy="4" r="1.4" fill="currentColor"/></svg></button>
+              <!-- 사양서 Detail_000_2 · 2-5) 영상 분석 및 뷰어 도구 :
+                   히트맵 / 경로 확인 / 주변 카메라 / 단일 영상 view(1X1, Default) / 다중 영상 view(2X2)
+                   ※ 대상 바운딩 박스는 2-2)에 따라 상시 표시라 토글 버튼을 두지 않는다 -->
               <button class="btn-icon" data-tool="heat" title="히트맵"><svg viewBox="0 0 16 16" class="ic"><path d="M8 1.5s3.5 3 3.5 6a3.5 3.5 0 11-7 0c0-3 3.5-6 3.5-6z" stroke="currentColor" stroke-width="1.2" fill="none"/></svg></button>
-              <button class="btn-icon" data-tool="cctv" title="CCTV 표시"><svg viewBox="0 0 16 16" class="ic"><path d="M2.2 5.4l9.6-2.6 1.2 4.4-9.6 2.6z" stroke="currentColor" stroke-width="1.2" fill="none"/><path d="M5 9.5l1 4M13 7.2l1.4-.4" stroke="currentColor" stroke-width="1.2" fill="none"/></svg></button>
-              <button class="btn-icon" data-tool="mask" title="마스킹"><svg viewBox="0 0 16 16" class="ic"><rect x="3" y="3" width="10" height="10" rx="1.5" fill="currentColor"/></svg></button>
-              <button class="btn-icon" data-tool="multi" title="멀티뷰"><svg viewBox="0 0 16 16" class="ic"><rect x="2" y="2" width="5.4" height="5.4" rx=".8" fill="currentColor"/><rect x="8.6" y="2" width="5.4" height="5.4" rx=".8" fill="currentColor"/><rect x="2" y="8.6" width="5.4" height="5.4" rx=".8" fill="currentColor"/><rect x="8.6" y="8.6" width="5.4" height="5.4" rx=".8" fill="currentColor"/></svg></button>
+              <button class="btn-icon" data-tool="path" title="경로 확인"><svg viewBox="0 0 16 16" class="ic"><path d="M3 13c0-4 4-2 4-5S11 3 13 4" stroke="currentColor" stroke-width="1.3" fill="none"/><circle cx="3" cy="13" r="1.4" fill="currentColor"/><circle cx="13" cy="4" r="1.4" fill="currentColor"/></svg></button>
+              <button class="btn-icon" data-tool="cctv" title="주변 카메라"><svg viewBox="0 0 16 16" class="ic"><path d="M2.2 5.4l9.6-2.6 1.2 4.4-9.6 2.6z" stroke="currentColor" stroke-width="1.2" fill="none"/><path d="M5 9.5l1 4M13 7.2l1.4-.4" stroke="currentColor" stroke-width="1.2" fill="none"/></svg></button>
+              <button class="btn-icon on" data-tool="single" title="단일 영상 view"><svg viewBox="0 0 16 16" class="ic"><rect x="2.4" y="2.4" width="11.2" height="11.2" rx="1" fill="currentColor"/></svg></button>
+              <button class="btn-icon" data-tool="multi" title="다중 영상 view"><svg viewBox="0 0 16 16" class="ic"><rect x="2" y="2" width="5.4" height="5.4" rx=".8" fill="currentColor"/><rect x="8.6" y="2" width="5.4" height="5.4" rx=".8" fill="currentColor"/><rect x="2" y="8.6" width="5.4" height="5.4" rx=".8" fill="currentColor"/><rect x="8.6" y="8.6" width="5.4" height="5.4" rx=".8" fill="currentColor"/></svg></button>
               <div class="select xs dt-sel" id="dtViewSel" data-value="Multi View">
                 <button class="select-btn">Multi View<i class="i i-16 i-chevron i-down caret"></i></button>
                 <div class="select-menu"><div data-v="Multi View">Multi View</div><div data-v="주변 카메라">주변 카메라</div><div data-v="맵뷰어">맵뷰어</div></div>
               </div>
-              <button class="btn-icon" title="설정"><svg viewBox="0 0 16 16" class="ic"><circle cx="8" cy="8" r="2.2" stroke="currentColor" stroke-width="1.2" fill="none"/><path d="M8 1.6l.9 1.7 1.9-.3.5 1.85 1.75.83-.85 1.72.85 1.72-1.75.83-.5 1.85-1.9-.3L8 14.4l-.9-1.7-1.9.3-.5-1.85-1.75-.83.85-1.72-.85-1.72 1.75-.83.5-1.85 1.9.3z" stroke="currentColor" stroke-width="1" fill="none"/></svg></button>
+              <button class="btn-icon" id="dtSet" title="설정"><svg viewBox="0 0 16 16" class="ic"><circle cx="8" cy="8" r="2.2" stroke="currentColor" stroke-width="1.2" fill="none"/><path d="M8 1.6l.9 1.7 1.9-.3.5 1.85 1.75.83-.85 1.72.85 1.72-1.75.83-.5 1.85-1.9-.3L8 14.4l-.9-1.7-1.9.3-.5-1.85-1.75-.83.85-1.72-.85-1.72 1.75-.83.5-1.85 1.9.3z" stroke="currentColor" stroke-width="1" fill="none"/></svg></button>
               <button class="btn-icon" id="dtFull" title="영상 전체보기"><svg viewBox="0 0 16 16" class="ic"><path d="M6 2H2v4M10 14h4v-4M2 10v4h4M14 6V2h-4" stroke="currentColor" stroke-width="1.3" fill="none"/></svg></button>
             </div>
           </div>
@@ -375,7 +392,7 @@
                 </button>
               </div>
               <dl class="dt-obj-meta">
-                <div><dt>이벤트 시간</dt><dd id="dtObjTime">2026-06-30 14:52:03</dd></div>
+                <div><dt>출현 일시</dt><dd id="dtObjTime">2026-06-30 14:52:03</dd></div>
                 <div><dt>이벤트</dt><dd id="dtObjEvent">이동/계수</dd></div>
                 <div><dt>색상</dt><dd class="sw-row"><span>상의<i class="dot-sw" id="dtSwTop"></i></span><span>하의<i class="dot-sw" id="dtSwBot"></i></span></dd></div>
               </dl>
@@ -436,6 +453,16 @@
        #workspace 를 가리는 별도 컨테이너. 내용은 app.js renderMenu() 가 채운다. -->
   <div class="menu-view" id="menuView" hidden></div>
 
+    </div><!-- /content-col -->
+
+    <!-- ---- 우: 원본 영상 (탭바와 같은 높이에서 시작) ---- -->
+    <aside class="preview" id="preview">
+      <div class="preview-head">원본 영상</div>
+      <div class="preview-list" id="previewList"></div>
+    </aside>
+
+    </div><!-- /main-row -->
+
     </div><!-- /shell-main -->
   </div><!-- /shell -->
 
@@ -461,7 +488,7 @@
 <!-- 이미지 검색 팝업 -->
 <div class="modal md-lg" id="mdImage" hidden>
   <div class="md-head">
-    <div><h3>이미지 검색</h3><p>이미지에서 자동 추출된 얼굴과 대상를 검색할 수 있습니다. (복수 선택 가능)</p></div>
+    <div><h3>이미지 검색</h3><p>이미지에서 자동 추출된 얼굴과 대상을 검색할 수 있습니다. (복수 선택 가능)</p></div>
     <button class="btn-icon md-x" data-close><svg viewBox="0 0 16 16" class="ic"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.3"/></svg></button>
   </div>
   <div class="md-body img-md">
@@ -565,7 +592,7 @@
 <!-- ============ 비교 대상 추가 ============ -->
 <div class="modal md-mid" id="mdObjAdd" hidden>
   <div class="md-head">
-    <div><h3>대상 추가</h3><p>주변 대상 중 경로를 비교할 대상를 선택해 주세요.</p></div>
+    <div><h3>대상 추가</h3><p>주변 대상 중 경로를 비교할 대상을 선택해 주세요.</p></div>
     <button class="btn-icon md-x" data-close><svg viewBox="0 0 16 16" class="ic"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.3"/></svg></button>
   </div>
   <div class="md-body" id="oaBody"></div>

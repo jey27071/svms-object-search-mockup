@@ -1797,3 +1797,439 @@ a{cursor:pointer;text-decoration:none;color:inherit}
 .pmf-img img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 /* GUI 썸네일은 세로형(3:4) */
 .pmf-img{aspect-ratio:3/4}
+
+/* ============================================================
+   GUI 정합 — 대시보드 공통 (Figma 4307:27222 / 4345:26657) 실측 반영
+   2026-08-26 · 1단계 : 레이아웃 골격
+   Side Panel 370(= Tool Bar 50 + Wrap 320) · Contents 1118 · Right 400 · 거터 8
+   ============================================================ */
+
+/* --- LNB (Tool Bar) : 50px, 아이템 pitch 65 --- */
+.lnb{
+  width:50px;flex:0 0 50px;padding:14px 0 0;gap:0;
+  border-right:1px solid var(--ln-subtle);background:var(--bg-2)
+}
+.lnb button{padding:0;gap:2px;height:45px;margin-bottom:20px}
+.lnb .bx{width:28px;height:28px;border-radius:6px}
+.lnb .bx .ic{width:20px;height:20px}
+.lnb span{font-size:10px;line-height:15px;letter-spacing:-.3px}
+
+/* --- 검색 패널 Wrap : 320px --- */
+:root{--w-side:320px}
+
+/* --- 패널 헤더 : 44px, padding 12, 아이콘 20×20 gap 16 --- */
+.shell > .side .side-head{height:44px;flex:0 0 44px;padding:0 12px;align-items:center}
+.side-title{font-size:15px;line-height:18px}
+.side-head-btns{gap:16px}
+.side-head-btns .btn-icon{width:20px;height:20px}
+
+/* --- 탭바 : 30px, 탭 200×28 gap 4, 히스토리 우측 --- */
+.tabbar{height:30px;flex:0 0 30px;padding:0 4px;align-items:center;gap:0}
+.tabs{gap:4px;height:28px}
+.tabs .tab{width:200px;flex:0 0 200px;height:28px}
+.tabs .tab::after{display:none}
+.tb-history{
+  margin-left:auto;height:28px;display:flex;align-items:center;gap:4px;
+  padding:0 4px;background:none;border:0;cursor:pointer;color:var(--tx-secondary);
+  font-size:12px;line-height:18px;white-space:nowrap
+}
+.tb-history .i{width:20px;height:20px}
+.tb-history:hover{color:var(--tx-primary)}
+
+/* --- 콘텐츠 행 : Contents(1118) + Right Pannel(400), 거터 8 --- */
+.main-row{flex:1;display:flex;gap:8px;min-height:0;padding:8px 8px 8px 0}
+.content-col{flex:1;display:flex;flex-direction:column;min-width:0;min-height:0}
+.content-col > .tabbar{padding:0 4px;background:transparent;border-bottom:0}
+.content-col > .workspace{flex:1;padding:0;gap:8px}
+.content-col > .menu-view{flex:1;min-height:0}
+.main-row > .preview{
+  flex:0 0 400px;width:400px;align-self:stretch;
+  background:var(--bg-2);border-radius:var(--r);border-left:0;margin:0
+}
+.main-row > .preview[hidden]{display:none}
+
+/* --- 8px 거터 : Side Panel(370) + Contents(1118) + Right(400) = 1920 --- */
+.shell{padding:8px;gap:8px;box-sizing:border-box}
+.shell > .lnb{border-radius:var(--r) 0 0 var(--r)}
+.shell > .side{border-radius:0 var(--r) var(--r) 0;border-right:0}
+.main-row{padding:0}
+
+/* --- 히스토리 버튼 : #btnHistory ID 규칙(1657줄)을 덮어써야 라벨이 산다 --- */
+.tabbar #btnHistory{
+  width:auto;height:28px;flex:0 0 auto;margin-left:auto;
+  display:flex;align-items:center;gap:4px;padding:0 4px;
+  background:none;border:0;border-radius:var(--r);cursor:pointer;
+  color:var(--tx-secondary);font-size:12px;line-height:18px;white-space:nowrap
+}
+.tabbar #btnHistory .i{width:20px;height:20px;flex:0 0 20px}
+.tabbar #btnHistory:hover{color:var(--tx-primary);background:rgba(255,255,255,.06)}
+
+/* LNB+검색패널은 하나의 카드(Side Panel 370) → 사이 간격 0, 콘텐츠와만 8 띄운다 */
+.shell{gap:0}
+.shell > .shell-main{margin-left:8px}
+.tabbar #btnHistory{width:80px;flex:0 0 80px;justify-content:flex-start;padding:0 0 0 4px}
+
+/* --- AI 유무 시안 스위치 (윈도우 크롬, 레이아웃 스위치와 동일 폼) --- */
+.ai-sw button.on{background:#7b5bd6}
+body.ai-off #btnAI{display:none}
+body.ai-off #aiFloat{display:none}
+
+/* ============================================================
+   GUI 정합 3단계 — 검색 패널 컴포넌트 (Figma 4307:27790 실측)
+   Inner 320 · 좌우 padding 12 → 콘텐츠 폭 296
+   ============================================================ */
+
+/* --- 모드 칩 : h28 · gap 6 · padding 12 12 --- */
+.mode-chips{padding:12px 12px 0;gap:6px}
+.mode-chips button{
+  height:28px;padding:0 12px;border-radius:14px;font-size:12px;line-height:18px
+}
+
+/* --- 입력창 : 296×102, 칩과 16px 간격, 하단에 + / 검색 --- */
+.mode-panel[data-panel="text"] .textarea-wrap,
+.mode-panel[data-panel="car"] .textarea-wrap{
+  min-height:102px;box-sizing:border-box;
+  border:1px solid var(--ln-border);border-radius:6px;background:var(--bg-1);position:relative
+}
+.mode-panel[data-panel="text"] .textarea-wrap textarea,
+.mode-panel[data-panel="car"] .textarea-wrap textarea{
+  border:0;background:transparent;padding:10px 12px 0;min-height:52px;
+  font-size:12px;line-height:18px;resize:none
+}
+.ta-plus{
+  position:absolute;left:12px;bottom:10px;width:20px;height:20px;
+  display:flex;align-items:center;justify-content:center;
+  background:none;border:0;cursor:pointer;color:var(--tx-tertiary)
+}
+.ta-plus:hover{color:var(--tx-secondary)}
+.mode-panel .ta-search{
+  position:absolute;right:12px;bottom:6px;width:24px;height:24px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--bg-3);border:0;cursor:pointer;color:var(--tx-secondary)
+}
+.mode-panel .ta-search:hover{color:var(--tx-primary)}
+.mode-panel .ta-search svg,.mode-panel .ta-search .i{width:16px;height:16px}
+
+/* --- 상시 `최근 검색` 블록 : label 16 / gap 24 / li h32 pitch 38 --- */
+.recent-blk .rb-lb{font-size:12px;line-height:16px;color:var(--tx-secondary);margin-bottom:8px}
+.recent-blk .rb-list{display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.recent-blk .rb-li{
+  height:32px;display:inline-flex;align-items:center;gap:8px;max-width:100%;
+  padding:0 12px;border-radius:16px;background:var(--bg-3);cursor:pointer
+}
+.recent-blk .rb-li:hover{background:#2c2d35}
+.recent-blk .rb-li .t{
+  font-size:12px;line-height:16px;color:var(--tx-secondary);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap
+}
+.recent-blk .rb-li .x{
+  width:12px;height:12px;flex:0 0 12px;display:flex;align-items:center;justify-content:center;
+  background:none;border:0;cursor:pointer;color:var(--tx-helper)
+}
+.recent-blk .rb-li .x:hover{color:var(--tx-primary)}
+.recent-blk .rb-li .x .i{width:12px;height:12px}
+
+/* --- 유사도 슬라이더 : 값(파랑) 좌 · 100% 우, 슬라이더 아래 --- */
+.slider-row .slider-top{display:none}
+.slider-scale{
+  display:flex;justify-content:space-between;align-items:center;margin-top:4px;
+  font-size:11px;line-height:16px
+}
+.slider-scale b{color:var(--primary);font-weight:500}
+.slider-scale span{color:var(--tx-helper)}
+
+/* .mode-panel 의 기존 padding:16px 12px 이 곧 시안값(Inner padding 12 · 칩↔입력창 16)이다.
+   컴포넌트에 좌우 마진을 또 주면 이중이 되므로 0으로 둔다. */
+.mode-panel[data-panel="text"] .textarea-wrap,
+.mode-panel[data-panel="car"] .textarea-wrap{margin:0}
+.recent-blk{margin:16px 0 0}
+.mode-panel .filters{margin-top:16px}
+
+/* 현재값 라벨은 손잡이를 따라간다 (시안 : 80% 가 thumb 아래) */
+.slider-scale{position:relative;display:block;height:16px}
+.slider-scale b{
+  position:absolute;left:calc(var(--p,80) * 1%);transform:translateX(-50%);
+  color:var(--primary);font-weight:500;white-space:nowrap
+}
+.slider-scale span{position:absolute;right:0;color:var(--tx-helper)}
+
+/* 필터칩 우측 `초기화` (사양서 Search main_002_1) */
+.chips-reset{
+  margin-left:4px;height:24px;padding:0 8px;border:0;background:none;cursor:pointer;
+  color:var(--tx-helper);font-size:11.5px;text-decoration:underline;text-underline-offset:2px
+}
+.chips-reset:hover{color:var(--tx-secondary)}
+
+/* ============================================================
+   AI 로고 · 컬러 갱신 (Figma 4345:26680 `AI 에이전트` / ic_에스원AI심볼)
+   · pill 테두리가 그라디언트 → **단색 #1690e8** 로 변경됨
+   · 아이콘은 에스원 AI 심볼(스파클 3개, 각자 그라디언트) — icons.css `.i-ai`
+   · 그라디언트 스톱 자체는 동일 : #1690e8 → #c452ec → #f52f67 → #f89303
+   ============================================================ */
+:root{--ai-border:#1690e8}
+
+/* 윈도우 크롬 AI pill : 단색 테두리 · pl8 pr12 py4 · gap2 · radius full */
+.win-ai::before{display:none}
+.win-ai{
+  border:1px solid var(--ai-border);border-radius:9999px;
+  padding:4px 12px 4px 8px;gap:2px;height:24px;
+  color:var(--tx-primary);font-size:12px;font-weight:500;background:transparent
+}
+.win-ai .i-ai{width:16px;height:16px}
+.win-ai:hover{background:rgba(22,144,232,.12)}
+.win-ai.on{background:rgba(22,144,232,.18)}
+
+/* --- `AI 검색` 칩 : 비활성일 때 그라디언트 테두리를 걸지 않는다 ---
+   (기존엔 무조건 그라디언트라 텍스트 칩과 동시에 선택된 것처럼 보였다) */
+.mode-chips button[data-mode="aim"]{
+  border:1px solid var(--ln-border);color:var(--tx-tertiary)
+}
+.mode-chips button[data-mode="aim"]::before{display:none}
+.mode-chips button[data-mode="aim"]:hover{color:var(--tx-secondary);border-color:var(--tx-helper)}
+.mode-chips button[data-mode="aim"].on{
+  border:0;background:rgba(22,144,232,.13);color:var(--tx-primary)
+}
+.mode-chips button[data-mode="aim"].on::before{
+  display:block;content:'';position:absolute;inset:0;border-radius:14px;padding:1px;
+  background:var(--ai-grad);
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none
+}
+
+/* --- 정정 : pill 테두리는 단색이 아니라 2스톱 세로 그라디언트다 ---
+   (get_design_context 가 그라디언트 스트로크를 첫 스톱 #1690e8 하나로 평탄화해 준 것)
+   실측(4345:26680) — 상단 #158fe7≈#1690E8 / 하단 #ce4acd≈#C452EC
+   4스톱(#f52f67·#f89303)은 이제 에스원 심볼 내부 중간 스파클에만 남는다. */
+:root{
+  --ai-grad: linear-gradient(180deg,#1690e8,#c452ec);
+  --ai-grad-symbol: linear-gradient(160deg,#1690e8 38%,#c452ec 55%,#f52f67 69%,#f89303 86%);
+  --ai-line:#1690e8;
+}
+.win-ai{border:0}
+.win-ai::before{
+  display:block;content:'';position:absolute;inset:0;border-radius:9999px;padding:1px;
+  background:var(--ai-grad);
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none
+}
+
+/* ============================================================
+   탭 GUI 정합 (Figma 4307:27822 `Tab Bar` 실측)
+   바 30 / 탭 200×28 / gap 4 → 탭을 바 **하단에 붙여** 콘텐츠와 이어지게 한다.
+   활성 탭 = 콘텐츠와 같은 #1c1d23 (경계선 없이 연속)
+   비활성 탭 = 바 배경과 같은 #0d0e12  ·  hover #131418
+   인접한 비활성 탭 사이에만 1px #2e2f38 구분선
+   ============================================================ */
+.tabbar{align-items:flex-end}
+.tabs{align-items:flex-end}
+
+.tabs .tab{
+  background:var(--bg-0);color:var(--tx-secondary);border-radius:0;
+  border:0;box-shadow:none
+}
+.tabs .tab:hover{background:var(--bg-1)}
+.tabs .tab.on{background:var(--bg-2);color:var(--tx-primary)}
+/* 비활성 탭이 연달아 오면 그 사이에만 구분선 (배경색이 같아 구분이 안 되므로) */
+.tabs .tab:not(.on) + .tab:not(.on){box-shadow:inset 1px 0 0 var(--ln-subtle)}
+
+/* 탭 아래 콘텐츠는 활성 탭과 같은 면이어야 한다 — 사이에 어떤 선/여백도 두지 않는다 */
+.content-col > .tabbar{border-bottom:0;margin-bottom:0}
+.content-col > .workspace{margin-top:0}
+.tabbar #btnHistory .hist-ic{width:20px;height:20px;flex:0 0 20px}
+
+/* ============================================================
+   시안 검토용 스위치 (AI 유무 / 레이아웃 A·B)
+   윈도우 탭 옆으로 옮기고, 시안 판단에 방해되지 않도록 눈에 띄지 않게 둔다.
+   평소엔 흐릿하고 hover 하면 또렷해진다. 목업 검토자 전용 컨트롤.
+   ============================================================ */
+.win-tabs .layout-sw{
+  align-self:center;margin:0 0 0 10px;
+  border:1px solid rgba(255,255,255,.09);border-radius:4px;
+  opacity:.28;transition:opacity .15s
+}
+.win-tabs .layout-sw:hover{opacity:1}
+.win-tabs .layout-sw button{
+  height:18px;padding:0 6px;font-size:10px;font-weight:400;
+  background:transparent;color:var(--tx-helper);border:0;cursor:pointer
+}
+.win-tabs .layout-sw button.on{background:rgba(255,255,255,.13);color:var(--tx-secondary)}
+.win-tabs .ai-sw button.on{background:rgba(255,255,255,.13)}
+
+/* 사양서 2-5) 다중 영상 view 중에는 검색·분석 도구 비활성 */
+#dtTools .btn-icon:disabled,#dtAreaTools .btn-icon:disabled{opacity:.35;pointer-events:none}
+
+/* 사양서 4-4)/3-1) 단일 대상에서 비활성인 버튼 */
+.mapview .tools .btn-icon:disabled,#dtEdit:disabled{opacity:.35;pointer-events:none}
+
+/* ============================================================
+   영상 재생 설정 팝업 · 음량 컨트롤 (사양서 Detail_000_2 · 2-6 / 2-7)
+   디자인은 GUI 토큰(bg-3 면 · radius · Pretendard)을 따른다.
+   ============================================================ */
+.set-menu{
+  position:fixed;z-index:80;min-width:210px;padding:6px;
+  background:#1a1b20;border:1px solid var(--ln-subtle);border-radius:10px;
+  box-shadow:0 10px 30px rgba(0,0,0,.55)
+}
+.set-menu.sub{min-width:180px}
+.set-menu .sm-row{
+  width:100%;height:38px;display:flex;align-items:center;gap:8px;padding:0 10px;
+  background:none;border:0;border-radius:6px;cursor:pointer;
+  color:var(--tx-secondary);font-size:12.5px;text-align:left
+}
+.set-menu button.sm-row:hover{background:rgba(255,255,255,.07);color:var(--tx-primary)}
+.set-menu .sm-row .ic{width:16px;height:16px;flex:0 0 16px;color:var(--tx-tertiary)}
+.set-menu .sm-row .t{flex:1;min-width:0}
+.set-menu .sm-row .v{color:var(--tx-helper);font-size:12px;margin-right:2px}
+.set-menu .sm-head{
+  width:100%;height:36px;display:flex;align-items:center;gap:6px;padding:0 8px;margin-bottom:2px;
+  background:none;border:0;border-bottom:1px solid var(--ln-subtle);border-radius:0;cursor:pointer;
+  color:var(--tx-primary);font-size:12.5px
+}
+.set-menu .sm-head:hover{color:#fff}
+.set-menu .sm-head .ic{width:16px;height:16px;flex:0 0 16px}
+.set-menu .sm-opt{
+  width:100%;height:34px;display:flex;align-items:center;gap:6px;padding:0 10px;
+  background:none;border:0;border-radius:6px;cursor:pointer;
+  color:var(--tx-secondary);font-size:12.5px;text-align:left
+}
+.set-menu .sm-opt:hover{background:rgba(255,255,255,.07);color:var(--tx-primary)}
+.set-menu .sm-opt.on{background:rgba(255,255,255,.09);color:var(--tx-primary)}
+.set-menu .sm-opt .ck{width:16px;height:16px;flex:0 0 16px;display:flex;align-items:center}
+.set-menu .sm-opt .ck .ic{width:14px;height:14px;color:var(--tx-primary)}
+/* 반복 재생 토글 */
+.set-menu .sm-sw{
+  width:34px;height:18px;border-radius:9px;border:0;cursor:pointer;position:relative;
+  background:rgba(255,255,255,.22);flex:0 0 34px
+}
+.set-menu .sm-sw i{
+  position:absolute;left:2px;top:2px;width:14px;height:14px;border-radius:50%;
+  background:#fff;transition:left .15s
+}
+.set-menu .sm-sw.on{background:var(--primary)}
+.set-menu .sm-sw.on i{left:18px}
+
+/* 음량 : 평소 아이콘만, 호버 시 슬라이더가 펼쳐진다 */
+.vol-wrap{display:inline-flex;align-items:center;gap:0}
+.vol-wrap .vol-slider{
+  width:0;opacity:0;margin:0;transition:width .15s,opacity .15s,margin .15s;
+  pointer-events:none;accent-color:#fff;height:3px
+}
+.vol-wrap:hover .vol-slider,.vol-wrap:focus-within .vol-slider{
+  width:64px;opacity:1;margin:0 8px 0 4px;pointer-events:auto
+}
+/* 주변 대상 카드 : 영상 내 바운딩 박스와 동일한 식별 색상 (사양서 4-5) */
+.dt-near-card .near-sw{width:8px;height:8px;border-radius:2px;display:inline-block;margin-right:5px;flex:0 0 8px}
+.dt-near-card .nm{display:flex;align-items:center}
+/* 사양서 2-4) 영상 1개일 때 이전/다음 비활성 */
+.dt-ctrl .btn-icon:disabled{opacity:.35;pointer-events:none}
+
+/* ============================================================
+   알림 팝업 (사양서 Alarm_001) — 벨 아래 드롭다운
+   ============================================================ */
+body.alarm-dim::before{
+  content:'';position:fixed;inset:0;background:rgba(0,0,0,.42);z-index:70
+}
+.alarm-pop{
+  position:fixed;z-index:75;width:330px;max-height:460px;display:flex;flex-direction:column;
+  background:var(--bg-2);border:1px solid var(--ln-subtle);border-radius:8px;
+  box-shadow:0 14px 40px rgba(0,0,0,.6);overflow:hidden
+}
+.alarm-pop .ap-head{
+  height:40px;flex:0 0 40px;display:flex;align-items:center;justify-content:space-between;
+  padding:0 10px 0 12px;border-bottom:1px solid var(--ln-subtle)
+}
+.alarm-pop .ap-tt{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--tx-primary)}
+.alarm-pop .ap-acts{display:flex;align-items:center;gap:8px}
+.alarm-pop .ap-read{background:none;border:0;cursor:pointer;color:var(--tx-helper);font-size:11.5px}
+.alarm-pop .ap-read:hover:not(:disabled){color:var(--tx-secondary)}
+.alarm-pop .ap-read:disabled{opacity:.4;cursor:default}
+.alarm-pop .ap-sep{width:1px;height:11px;background:var(--ln-border)}
+.alarm-pop .ap-link{background:none;border:0;cursor:pointer;color:#7fb0ff;font-size:11.5px}
+.alarm-pop .ap-link:hover{color:#a9caff}
+.alarm-pop .ap-x{background:none;border:0;cursor:pointer;color:var(--tx-tertiary);font-size:12px;padding:2px 2px 2px 4px}
+.alarm-pop .ap-x:hover{color:var(--tx-primary)}
+.alarm-pop .ap-body{flex:1;min-height:0;overflow-y:auto;padding:4px 0 8px}
+.alarm-pop .ap-date{padding:8px 12px 4px;font-size:11px;color:var(--tx-helper)}
+.alarm-pop .ap-card{
+  width:100%;display:flex;gap:8px;padding:8px 12px;background:none;border:0;cursor:pointer;text-align:left
+}
+.alarm-pop .ap-card:hover{background:rgba(255,255,255,.05)}
+.alarm-pop .ap-card.unread{background:rgba(48,112,216,.14)}
+.alarm-pop .ap-card.unread:hover{background:rgba(48,112,216,.2)}
+.alarm-pop .ap-card img{width:56px;height:42px;flex:0 0 56px;object-fit:cover;border-radius:4px}
+.alarm-pop .ap-card .bd{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+.alarm-pop .ap-card .r1{display:flex;align-items:baseline;justify-content:space-between;gap:6px}
+.alarm-pop .ap-card .r1 b{font-size:12px;font-weight:600;color:var(--tx-primary)}
+.alarm-pop .ap-card .r1 em{font-style:normal;font-size:10px;color:var(--tx-helper);font-family:Menlo,monospace}
+.alarm-pop .ap-card .who{font-size:11px;color:var(--tx-secondary)}
+.alarm-pop .ap-card .cls{font-size:10.5px;color:var(--tx-helper)}
+.alarm-pop .ap-card .lc{font-size:10.5px;color:var(--tx-helper);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.alarm-pop .ap-empty{padding:40px 12px;text-align:center;color:var(--tx-helper);font-size:12px}
+#btnAlarmTop.on{background:var(--primary);color:#fff;border-radius:4px}
+
+/* AI 검색 패널 상단 고정 버튼 (사양서 AI Agent_001_01 · 1-1) */
+.aim-top{display:flex;flex-direction:column;gap:2px;padding:4px 0 10px;border-bottom:1px solid var(--ln-subtle);margin-bottom:12px}
+.aim-tb{
+  display:flex;align-items:center;gap:8px;height:32px;padding:0 8px;
+  background:none;border:0;border-radius:6px;cursor:pointer;
+  color:var(--tx-secondary);font-size:12.5px;text-align:left
+}
+.aim-tb:hover{background:rgba(255,255,255,.06);color:var(--tx-primary)}
+.aim-tb .ic{width:16px;height:16px;flex:0 0 16px;color:var(--tx-tertiary)}
+
+/* ============================================================
+   `AI 검색` 칩 컬러 — GUI 4392:41970 실측 반영
+   활성 : 그라디언트 테두리 + 글자 #4285e8 + 배경 없음(패널색 그대로)
+   비활성 : AI 진입점임을 알 수 있게 글자만 AI 컬러를 유지하고,
+            선택 표시(테두리/틴트)는 주지 않아 활성과 헷갈리지 않게 한다
+   ============================================================ */
+.mode-chips button[data-mode="aim"]{
+  color:#4285e8;border:1px solid var(--ln-border);background:transparent
+}
+.mode-chips button[data-mode="aim"]:hover{border-color:var(--tx-helper)}
+.mode-chips button[data-mode="aim"].on{
+  border:0;background:transparent;color:#4285e8
+}
+
+/* ============================================================
+   AI 로딩 애니메이션 — GUI 프로토타입(4392:41970 `Loading`) 재연
+   스파클 3개가 각자 크기·투명도로 반짝인다. 6프레임 × 0.3s = 1.8s 루프, LINEAR.
+   각 프레임 값은 Figma 변형(Property 1=1~6) 실측을 그대로 옮긴 것.
+   ============================================================ */
+.ai-load{width:14px;height:14px;flex:0 0 14px;display:inline-block;vertical-align:-2px}
+.ai-load path{transform-box:fill-box;transform-origin:center;animation-duration:1.8s;
+  animation-timing-function:linear;animation-iteration-count:infinite}
+
+/* 큰 스파클(우하) : 100/0 → 75 → 100 → 63 → 100/0 */
+.ai-load .sp-lg{animation-name:aiLoadLg}
+@keyframes aiLoadLg{
+  0%,100%{transform:scale(1);   opacity:1}
+  16.7%  {transform:scale(1);   opacity:0}
+  33.3%  {transform:scale(.75); opacity:1}
+  50%    {transform:scale(1);   opacity:1}
+  66.7%  {transform:scale(.63); opacity:1}
+  83.3%  {transform:scale(1);   opacity:0}
+}
+/* 작은 스파클(좌) : 1 → .5 → 0 → .5 → 144% → 1 */
+.ai-load .sp-sm{animation-name:aiLoadSm}
+@keyframes aiLoadSm{
+  0%,100%{transform:scale(1);    opacity:1}
+  16.7%  {transform:scale(1);    opacity:.5}
+  33.3%  {transform:scale(1);    opacity:0}
+  50%    {transform:scale(1);    opacity:.5}
+  66.7%  {transform:scale(1.44); opacity:1}
+  83.3%  {transform:scale(1);    opacity:1}
+}
+/* 중간 스파클(상) : 100 → 82 → 100 → 0 → 0 → 136% */
+.ai-load .sp-md{animation-name:aiLoadMd}
+@keyframes aiLoadMd{
+  0%,100%{transform:scale(1);    opacity:1}
+  16.7%  {transform:scale(.82);  opacity:1}
+  33.3%  {transform:scale(1);    opacity:1}
+  50%    {transform:scale(1);    opacity:0}
+  66.7%  {transform:scale(1);    opacity:0}
+  83.3%  {transform:scale(1.36); opacity:1}
+}
+@media (prefers-reduced-motion:reduce){ .ai-load path{animation:none;opacity:1} }
+
+.aim-wait{display:flex;align-items:center;gap:6px}

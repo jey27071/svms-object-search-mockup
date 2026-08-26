@@ -12,19 +12,22 @@
 | 저장소 | **https://github.com/jey27071/svms-object-search-mockup** (Private) |
 | 브랜치 | `main` |
 | 클론 | `git clone https://github.com/jey27071/svms-object-search-mockup.git` |
-| 로컬 경로(작업 PC) | `C:\Users\S-1\svms-object-search-mockup\` |
+| 로컬 경로(작업 PC · Windows) | `C:\Users\S-1\svms-object-search-mockup\` |
+| 로컬 경로(맥북 · 2026-08-26~) | `~/svms-object-search-mockup` |
 
 - `_shots/`(검증 캡처 82MB)와 `_backup_pre-gui/` 는 `.gitignore` 로 제외. 캡처는 언제든 재생성 가능
 - **핸드오프 문서 2종은 저장소 안 `_handoff/` 에도 포함**되어 있다 → 클론하면 바로 읽을 수 있음
-- ⚠️ **사내 프록시 주의** — `api.github.com` 차단(403)이라 `gh` CLI / REST API 사용 불가.
+- ⚠️ **사내 프록시 주의(작업 PC 한정)** — `api.github.com` 차단(403)이라 `gh` CLI / REST API 사용 불가.
   `github.com` 으로의 git clone·push 는 정상. **저장소 생성 같은 API 작업은 브라우저로** 해야 한다.
   (OAuth device flow 도 502 로 막힘 → 인증은 **PAT를 remote URL에 넣어 푸시**하는 방식 사용)
+- ✅ **맥북에서는 `gh` CLI 정상 동작.** 단 **clone 이 느리다(13MB에 10분 가까이)** —
+  끊긴 게 아니니 타임아웃으로 죽이지 말고 백그라운드로 돌릴 것.
 
 ---
 
 ## 0. 30초 요약
 
-- **위치**: `C:\Users\S-1\svms-object-search-mockup\`
+- **위치**: 맥북 `~/svms-object-search-mockup` · 작업 PC `C:\Users\S-1\svms-object-search-mockup\`
 - **실행**: `index.html` 을 브라우저로 그냥 열면 된다. **빌드·서버 불필요**(순수 HTML/CSS/JS, `file://` 로 동작)
 - **정체**: 전자DS(에스원) 영상감시 고도화 과제의 **대상 검색 UI 워킹 목업**. 미팅에서 프로토타입 시연용
 - **분량**: `index.html` ~37KB · `app.js` ~200KB(약 3,500줄) · `style.css` ~95KB · `data.js` ~38KB · 이미지 52장
@@ -123,6 +126,16 @@ svms-object-search-mockup/
 모르면 칩이 패널 본문을 밀어내 **본문이 사라진 것처럼** 보인다.
 
 ### 4-4. headless 캡처 (검증 필수)
+
+**맥북**
+```bash
+"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless --disable-gpu \
+  --window-size=1920,1041 \
+  --screenshot=/Users/jey27071/svms-object-search-mockup/_shots/x.png \
+  "file:///Users/jey27071/svms-object-search-mockup/index.html#demo=result"
+```
+
+**작업 PC (Windows)**
 ```bash
 "/c/Program Files/Google/Chrome/Application/chrome.exe" --headless --disable-gpu \
   --window-size=1920,1080 \
@@ -146,6 +159,15 @@ svms-object-search-mockup/
 
 ## 5. 남은 작업
 
+> 2026-08-26 갱신 — 모듈명 `동선 추적 검색` 변경 · **AI 유무 전환 스위치** 추가 ·
+> GUI 실측 정합(레이아웃 골격/검색 패널) · 사양서 대조 반영 완료. 상세는 README 최상단 절 참고.
+
+### 새로 생긴 항목
+- **AI 에이전트 노출 3타입** — 시안 주석 기준 `A타입(우측 상단 팝업형)` /
+  `B타입(레이어 오버레이, 콘텐츠 축소 없음)` / `C타입(AI 영역이 밀고 들어와 기존 영역 축소)`.
+  현재 **B타입만** 구현. A·C 타입 미구현.
+- 사양서 87장 중 **상세화면·팝업 장표 Description 전량 대조는 미완** (검색화면 위주로 반영함)
+
 ### 바로 구현 가능
 1. **팝업 GUI 대조 잔여 3종** — `이미지 검색 팝업(002_2)`, `유사 대상 편집 팝업(005_5~7, 3프레임)`, `AI 에이전트(007_1~4)`
    → 인물 관리 팝업을 GUI 정합으로 재작성한 것과 같은 방식으로 진행
@@ -164,6 +186,13 @@ svms-object-search-mockup/
 ---
 
 ## 6. 원본(Figma) 참조
+
+> **맥북에서 Figma 읽는 법** — 공식 Figma MCP(`claude.ai Figma` 커넥터)를 쓴다.
+> 인증이 풀려 있으면 대화형 세션에서 `/mcp` → `claude.ai Figma` → Authenticate.
+> claude.ai 앱에서 커넥터를 붙인 것과 **Claude Code 인증은 별개**다.
+> 로컬 `claude-in-figma` 플러그인 경로도 있으나, 서버가 포트 3055를 선점하는
+> 다른 세션이 있으면 안 붙으니 주의.
+
 
 | 용도 | 파일 / 섹션 |
 |---|---|

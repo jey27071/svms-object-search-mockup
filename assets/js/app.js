@@ -29,11 +29,11 @@ const ICON = {
 
 /* ===================== 상태 ===================== */
 const S = {
-  mode: 'text', aiMode: false, aiStage: 'idle',
+  mode: 'aim', aiMode: false, aiStage: 'idle',
   textOpt: '자연어', q: '',
   sim: 80, allResults: false,
   cams: [], top: [], bottom: [],
-  period: '당일', dFrom: '2025-06-05', tFrom: '00:00', dTo: '2025-06-05', tTo: '00:00',
+  period: '오늘', dFrom: '2025-06-05', tFrom: '00:00', dTo: '2025-06-05', tTo: '00:00',
   searched: false, sort: '유사도순', grouped: false,
   openGroups: new Set(),
   results: [], selected: null, preview: [], compare: [],
@@ -68,11 +68,11 @@ function renderTabs() {
   const box = $('#tabs'); box.innerHTML = '';
   S.tabs.forEach(t => {
     const n = el('div', 'tab' + (t.id === S.activeTab ? ' on' : ''));
-    /* GUI(GNB Tab/2depth) : 모든 탭에 닫기 ✕ (hover·활성 시 노출). 검색홈(고정)은 닫아도 유지 */
-    n.innerHTML = `<span>${t.title}</span><button class="x">${ICON.xs}</button>`;
+    /* 사양서 Search main_000_1 · 4-1) : 검색 탭은 기본 탭으로 **닫기 불가** → ✕ 자체를 두지 않는다 */
+    n.innerHTML = `<span>${t.title}</span>` + (t.fixed ? '' : `<button class="x">${ICON.xs}</button>`);
     n.onclick = e => {
       if (e.target.closest('.x')) {
-        if (t.fixed) { S.activeTab = t.id; }      /* 검색홈은 닫히지 않음 */
+        if (t.fixed) { S.activeTab = t.id; }
         else {
           S.tabs = S.tabs.filter(x => x.id !== t.id);
           if (S.activeTab === t.id) S.activeTab = 'search';
@@ -141,10 +141,11 @@ function buildFilters(mode) {
   const on = filterEnabled();
   const parts = [];
   for (const f of FILTER_DEF[mode]) {
+    /* 시안(4307:27540) : 슬라이더 위 라벨 없이, 아래에 현재값(파랑) + 100% 를 둔다 */
     if (f === 'sim') parts.push(accBlock('sim', '유사도', `
       <div class="slider-row">
-        <div class="slider-top"><span>대상유사도</span><b id="fSimVal">${S.sim}%</b></div>
         <input type="range" class="slider" id="fSim" min="0" max="100" value="${S.sim}">
+        <div class="slider-scale" id="fSimScale" style="--p:${S.sim}"><b id="fSimVal">${S.sim}%</b><span>100%</span></div>
       </div>
       <label class="check sm"><input type="checkbox" id="fAll" ${S.allResults ? 'checked' : ''}><i></i>모든 결과 출력</label>`, on));
 
@@ -165,7 +166,7 @@ function buildFilters(mode) {
         `<button class="mn-chip${(S.carTypes || []).includes(t) ? ' on' : ''}" data-cartype="${t}">${t}</button>`).join('')}</div>`, on));
 
     if (f === 'period') parts.push(accBlock('period', '기간', `
-      ${['당일', '최근 3일', '최근 7일', '날짜 지정'].map(p =>
+      ${['오늘', '최근 3일', '최근 7일', '날짜 지정'].map(p =>
         `<label class="radio sm"><input type="radio" name="fp" data-p="${p}" ${S.period === p ? 'checked' : ''}><i></i>${p}</label>`).join('')}
       <div class="date-wrap" ${S.period === '날짜 지정' ? '' : 'hidden'}>
         <div class="date-row"><span class="lb">시작</span>
@@ -187,8 +188,11 @@ function bindFilters(box) {
 
   const sim = $('#fSim', box);
   if (sim) {
-    sim.oninput = () => { S.sim = +sim.value; $('#fSimVal', box).textContent = S.sim + '%'; if (S.allResults) { S.allResults = false; $('#fAll', box).checked = false; } runSearch(true); };
-    $('#fAll', box).onchange = e => { S.allResults = e.target.checked; if (S.allResults) { S.sim = 0; sim.value = 0; $('#fSimVal', box).textContent = '0%'; } runSearch(true); };
+    sim.oninput = () => { S.sim = +sim.value; $('#fSimVal', box).textContent = S.sim + '%';
+      const sc = $('#fSimScale', box); if (sc) sc.style.setProperty('--p', S.sim);
+      if (S.allResults) { S.allResults = false; $('#fAll', box).checked = false; } runSearch(true); };
+    $('#fAll', box).onchange = e => { S.allResults = e.target.checked; if (S.allResults) { S.sim = 0; sim.value = 0; $('#fSimVal', box).textContent = '0%';
+      const sc = $('#fSimScale', box); if (sc) sc.style.setProperty('--p', 0); } runSearch(true); };
   }
   $$('[data-cam]', box).forEach(cb => cb.onchange = () => {
     const v = cb.dataset.cam;
@@ -221,8 +225,9 @@ function matchFilters(o) {
 }
 
 function runSearch(keep) {
-  if (!filterEnabled()) { S.searched = false; S.results = []; render(); return; }
+  if (!filterEnabled()) { S.searched = false; S.results = []; render(); if (typeof renderRecentBlk === 'function') renderRecentBlk(); return; }
   S.searched = true;
+  if (typeof renderRecentBlk === 'function') renderRecentBlk();
   let base = OBJECTS;
   if (S.mode === 'person') base = OBJECTS.filter(o => o.group === 'c1' || o.group === 'c2');
   if (S.mode === 'algo')   base = OBJECTS.filter(o => ['etc', 'c1'].includes(o.group));
@@ -355,9 +360,9 @@ function bindCards(root) {
       const g = GROUPS.find(x => x.key === o.group);
       /* 유사 대상별 보기의 대표 카드 → 대상 그룹 상세 / 그 외 → 단일 대상 상세 */
       const isRep = !!c.closest('.rep');
-      DT.clip = 0; DT.removed = new Set(); DT.edit = false; DT.area = null; DT.tracks = false; DT.tools = ['obj'];
-      if (isRep) newTab(`${GROUP_CLIPS[0].cam} > ${(g && g.label) || '대상'}`, o, { kind: 'group' });
-      else newTab(`${o.cam} > ${(g && g.label) || '대상'}`, o);
+      DT.clip = 0; DT.removed = new Set(); DT.edit = false; DT.area = null; DT.tracks = false; DT.tools = ['obj', 'single'];
+      if (isRep) newTab(`${(g && g.label) || '대상'}`, o, { kind: 'group' });
+      else newTab(`${o.cam}`, o);
     };
   });
   $$('[data-cmp]', root).forEach(cb => cb.onchange = e => {
@@ -382,7 +387,8 @@ function selectCard(id) {
 function openCtx(e, id) {
   e.stopPropagation();
   const m = $('#ctxMenu'); m.hidden = false;
-  m.innerHTML = `<div data-act="bookmark">북마크</div><div data-act="watch">관심인물 등록</div><div data-act="case">사건 등록</div><div data-act="report">오대상 신고</div>`;
+  /* 사양서 : 검색 결과 카드의 더보기는 `북마크 / 오탐지 신고` 2종이다 */
+  m.innerHTML = `<div data-act="bookmark">북마크</div><div data-act="report">오탐지 신고</div>`;
   const r = e.target.getBoundingClientRect();
   m.style.left = Math.min(r.left, innerWidth - 150) + 'px';
   m.style.top = (r.bottom + 4) + 'px';
@@ -393,7 +399,7 @@ function openCtx(e, id) {
     if (act === 'bookmark') { S.bookmarks.has(id) ? S.bookmarks.delete(id) : S.bookmarks.add(id); toast(S.bookmarks.has(id) ? '북마크에 추가했습니다.' : '북마크에서 해제했습니다.'); }
     else if (act === 'watch') { DT._tab = { obj: findObj(id), label: '인물 A' }; openWatch(); }
     else if (act === 'case')  { DT._tab = { obj: findObj(id), label: '인물 A' }; openCase(); }
-    else toast('오대상로 신고했습니다.');
+    else toast('오탐지로 신고했습니다.');
     renderResults();
   });
 }
@@ -403,9 +409,9 @@ document.addEventListener('click', e => { if (!e.target.closest('#ctxMenu') && !
 function renderChips() {
   const box = $('#chips'); box.innerHTML = '';
   const chips = [];
-  if (S.cams.length) chips.push({ k: 'cam', label: `카메라 ${S.cams.length}` });
+  if (S.cams.length) chips.push({ k: 'cam', label: `위치 ${S.cams.length}` });
   if (S.top.length || S.bottom.length) chips.push({ k: 'color', label: `색상 ${S.top.length + S.bottom.length}` });
-  if (S.period !== '당일') chips.push({ k: 'period', label: S.period });
+  if (S.period !== '오늘') chips.push({ k: 'period', label: S.period });
   if (S.allResults) chips.push({ k: 'all', label: '모든 결과 출력' });
   if (!S.searched) return;
   chips.forEach(c => {
@@ -413,12 +419,22 @@ function renderChips() {
     n.querySelector('button').onclick = () => {
       if (c.k === 'cam') S.cams = [];
       if (c.k === 'color') { S.top = []; S.bottom = []; }
-      if (c.k === 'period') S.period = '당일';
+      if (c.k === 'period') S.period = '오늘';
       if (c.k === 'all') { S.allResults = false; S.sim = 80; }
       buildFilters(S.mode); runSearch(true);
     };
     box.appendChild(n);
   });
+  /* 사양서(Search main_002_1) : 필터칩 우측 `초기화` — 적용된 필터를 한 번에 해제 */
+  if (chips.length) {
+    const r = el('button', 'chips-reset', '초기화');
+    r.onclick = () => {
+      S.cams = []; S.top = []; S.bottom = []; S.period = '오늘';
+      S.allResults = false; S.sim = 80; S.carTypes = [];
+      buildFilters(S.mode); runSearch(true);
+    };
+    box.appendChild(r);
+  }
 }
 
 /* ===================== 원본 영상 ===================== */
@@ -440,7 +456,7 @@ function renderPreview() {
           <dl class="pv-meta">
             <div><dt>대상 정보</dt><dd>${p.type} ${p.group === 'c1' ? 'A' : p.group === 'c2' ? 'B' : ''}</dd></div>
             <div><dt>이벤트</dt><dd>${p.group === 'etc' || !p.group ? '-' : '이동/계수'}</dd></div>
-            <div><dt>이벤트 시간</dt><dd>${fmtTS(p.t)}</dd></div>
+            <div><dt>출현 일시</dt><dd>${fmtTS(p.t)}</dd></div>
           </dl>
         </div>`);
       box.appendChild(n);
@@ -564,7 +580,7 @@ function finishExtract() {
 function renderExtractGrid(t) {
   const list = S.extracted.filter(x => t === 'all' || x.type === t);
   $('#ieCount').textContent = S.extracted.length;
-  if (!list.length) { $('#ieGrid').innerHTML = `<div class="ie-loading" style="color:#6b7785">이미지에서 추출된 대상가 없습니다.<br>다시 추출하거나 다른 이미지를 선택해 주세요.</div>`; return; }
+  if (!list.length) { $('#ieGrid').innerHTML = `<div class="ie-loading" style="color:#6b7785">이미지에서 추출된 대상이 없습니다.<br>다시 추출하거나 다른 이미지를 선택해 주세요.</div>`; return; }
   $('#ieGrid').innerHTML = list.map(x =>
     `<div class="ext-item${S.extSel.includes(x.id) ? ' on' : ''}" data-x="${x.id}"><img src="${x.img}"><span class="tag">${x.type === 'face' ? '얼굴' : '대상'}</span></div>`).join('');
   $$('#ieGrid .ext-item').forEach(n => n.onclick = () => {
@@ -697,7 +713,7 @@ let addState = { tab: '검색', q: '', sel: [] };
 function openObjectAdd() {
   addState = { tab: '검색', q: '', sel: [] };
   $('#edTitle').textContent = '대상 추가';
-  $('#edDesc').textContent = '유사 대상 그룹에 추가할 대상를 검색하거나 북마크에서 선택합니다.';
+  $('#edDesc').textContent = '유사 대상 그룹에 추가할 대상을 검색하거나 북마크에서 선택합니다.';
   $('#edBack').hidden = false;
   $('#edBack').onclick = () => { $('#edTitle').textContent = '유사 대상 편집'; $('#edDesc').textContent = 'AI 자동 그룹핑 결과를 편집할 수 있습니다.'; $('#edBack').hidden = true; renderEdit(); };
   renderObjectAdd();
@@ -718,12 +734,12 @@ function renderObjectAdd() {
         <div class="textarea-wrap" style="flex:1">
           <input class="input" id="addQ" style="width:100%;height:30px" placeholder="검색어를 입력해 주세요." value="${addState.q}">
         </div>
-        <span class="chip">위치 전체</span><span class="chip">기간 당일</span>
+        <span class="chip">위치 전체</span><span class="chip">기간 오늘</span>
       </div>` : ''}
     <div style="font-size:12px;color:var(--muted);margin-bottom:9px">총 ${list.length}건</div>
     <div class="pick-grid">${list.length ? list.map(o =>
       `<div class="pick${addState.sel.includes(o.id) ? ' on' : ''}" data-add="${o.id}"><img src="${o.img}"></div>`).join('')
-      : `<div class="ie-loading" style="grid-column:1/-1;color:#6b7785">${addState.tab === '검색' ? '검색어를 입력해 주세요.' : '북마크한 대상가 없습니다.'}</div>`}</div>`;
+      : `<div class="ie-loading" style="grid-column:1/-1;color:#6b7785">${addState.tab === '검색' ? '검색어를 입력해 주세요.' : '북마크한 대상이 없습니다.'}</div>`}</div>`;
 
   $('#edFoot').innerHTML = `<button class="btn-ghost" id="addBack">뒤로</button><button class="btn-primary" id="addGo" ${addState.sel.length ? '' : 'disabled'}>추가</button>`;
   $$('[data-tab]', $('#edBody')).forEach(b => b.onclick = () => { addState.tab = b.dataset.tab; renderObjectAdd(); });
@@ -1120,6 +1136,10 @@ function renderDetail(tab) {
   }
 
   /* 클립 스트립 */
+  /* 사양서 2-4) : 영상이 1개뿐이면 이전/다음 영상 버튼 비활성 */
+  const nClip = DT.clips.length;
+  if ($('#dtPrevClip')) $('#dtPrevClip').disabled = nClip <= 1 || DT.clip <= 0;
+  if ($('#dtNextClip')) $('#dtNextClip').disabled = nClip <= 1 || DT.clip >= nClip - 1;
   $('#dtClips').innerHTML = DT.clips.map((c, i) => `
     <div class="dt-clip${i === DT.clip ? ' on' : ''}" data-clip="${i}">
       <img src="${c.img}" alt="">
@@ -1151,7 +1171,7 @@ function renderDetail(tab) {
   /* 편집(타임라인 수정) 상태 — WF 'B안 : 팝업'과 병행되는 인라인 편집 */
   $('#dtHistBtns').innerHTML = DT.edit
     ? `<button class="btn-ghost sm" id="dtEditCancel">취소</button><button class="btn-primary sm" id="dtEditSave">저장</button>`
-    : `<button class="btn-ghost sm" id="dtEdit">편집</button>`;
+    : `<button class="btn-ghost sm" id="dtEdit"${(DT._tab && (DT._tab.kind === 'group' || DT._tab.kind === 'compare')) ? '' : ' disabled'}>편집</button>`;
   bindHistEdit(tab);
   $('#dtCase').disabled = DT.edit;
   $('#dtObjAdd').disabled = DT.edit;
@@ -1191,9 +1211,9 @@ function renderNear(tab) {
     <div class="dt-near-card" data-near="${x.id}">
       <img src="${x.img}" alt="">
       <span class="bk${DT.bookmarks.has(x.id) ? ' on' : ''}" data-nearbk="${x.id}">${ICON.bmark}</span>
-      <div class="bd"><div class="nm">${x.name}<span class="n">${x.n}건</span></div><div class="tm">${x.t}</div></div>
+      <div class="bd"><div class="nm"><i class="near-sw" style="background:${slotColor(x.slot)}"></i>${x.name}<span class="n">${x.n}건</span></div><div class="tm">${x.t}</div></div>
     </div>`).join('')
-    : `<div class="empty-inline" style="grid-column:1/-1;padding:16px 6px">${inArea ? '영역을 지정하면 통과 대상가 표시됩니다.' : '주변 대상가 없습니다.'}</div>`;
+    : `<div class="empty-inline" style="grid-column:1/-1;padding:16px 6px">${inArea ? '영역을 지정하면 통과 대상이 표시됩니다.' : '주변 대상이 없습니다.'}</div>`;
 
   $$('#dtNear .dt-near-card').forEach(n => n.onclick = e => {
     if (e.target.closest('[data-nearbk]')) return;
@@ -1212,7 +1232,7 @@ function openNearDetail(x) {
   if (!x) return;
   const seed = { ...OBJECTS[0], id: 'near_' + x.id, img: x.img, cam: x.cam, sim: x.sim, top: x.top, bottom: x.bottom, group: 'etc' };
   DT.clip = 0; DT.removed = new Set(); DT.edit = false; DT.area = null; DT.tracks = false;
-  newTab(`${x.cam} > ${x.name}`, seed, { label: x.name, event: x.event });
+  newTab(`${x.cam}`, seed, { label: x.name, event: x.event });
   $('#dtVideoImg').src = x.img;
 }
 
@@ -1230,6 +1250,13 @@ function applyTools() {
   $$('#dtVideo>.dt-box').forEach(b => b.hidden = !on('obj') || on('multi'));
   $$('#dtVideo>.dt-box').forEach(b => b.classList.toggle('masked', on('mask')));
   $('#dtVhead').hidden = on('multi');
+  /* 사양서 2-5) : 다중 영상 view 선택 시 영상 검색 도구 및 영상 분석 도구 비활성화 */
+  const multiOn = on('multi');
+  $$('#dtAreaTools [data-area]').forEach(b => { b.disabled = multiOn; });
+  $$('#dtTools [data-tool]').forEach(b => {
+    if (['heat', 'path', 'cctv'].includes(b.dataset.tool)) b.disabled = multiOn;
+  });
+  $('#dtCtrl').classList.toggle('multi-mode', multiOn);
   $('#dtCtrl').classList.toggle('area-mode', !!DT.area);
   $$('#dtAreaTools [data-area]').forEach(b => b.classList.toggle('on', !!DT.area && DT.area.mode === b.dataset.area));
 }
@@ -1363,7 +1390,7 @@ function renderArea() {
     const move = ev => { const [x, y] = pct(ev); DT.area.rect = [Math.min(sx, x), Math.min(sy, y), Math.abs(x - sx), Math.abs(y - sy)]; renderArea(); };
     const up = () => {
       document.removeEventListener('mousemove', move); document.removeEventListener('mouseup', up);
-      if (DT.area && DT.area.rect && DT.area.rect[2] > 3 && DT.area.rect[3] > 3) { DT.area.done = true; renderArea(); renderNear(DT._tab); toast('지정한 영역을 통과한 대상를 조회했습니다.'); }
+      if (DT.area && DT.area.rect && DT.area.rect[2] > 3 && DT.area.rect[3] > 3) { DT.area.done = true; renderArea(); renderNear(DT._tab); toast('지정한 영역을 통과한 대상을 조회했습니다.'); }
       else if (DT.area) { DT.area.rect = null; renderArea(); }
     };
     document.addEventListener('mousemove', move); document.addEventListener('mouseup', up);
@@ -1374,7 +1401,7 @@ function renderArea() {
     if (!DT.area.line) { DT.area.line = [x, y, x, y]; renderArea(); }
     else {
       DT.area.line = [DT.area.line[0], DT.area.line[1], x, y];
-      DT.area.done = true; renderArea(); renderNear(DT._tab); toast('기준선을 통과한 대상를 조회했습니다.');
+      DT.area.done = true; renderArea(); renderNear(DT._tab); toast('기준선을 통과한 대상을 조회했습니다.');
     }
   });
   v.addEventListener('mousemove', e => {
@@ -1436,11 +1463,48 @@ $$('#dtMapTools [data-map]').forEach(b => b.onclick = () => {
 /* 영상 도구 토글 */
 $$('#dtTools [data-tool]').forEach(b => b.onclick = () => {
   const k = b.dataset.tool;
+  /* 사양서 2-5) 단일(1X1) / 다중(2X2) view 는 택1 — 토글이 아니라 라디오처럼 동작 */
+  if (k === 'single' || k === 'multi') {
+    DT.tools = DT.tools.filter(x => x !== 'single' && x !== 'multi').concat(k);
+    /* 다중 view 에서는 영상 검색·분석 도구를 쓸 수 없다 → 켜져 있던 것들을 끈다 */
+    if (k === 'multi') { DT.tools = DT.tools.filter(x => !['heat', 'path', 'cctv'].includes(x)); DT.tracks = false; DT.area = null; }
+    applyTools(); return;
+  }
+  /* 다중 view 중에는 분석 도구가 비활성 */
+  if (DT.tools.includes('multi')) return;
   DT.tools = DT.tools.includes(k) ? DT.tools.filter(x => x !== k) : [...DT.tools, k];
   if (k === 'path' && DT.tools.includes('path')) DT.tracks = true;
   applyTools();
 });
 $$('#dtAreaTools [data-area]').forEach(b => b.onclick = () => setAreaTool(b.dataset.area));
+const SET = {
+  open: false, view: 'main',
+  speed: '1.0', span: '1분', loop: false,
+  muted: false, vol: 70
+};
+const SET_SPEEDS = ['0.25', '0.5', '0.75', '1.0', '1.25', '1.5', '2.0'];
+const SET_SPANS  = ['10초', '30초', '1분', '5분', '10분', '30분', '1시간'];
+const SET_IC = {
+  speed: '<svg viewBox="0 0 16 16" class="ic"><circle cx="8" cy="8.6" r="5.4" stroke="currentColor" stroke-width="1.2" fill="none"/><path d="M8 5.6v3l2 1.4" stroke="currentColor" stroke-width="1.2" fill="none" stroke-linecap="round"/></svg>',
+  span:  '<svg viewBox="0 0 16 16" class="ic"><path d="M2.6 4v8M13.4 4v8M4.4 8h7.2M5.8 6.4L4.2 8l1.6 1.6M10.2 6.4L11.8 8l-1.6 1.6" stroke="currentColor" stroke-width="1.2" fill="none" stroke-linecap="round"/></svg>',
+  loop:  '<svg viewBox="0 0 16 16" class="ic"><path d="M3 8a5 5 0 015-5c1.7 0 3.2.9 4.1 2.2" stroke="currentColor" stroke-width="1.2" fill="none"/><path d="M13 8a5 5 0 01-5 5c-1.7 0-3.2-.9-4.1-2.2" stroke="currentColor" stroke-width="1.2" fill="none"/><path d="M12.4 2.6v2.8H9.6zM3.6 13.4v-2.8h2.8z" fill="currentColor"/></svg>',
+  back:  '<svg viewBox="0 0 16 16" class="ic"><path d="M10 3L5 8l5 5" stroke="currentColor" stroke-width="1.3" fill="none" stroke-linecap="round"/></svg>',
+  next:  '<svg viewBox="0 0 16 16" class="ic"><path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="1.3" fill="none" stroke-linecap="round"/></svg>',
+  check: '<svg viewBox="0 0 16 16" class="ic"><path d="M3.2 8.4l3.2 3.2 6.4-7" stroke="currentColor" stroke-width="1.4" fill="none" stroke-linecap="round"/></svg>'
+};
+
+/* 알림 벨 — 사양서 : 선택 시 알림 팝업 노출 (핸들러가 아예 없었다) */
+if ($('#btnAlarmTop')) $('#btnAlarmTop').onclick = e => {
+  e.stopPropagation();
+  const p = $('#alarmPop');
+  (p && !p.hidden) ? closeAlarmPop() : openAlarmPop();
+};
+
+/* 설정 팝업 · 음량 (사양서 2-6 / 2-7) */
+if ($('#dtSet')) $('#dtSet').onclick = e => { e.stopPropagation(); SET.open ? closeSetMenu() : openSetMenu(); };
+if ($('#dtVol')) $('#dtVol').onclick = () => { SET.muted = !SET.muted; syncVol(); };
+if ($('#dtVolRange')) $('#dtVolRange').oninput = e => { SET.vol = +e.target.value; SET.muted = SET.vol === 0; syncVol(); };
+syncVol();
 $('#btnTracks').onclick = () => { DT.tracks = !DT.tracks; applyTools(); };
 $('#pnlTracksX').onclick = () => { DT.tracks = false; applyTools(); };
 bindSelect('#trackSel', () => renderTracks());
@@ -1636,7 +1700,7 @@ function renderCmpView(tab) {
           <button class="btn-icon" data-objmenu="${o.slot}" style="margin-left:auto">${ICON.more}</button>
         </div>
         <dl class="dt-obj-meta">
-          <div><dt>이벤트 시간</dt><dd>${o.t}</dd></div>
+          <div><dt>출현 일시</dt><dd>${o.t}</dd></div>
           <div><dt>이벤트</dt><dd>${o.group === 'etc' ? '-' : '이동/계수'}</dd></div>
           <div><dt>색상</dt><dd class="sw-row"><span>상의<i class="dot-sw" style="background:${colorHex(o.top)}"></i></span><span>하의<i class="dot-sw" style="background:${colorHex(o.bottom)}"></i></span></dd></div>
         </dl>
@@ -1655,23 +1719,100 @@ function renderCmpView(tab) {
   DT._tab = tab;
 }
 
-/* 대상 카드 ⋮ 메뉴 — 관심인물 등록 / 북마크 / 사건 등록 */
-const CTX_DEFAULT = `<div data-act="bookmark">북마크</div><div data-act="report">오대상 신고</div>`;
+/* 대상 상세 ⋮ 메뉴 — 사양서 Detail_000_4 · 4-3) : 관심 인물 등록 / 북마크 / 인물 등록 3종
+   (검색 결과 카드의 ⋮ 는 사양서 별도 장표대로 북마크 / 오탐지 신고 2종 = CTX_DEFAULT) */
+const CTX_DEFAULT = `<div data-act="bookmark">북마크</div><div data-act="report">오탐지 신고</div>`;
 function openObjMenu(e, slot) {
   e.stopPropagation();
   const m = $('#ctxMenu');
-  m.innerHTML = `<div data-act="watch">관심인물 등록</div><div data-act="vbookmark">영상 북마크</div><div data-act="case">사건 등록</div><div data-act="report">오대상 신고</div>`;
+  m.innerHTML = `<div data-act="watch">관심 인물 등록</div><div data-act="bookmark">북마크</div><div data-act="pnew">인물 등록</div>`;
   const r = e.target.getBoundingClientRect();
   m.style.left = Math.min(r.left - 110, innerWidth - 160) + 'px';
   m.style.top = (r.bottom + 4) + 'px';
   m.hidden = false;
   $$('div', m).forEach(d => d.onclick = () => {
     m.hidden = true; m.innerHTML = CTX_DEFAULT;
-    if (d.dataset.act === 'watch') openWatch();
-    else if (d.dataset.act === 'vbookmark') openBookmark();
-    else if (d.dataset.act === 'case') openCase();
-    else toast('오대상로 신고했습니다.');
+    const act = d.dataset.act;
+    if (act === 'watch') openWatch();                        /* '관심인물 등록' 팝업 */
+    else if (act === 'bookmark') { toast('북마크에 추가했습니다.'); }  /* 대상을 북마크 메뉴에 추가 */
+    else if (act === 'pnew') { pmView = 'new'; openModal('#mdPersonMgr'); renderPm(); }  /* '새 인물 등록' 팝업 */
+    else if (act === 'vbookmark') openBookmark();
+    else if (act === 'case') openCase();
+    else toast('오탐지로 신고했습니다.');
   });
+}
+
+/* ============================================================
+   영상 재생 설정 팝업 — 사양서 Detail_000_2 · 2-7)
+   재생 속도 / 구간 길이 / 반복 재생 (메인 + 서브메뉴 2종)
+   ※ Description 텍스트에는 0.75 가 빠져 있으나 스토리보드 목업에는 있어 목업 기준으로 넣음
+   ============================================================ */
+function renderSetMenu() {
+  let box = $('#dtSetMenu');
+  if (!box) {
+    box = document.createElement('div');
+    box.className = 'set-menu'; box.id = 'dtSetMenu'; box.hidden = true;
+    document.body.appendChild(box);
+    /* 메뉴 안 클릭은 document 까지 올려보내지 않는다.
+       (innerHTML 재생성으로 e.target 이 분리돼 '바깥 클릭'으로 오인되던 문제) */
+    box.addEventListener('click', e => e.stopPropagation());
+    document.addEventListener('click', e => {
+      if (!e.target.closest('#dtSetMenu') && !e.target.closest('#dtSet')) closeSetMenu();
+    });
+  }
+  if (SET.view === 'main') {
+    box.innerHTML = `
+      <button class="sm-row" data-setv="speed">${SET_IC.speed}<span class="t">재생 속도</span>
+        <span class="v">${SET.speed}${SET.speed === '1.0' ? ' (보통)' : ''}</span>${SET_IC.next}</button>
+      <button class="sm-row" data-setv="span">${SET_IC.span}<span class="t">구간 길이</span>
+        <span class="v">${SET.span}</span>${SET_IC.next}</button>
+      <div class="sm-row">${SET_IC.loop}<span class="t">반복 재생</span>
+        <button class="sm-sw${SET.loop ? ' on' : ''}" id="setLoop" title="반복 재생"><i></i></button></div>`;
+    $$('#dtSetMenu [data-setv]').forEach(b => b.onclick = () => { SET.view = b.dataset.setv; renderSetMenu(); });
+    $('#setLoop').onclick = () => { SET.loop = !SET.loop; renderSetMenu(); };
+  } else {
+    const isSpeed = SET.view === 'speed';
+    const list = isSpeed ? SET_SPEEDS : SET_SPANS;
+    const cur  = isSpeed ? SET.speed : SET.span;
+    box.innerHTML = `
+      <button class="sm-head" id="setBack">${SET_IC.back}${isSpeed ? SET_IC.speed : SET_IC.span}
+        <span class="t">${isSpeed ? '재생 속도' : '구간 길이'}</span></button>
+      ${list.map(v => `<button class="sm-opt${v === cur ? ' on' : ''}" data-setopt="${v}">
+        <span class="ck">${v === cur ? SET_IC.check : ''}</span>${v}</button>`).join('')}`;
+    $('#setBack').onclick = () => { SET.view = 'main'; renderSetMenu(); };
+    $$('#dtSetMenu [data-setopt]').forEach(b => b.onclick = () => {
+      if (isSpeed) SET.speed = b.dataset.setopt; else SET.span = b.dataset.setopt;
+      SET.view = 'main'; renderSetMenu();
+    });
+  }
+  box.classList.toggle('sub', SET.view !== 'main');
+  /* 메인 ↔ 서브 전환 시 높이가 달라지므로 위치를 다시 잡는다 */
+  if (!box.hidden) positionSetMenu();
+}
+function positionSetMenu() {
+  const box = $('#dtSetMenu'), btn = $('#dtSet');
+  if (!box || !btn) return;
+  const r = btn.getBoundingClientRect();
+  box.style.left = Math.max(8, Math.min(r.right - box.offsetWidth, innerWidth - box.offsetWidth - 8)) + 'px';
+  box.style.top  = Math.max(8, r.top - box.offsetHeight - 8) + 'px';
+}
+function openSetMenu() {
+  SET.view = 'main'; renderSetMenu();
+  const box = $('#dtSetMenu'), btn = $('#dtSet');
+  if (!btn) return;
+  box.hidden = false;
+  positionSetMenu();
+  SET.open = true;
+}
+function closeSetMenu() { const b = $('#dtSetMenu'); if (b) b.hidden = true; SET.open = false; }
+
+/* 음량 (2-6) : 호버 시 슬라이더 · 선택 시 음소거 토글 */
+function syncVol() {
+  const ic = $('#dtVolIc'); if (!ic) return;
+  ic.innerHTML = SET.muted || SET.vol === 0
+    ? '<path d="M3 6h2.5L9 3v10L5.5 10H3z" fill="currentColor"/><path d="M11 6.2l3 3.6M14 6.2l-3 3.6" stroke="currentColor" stroke-width="1.2" fill="none" stroke-linecap="round"/>'
+    : '<path d="M3 6h2.5L9 3v10L5.5 10H3z" fill="currentColor"/><path d="M11 6a3 3 0 010 4" stroke="currentColor" stroke-width="1.2" fill="none"/>';
+  const rg = $('#dtVolRange'); if (rg) rg.value = SET.muted ? 0 : SET.vol;
 }
 
 /* ============================================================
@@ -1689,10 +1830,13 @@ function renderMapView() {
   const paths = mvwPaths();
   const mapImg = DT.map === 'map' ? 'assets/img/map.png' : 'assets/img/floor.png';
   const seg = `<div class="seg"><button class="${DT.map === 'map' ? 'on' : ''}" data-mm="map">지도</button><button class="${DT.map === 'map' ? '' : 'on'}" data-mm="floor">층별</button></div>`;
+  /* 사양서 Detail_000_4 · 4-4) : 주변 카메라 / 이동 경로 / 전체 보기
+     이동 경로는 **단일 대상일 때 비활성** (그룹·경로비교에서만 사용) */
+  const multiObj = !!(DT._tab && (DT._tab.kind === 'group' || DT._tab.kind === 'compare'));
   const tools = `<div class="tools">
-      <button class="btn-icon${DT.mapTools.includes('cctv') ? ' on' : ''}" data-mvt="cctv" title="CCTV 표시"><svg viewBox="0 0 16 16" class="ic"><path d="M2.5 6l5-3.2 6 2.6-1 6.4-6.6 1.4z" stroke="currentColor" stroke-width="1.2" fill="none"/></svg></button>
+      <button class="btn-icon${DT.mapTools.includes('cctv') ? ' on' : ''}" data-mvt="cctv" title="주변 카메라"><svg viewBox="0 0 16 16" class="ic"><path d="M2.2 5.4l9.6-2.6 1.2 4.4-9.6 2.6z" stroke="currentColor" stroke-width="1.2" fill="none"/><path d="M5 9.5l1 4M13 7.2l1.4-.4" stroke="currentColor" stroke-width="1.2" fill="none"/></svg></button>
       <span class="sepv"></span>
-      <button class="btn-icon" data-mvt="path" title="이동경로"><svg viewBox="0 0 16 16" class="ic"><path d="M4 14V6a2 2 0 012-2h4a2 2 0 002-2" stroke="currentColor" stroke-width="1.3" fill="none"/></svg></button>
+      <button class="btn-icon" data-mvt="path" title="이동 경로"${multiObj ? '' : ' disabled'}><svg viewBox="0 0 16 16" class="ic"><path d="M4 14V6a2 2 0 012-2h4a2 2 0 002-2" stroke="currentColor" stroke-width="1.3" fill="none"/></svg></button>
     </div>`;
   const conesHTML = DT.mapTools.includes('cctv') ? MAP_CCTV.map((c, i) =>
     `<span class="map-cone" data-mvc="${i}" style="left:${c.x}%;top:${c.y}%;rotate:${c.deg}deg"><i></i><b></b></span>`).join('') : '';
@@ -1824,7 +1968,7 @@ function openVideoView(src) {
 }
 
 /* ============================================================
-   팝업 ③ 관심인물 등록
+   팝업 ③ 관심 인물 등록
    ============================================================ */
 let watchForm = null;
 function openWatch() {
@@ -1917,7 +2061,7 @@ function renderObjAdd() {
       </div>
     </div>
     <div class="oa-count">총 ${list.length}<span class="badge">${st.sel.length}/${max}</span></div>
-    <div class="oa-list">${body || `<div class="ie-loading" style="grid-column:1/-1;color:#6b7785">조건에 맞는 대상가 없습니다.</div>`}</div>`;
+    <div class="oa-list">${body || `<div class="ie-loading" style="grid-column:1/-1;color:#6b7785">조건에 맞는 대상이 없습니다.</div>`}</div>`;
   $('#oaFoot').innerHTML = `<button class="btn-ghost" data-close>취소</button><button class="btn-primary" id="oaOk" ${st.sel.length ? '' : 'disabled'}>추가</button>`;
 
   $('#oaQ').oninput = e => { st.q = e.target.value; renderObjAdd(); $('#oaQ').focus(); };
@@ -2034,7 +2178,7 @@ function renderCase() {
   $$('#mdCase [data-close]').forEach(b => b.onclick = () => closeModal('#mdCase'));
   $('#csOk').onclick = () => {
     closeModal('#mdCase');
-    toast(f.mode === 'new' ? `사건 '${f.name}' 을 등록했습니다.` : `'${CASES.find(c => c.id === f.pick).name}' 사건에 대상를 추가했습니다.`);
+    toast(f.mode === 'new' ? `사건 '${f.name}' 을 등록했습니다.` : `'${CASES.find(c => c.id === f.pick).name}' 사건에 대상을 추가했습니다.`);
   };
 }
 function renderCaseFoot() {
@@ -2094,6 +2238,8 @@ function applyDemo() {
   const setMode = k => { $$('#modeRail button').forEach(x => x.classList.toggle('on', x.dataset.mode === k)); S.mode = k; $$('.mode-panel').forEach(p => p.classList.toggle('on', p.dataset.panel === k)); };
 
   if (['result', 'group', 'groupopen', 'compare'].includes(d)) {
+    /* 기본 검색 유형이 'AI 검색'(사양서 3-2)이라 텍스트 결과 딥링크는 모드를 먼저 전환해야 한다 */
+    setMode('text');
     S.q = '검정색 모자를 쓴 배송기사'; qText.value = S.q; $('#qTextClear').hidden = false;
     buildFilters('text'); runSearch(false);
     if (d !== 'result') { S.grouped = true; $('#groupToggle').checked = true; S.openGroups.add('etc'); }
@@ -2119,12 +2265,12 @@ function applyDemo() {
   if (DETAIL_DEMOS[d]) {
     const c = DETAIL_DEMOS[d];
     S.q = '검정색 모자를 쓴 배송기사'; qText.value = S.q; buildFilters('text'); runSearch(false);
-    DT.tools = c.tools || ['obj'];
+    DT.tools = c.tools || ['obj', 'single'];
     DT.tracks = !!c.tracks; DT.mapTools = c.mapTools || []; DT.edit = !!c.edit;
     if (c.area) DT.area = { mode: c.area, done: !!c.drawn, rect: c.drawn && c.area === 'shape' ? [21, 5, 28, 43] : null, line: c.area === 'line' ? (c.drawn ? [26, 55, 30, 41] : null) : null };
     $$('#dtMapTools [data-map]').forEach(b => b.classList.toggle('on', DT.mapTools.includes(b.dataset.map)));
     const o = OBJECTS[0];
-    newTab(c.kind === 'group' ? `${GROUP_CLIPS[0].cam} > 인물 A` : `${o.cam} > 인물 A`, o, c.kind ? { kind: c.kind } : null);
+    newTab(c.kind === 'group' ? `인물 A` : `${o.cam}`, o, c.kind ? { kind: c.kind } : null);
   }
   /* ---- 경로 비교 ---- */
   if (d === 'cmp2' || d === 'cmp4' || d === 'cmpopen') {
@@ -2148,7 +2294,7 @@ function applyDemo() {
   if (POPUPS[d]) {
     S.q = '검정색 모자를 쓴 배송기사'; qText.value = S.q; buildFilters('text'); runSearch(false);
     const o = OBJECTS[0];
-    newTab(`${o.cam} > 인물 A`, o, d === 'movepath' ? { kind: 'group' } : null);
+    newTab(d === 'movepath' ? `인물 A` : `${o.cam}`, o, d === 'movepath' ? { kind: 'group' } : null);
     setTimeout(POPUPS[d], 60);
   }
   if (d === 'personmgr') { switchMode('person'); renderPersonGrid(); openPersonMgr(); }
@@ -2178,9 +2324,9 @@ function applyDemo() {
    ============================================================ */
 const GICON = {
   search:   '<svg viewBox="0 0 16 16" class="ic"><circle cx="7" cy="7" r="4.6" stroke="currentColor" stroke-width="1.3" fill="none"/><path d="M10.4 10.4L14 14" stroke="currentColor" stroke-width="1.3"/></svg>',
-  bookmark: '<svg viewBox="0 0 16 16" class="ic"><path d="M4 2.2h8v11.6L8 10.6l-4 3.2z" stroke="currentColor" stroke-width="1.3" fill="none" stroke-linejoin="round"/></svg>',
-  cases:    '<svg viewBox="0 0 16 16" class="ic"><path d="M3.4 1.8h6l3.2 3.2v9.2H3.4z" stroke="currentColor" stroke-width="1.3" fill="none" stroke-linejoin="round"/><path d="M9.2 1.9V5.2h3.3M5.6 8.4h4.8M5.6 11h4.8" stroke="currentColor" stroke-width="1.2" fill="none"/></svg>',
-  map:      '<svg viewBox="0 0 16 16" class="ic"><path d="M8 1.6c2.3 0 4.1 1.8 4.1 4.1 0 2.9-4.1 8.4-4.1 8.4S3.9 8.6 3.9 5.7C3.9 3.4 5.7 1.6 8 1.6z" stroke="currentColor" stroke-width="1.3" fill="none"/><circle cx="8" cy="5.8" r="1.6" stroke="currentColor" stroke-width="1.2" fill="none"/></svg>',
+  bookmark: '<svg viewBox="0 0 16 16" class="ic"><path fill="currentColor" fill-rule="evenodd" d="M3.8 2.2h8.4v11.6l-4.2-3.4-4.2 3.4zM8 3.6l.73 1.69 1.84.18-1.38 1.22.4 1.79L8 7.55l-1.59.93.4-1.79-1.38-1.22 1.84-.18z"/></svg>',
+  cases:    '<svg viewBox="0 0 16 16" class="ic"><path fill="currentColor" fill-rule="evenodd" d="M4.2 2.4h7.6a.6.6 0 01.6.6v10a.6.6 0 01-.6.6H4.2a.6.6 0 01-.6-.6V3a.6.6 0 01.6-.6zM5.6 4.7h4.9v1.15H5.6z"/></svg>',
+  map:      '<svg viewBox="0 0 16 16" class="ic"><path fill="currentColor" d="M2.6 8.4L5.9 7.1v7.1L2.6 15.4zM10.1 8.9l3.3-1.8v7.1l-3.3 1.2zM6.6 9.9q.7.7 1.4 1.2v3.1l-1.4-.5z"/><path fill="currentColor" fill-rule="evenodd" d="M8 .9a3.35 3.35 0 013.35 3.35c0 2.4-3.35 5.7-3.35 5.7S4.65 6.65 4.65 4.25A3.35 3.35 0 018 .9zm0 2.15a1.2 1.2 0 100 2.4 1.2 1.2 0 000-2.4z"/></svg>',
   alarm:    '<svg viewBox="0 0 16 16" class="ic"><path d="M8 2c2.2 0 3.6 1.6 3.6 3.7 0 2.6.9 3.6 1.3 4.1H3.1c.4-.5 1.3-1.5 1.3-4.1C4.4 3.6 5.8 2 8 2z" stroke="currentColor" stroke-width="1.3" fill="none" stroke-linejoin="round"/><path d="M6.5 12.2a1.6 1.6 0 003 0" stroke="currentColor" stroke-width="1.2" fill="none"/></svg>'
 };
 const GNB_ITEMS = [
@@ -2208,6 +2354,8 @@ function setMenu(k) {
   if (sp) sp.hidden = !!S.menu;
   if (ap && S.menu) ap.hidden = true;
   $('.tabbar').classList.toggle('menu-on', !!S.menu);
+  /* 원본 영상 패널은 workspace 밖(main-row 직속)이라 메뉴 화면에서 직접 숨긴다 */
+  if (S.menu) $('#preview').hidden = true;
   if (S.menu) renderMenu();
 }
 function renderMenu() {
@@ -2421,7 +2569,7 @@ function bindBmDetail(b) {
     if (a === 'orig') {                       /* 원본 영상 상세화면 : 검색 메뉴 + 새 탭 */
       const o = OBJECTS.find(x => x.id === b.obj) || OBJECTS[0];
       setMenu(null);
-      newTab(`${o.cam} > ${b.target}`, o);
+      newTab(`${o.cam}`, o);
       return;
     }
     if (a === 'case') { openCase(); return; }
@@ -2483,6 +2631,13 @@ function applyMenuDemo() {
   if (d === 'layb') setLayout('b');
   if (d === 'lybresult') { setLayout('b'); S.q='검정색 모자를 쓴 배송기사'; $('#qText').value=S.q; $('#qTextClear').hidden=false; runSearch(false); }
   if (d === 'laya') setLayout('a');
+  if (d === 'alarmpop') { setTimeout(openAlarmPop, 60); }
+  /* AI 검색 없는 버전 (4307:27222) — A/B안 · 진입/검색후 4상태 */
+  if (d === 'noai')      { setAiVer('off'); setLayout('a'); }
+  if (d === 'noaib')     { setAiVer('off'); setLayout('b'); }
+  if (d === 'noairesult'){ setAiVer('off'); setLayout('a'); S.q='검정색 모자를 쓴 배송기사'; $('#qText').value=S.q; $('#qTextClear').hidden=false; runSearch(false); }
+  if (d === 'noaibresult'){ setAiVer('off'); setLayout('b'); S.q='검정색 모자를 쓴 배송기사'; $('#qText').value=S.q; $('#qTextClear').hidden=false; runSearch(false); }
+  if (d === 'aiver')     { setAiVer('on'); setLayout('a'); }
   if (d === 'aifloat') { toggleAiFloat(true); AIM.log=[{me:AI_SUGGESTIONS[2]}]; AIM.wait=true; renderAim(); }
   if (d === 'aim') {
     $$('#modeRail button').forEach(x => x.classList.toggle('on', x.dataset.mode === 'aim'));
@@ -2504,7 +2659,7 @@ function applyMenuDemo() {
 /* ============================================================
    사건 관리 (Case_001 / Case_002)  — 조회
    ============================================================ */
-const CS = { q: '', status: null, period: '당일', sel: null, acc: { rep: true, tg: true, ev: true, pth: true } };
+const CS = { q: '', status: null, period: '오늘', sel: null, acc: { rep: true, tg: true, ev: true, pth: true } };
 const CS_ORDER = { '진행중': 0, '처리전': 1, '처리 완료': 2 };
 const stClass = s => s === '진행중' ? 'st-ing' : s === '처리전' ? 'st-pre' : 'st-done';
 const CS_COLORS = ['#3070d8', '#e0409a', '#e88038', '#3fbe7e'];
@@ -2873,6 +3028,74 @@ function alCur() {
   if (!a) { a = ALARMS[0]; AL.sel = a.id; a.read = true; }
   return a;
 }
+/* ============================================================
+   알림 팝업 — 사양서 Alarm_001
+   진입 : 글로벌 메뉴 bar(윈도우 크롬) 의 알림 벨 선택 시 벨 아래 드롭다운으로 노출
+   2-1) 헤더 : `알림 목록` · `모두 읽기` · `관심인물 관리` · ✕
+   2-2) 목록 : 일자(YYYY-MM-DD) 그룹 헤더 · 최신순 · 미확인 하이라이트 · 선택 시 읽음 전환
+   ============================================================ */
+function renderAlarmPop() {
+  let pop = $('#alarmPop');
+  if (!pop) {
+    pop = document.createElement('div');
+    pop.className = 'alarm-pop'; pop.id = 'alarmPop'; pop.hidden = true;
+    document.body.appendChild(pop);
+    pop.addEventListener('click', e => e.stopPropagation());
+    document.addEventListener('click', e => {
+      if (!e.target.closest('#alarmPop') && !e.target.closest('#btnAlarmTop')) closeAlarmPop();
+    });
+  }
+  const days = [...new Set(ALARMS.map(a => a.date))].sort().reverse();
+  const list = days.map(d => `<div class="ap-date">${d}</div>` +
+    ALARMS.filter(a => a.date === d).sort((x, y) => x.at < y.at ? 1 : -1).map(a => `
+      <button class="ap-card${a.read ? '' : ' unread'}" data-apc="${a.id}">
+        <img src="${a.img}" alt="">
+        <span class="bd">
+          <span class="r1"><b>${a.title}</b><em>${a.at}</em></span>
+          <span class="who">${a.person}</span>
+          <span class="cls">${a.cls}</span>
+          <span class="lc">${a.place}・${a.cam}</span>
+        </span>
+      </button>`).join('')).join('');
+  const unread = ALARMS.filter(a => !a.read).length;
+  pop.innerHTML = `
+    <div class="ap-head">
+      <span class="ap-tt">${ICON2.bell || ''}알림 목록</span>
+      <span class="ap-acts">
+        <button class="ap-read" id="apReadAll"${unread ? '' : ' disabled'}>모두 읽기</button>
+        <i class="ap-sep"></i>
+        <button class="ap-link" id="apWatch">관심인물 관리</button>
+        <button class="ap-x" id="apClose" title="닫기">✕</button>
+      </span>
+    </div>
+    <div class="ap-body">${ALARMS.length ? list : '<div class="ap-empty">알림이 없습니다.</div>'}</div>`;
+  $('#apClose').onclick = () => closeAlarmPop();
+  $('#apReadAll').onclick = () => { ALARMS.forEach(a => a.read = true); renderAlarmPop(); };
+  $('#apWatch').onclick = () => { closeAlarmPop(); openWatchMgr(); };
+  $$('#alarmPop [data-apc]').forEach(b => b.onclick = () => {
+    const a = ALARMS.find(x => x.id === b.dataset.apc); if (a) a.read = true;
+    AL.sel = b.dataset.apc;
+    closeAlarmPop();
+    setMenu('alarm');            /* 사양서 2-2) : 선택 시 알림 상세 영역에 노출 */
+  });
+}
+function openAlarmPop() {
+  renderAlarmPop();
+  const pop = $('#alarmPop'), btn = $('#btnAlarmTop');
+  if (!btn) return;
+  const r = btn.getBoundingClientRect();
+  pop.hidden = false;
+  pop.style.right = Math.max(8, innerWidth - r.right - 4) + 'px';
+  pop.style.top = (r.bottom + 6) + 'px';
+  btn.classList.add('on');
+  document.body.classList.add('alarm-dim');
+}
+function closeAlarmPop() {
+  const p = $('#alarmPop'); if (p) p.hidden = true;
+  const b = $('#btnAlarmTop'); if (b) b.classList.remove('on');
+  document.body.classList.remove('alarm-dim');
+}
+
 function renderAlView() {
   const cur = alCur();
   const days = [...new Set(ALARMS.map(a => a.date))].sort().reverse();
@@ -2891,7 +3114,10 @@ function renderAlView() {
   $('#menuView').innerHTML = `
     <div class="mn-panel" style="width:420px;flex:0 0 420px">
       <div class="mn-head"><h3>알림 목록</h3>
-        <button class="btn-ghost sm" id="alWatch">관심인물 관리</button></div>
+        <div class="mn-head-btns">
+          <button class="btn-ghost sm" id="alReadAll">모두 읽기</button>
+          <button class="btn-ghost sm" id="alWatch">관심인물 관리</button>
+        </div></div>
       <div class="mn-body">${ALARMS.length ? list : '<div class="mn-empty">알림이 없습니다.</div>'}</div>
     </div>
     <div class="mn-panel mn-list">${cur ? `
@@ -2917,10 +3143,11 @@ function renderAlView() {
     renderAlView();
   });
   $('#alWatch').onclick = () => openWatchMgr();
+  if ($('#alReadAll')) $('#alReadAll').onclick = () => { ALARMS.forEach(a => a.read = true); renderAlView(); };
   $$('#menuView [data-alact]').forEach(b => b.onclick = () => {
     if (b.dataset.alact === 'case') return openCase();
     const o = OBJECTS.find(x => x.id === cur.obj) || OBJECTS[0];
-    setMenu(null); newTab(`${o.cam} > ${cur.person}`, o);
+    setMenu(null); newTab(`${o.cam}`, o);
   });
 }
 
@@ -3383,8 +3610,14 @@ S.textRecent = TEXT_RECENT.slice();
 (function initTextA() {
   const ta = $('#qText'); if (!ta) return;
   ta.placeholder = '대상의 특징을 문장으로 입력해 보세요.\n(예: 흰색 옷을 입고 가방을 든 사람)';
-  /* 입력창 안 검색 버튼 */
+  /* 입력창 안 : 좌하단 `+`(첨부) · 우하단 검색 (시안 4307:27799 Button 행) */
   const wrap = ta.parentElement;
+  if (wrap && !wrap.querySelector('.ta-plus')) {
+    const p = document.createElement('button');
+    p.className = 'ta-plus'; p.title = '첨부';
+    p.innerHTML = `<i class="i i-16 i-plus"></i>`;
+    wrap.appendChild(p);
+  }
   if (wrap && !wrap.querySelector('.ta-search')) {
     const b = document.createElement('button');
     b.className = 'ta-search'; b.title = '검색';
@@ -3396,6 +3629,11 @@ S.textRecent = TEXT_RECENT.slice();
   const box = document.createElement('div');
   box.id = 'textRecent';
   wrap.appendChild(box);
+  /* 상시 노출 `최근 검색` 블록 (시안 4307:27803) — 검색 실행 전에만 보인다.
+     입력창 포커스 시 뜨는 자동완성(001_2)과는 별개 컴포넌트다. */
+  const blk = document.createElement('div');
+  blk.className = 'recent-blk'; blk.id = 'recentBlk';
+  wrap.parentElement.insertBefore(blk, wrap.nextSibling);
   renderTextRecent();
   ta.addEventListener('focus', openAutocomplete);
   ta.addEventListener('blur', () => setTimeout(closeAutocomplete, 160));
@@ -3426,6 +3664,27 @@ function renderTextRecent() {
   $$('#textRecent [data-trx]').forEach(b => b.onclick = e => {
     e.stopPropagation(); S.textRecent.splice(+b.dataset.trx, 1); renderTextRecent();
   });
+  renderRecentBlk();
+}
+
+/* 상시 `최근 검색` 블록 — li 32 / pitch 38 / 텍스트 x12 / ✕ 12×12 (시안 실측) */
+function renderRecentBlk() {
+  const blk = $('#recentBlk'); if (!blk) return;
+  blk.hidden = !!S.searched || !S.textRecent.length;
+  if (blk.hidden) { blk.innerHTML = ''; return; }
+  blk.innerHTML = `<div class="rb-lb">최근 검색</div>
+    <div class="rb-list">${S.textRecent.map((v, i) =>
+      `<div class="rb-li" data-rbc="${i}"><span class="t">${v}</span>
+         <button class="x" data-rbx="${i}" title="삭제"><i class="i i-12 i-close"></i></button></div>`).join('')}</div>`;
+  $$('#recentBlk [data-rbc]').forEach(p => p.onclick = e => {
+    if (e.target.closest('[data-rbx]')) return;
+    const v = S.textRecent[+p.dataset.rbc];
+    S.q = v; $('#qText').value = v; $('#qTextClear').hidden = false;
+    buildFilters('text'); runSearch(false);
+  });
+  $$('#recentBlk [data-rbx]').forEach(b => b.onclick = e => {
+    e.stopPropagation(); S.textRecent.splice(+b.dataset.rbx, 1); renderTextRecent();
+  });
 }
 function openAutocomplete() {
   const w = $('#textRecent') && $('#textRecent').closest('.textarea-wrap');
@@ -3437,21 +3696,51 @@ function closeAutocomplete() {
 }
 
 /* ---- AI 검색을 모드 칩으로 통합 ---- */
+/* ============================================================
+   AI 로딩 애니메이션 — GUI 프로토타입(4392:41970 `Loading`) 재연
+   에스원 AI 심볼의 스파클 3개가 각각 크기·투명도를 바꾸며 반짝이는 6프레임 루프.
+   원본은 Figma SMART_ANIMATE 0.3s · LINEAR 체인 → CSS keyframes 1.8s 로 옮김.
+   ============================================================ */
+const AI_LOADER = `<svg class="ai-load" viewBox="0 0 16 16" aria-hidden="true">
+  <g transform="translate(2.219,1.333)">
+    <path class="sp-sm" fill="url(#aiSpSm)" d="M3.82717 7.40501C2.8673 7.40501 2.08895 6.62359 2.08895 5.66681C2.08895 5.60221 2.03664 5.54991 1.97204 5.54991C1.90743 5.54991 1.85513 5.60221 1.85513 5.66681C1.85513 6.62667 1.0737 7.40501 0.116907 7.40501C0.0523006 7.40501 0 7.45731 0 7.52191C0 7.58652 0.0523006 7.63882 0.116907 7.63882C1.07678 7.63882 1.85513 8.42024 1.85513 9.37702C1.85513 9.44162 1.90743 9.49392 1.97204 9.49392C2.03664 9.49392 2.08895 9.44162 2.08895 9.37702C2.08895 8.41716 2.87038 7.63882 3.82717 7.63882C3.89178 7.63882 3.94408 7.58652 3.94408 7.52191C3.94408 7.45731 3.89178 7.40501 3.82717 7.40501Z"/>
+    <path class="sp-md" fill="url(#aiSpMd)" d="M3.14446 2.99954C4.51966 2.99954 5.63643 4.11629 5.63643 5.49147C5.63643 5.58376 5.71027 5.66067 5.80564 5.66067C5.90101 5.66067 5.97485 5.58684 5.97485 5.49147C5.97485 4.11629 7.09162 2.99954 8.46681 2.99954C8.55911 2.99954 8.63602 2.92571 8.63602 2.83034C8.63602 2.73497 8.56219 2.66113 8.46681 2.66113C7.09162 2.66113 5.97485 1.54438 5.97485 0.169205C5.97485 0.0769113 5.90101 0 5.80564 0C5.71027 0 5.63643 0.0738349 5.63643 0.169205C5.63643 1.54438 4.51966 2.66113 3.14446 2.66113C3.05217 2.66113 2.97526 2.73497 2.97526 2.83034C2.97526 2.92571 3.04909 2.99954 3.14446 2.99954Z"/>
+    <path class="sp-lg" fill="url(#aiSpLg)" d="M11.4323 9.31568C9.51871 9.31568 7.95892 7.75899 7.95892 5.84236C7.95892 5.74084 7.87893 5.66085 7.77741 5.66085C7.67588 5.66085 7.59589 5.74084 7.59589 5.84236C7.59589 7.75592 6.03918 9.31568 4.12252 9.31568C4.021 9.31568 3.94101 9.39567 3.94101 9.49719C3.94101 9.59871 4.021 9.6787 4.12252 9.6787C6.03611 9.6787 7.59589 11.2354 7.59589 13.152C7.59589 13.2535 7.67588 13.3335 7.77741 13.3335C7.87893 13.3335 7.95892 13.2535 7.95892 13.152C7.95892 11.2385 9.51563 9.6787 11.4323 9.6787C11.5338 9.6787 11.6138 9.59871 11.6138 9.49719C11.6138 9.39567 11.5338 9.31568 11.4323 9.31568Z"/>
+  </g>
+</svg>`;
+
 const AIM = { log: [], wait: false };
 (function initAimPanel() {
   const panels = $('#modePanels'); if (!panels) return;
   const sec = document.createElement('section');
   sec.className = 'mode-panel'; sec.dataset.panel = 'aim';
   sec.innerHTML = `<div class="aim-body">
+      <!-- 사양서 AI Agent_001_01 · 1-1) 버튼 영역 (상단 고정) : 새 채팅 / 최근 채팅 -->
+      <div class="aim-top">
+        <button class="aim-tb" id="aimNew"><svg viewBox="0 0 16 16" class="ic"><path d="M8 3.2v9.6M3.2 8h9.6" stroke="currentColor" stroke-width="1.4" fill="none" stroke-linecap="round"/></svg>새 채팅</button>
+        <button class="aim-tb" id="aimRecent"><svg viewBox="0 0 16 16" class="ic"><circle cx="8" cy="8" r="5.6" stroke="currentColor" stroke-width="1.2" fill="none"/><path d="M8 4.8V8l2.2 1.5" stroke="currentColor" stroke-width="1.2" fill="none" stroke-linecap="round"/></svg>최근 채팅</button>
+      </div>
       <div class="aim-scroll" id="aimScroll"></div>
       <div class="aim-input">
-        <textarea id="aimQ" placeholder="검정색 상의를 입은 남성"></textarea>
+        <textarea id="aimQ" placeholder="찾으시는 내용을 자유롭게 물어보세요."></textarea>
         <div class="aim-row"><button class="plus" title="첨부">+</button>
           <button class="aim-send" id="aimSend" title="전송">↑</button></div>
       </div>
     </div>`;
   panels.appendChild(sec);
+  /* aim 패널은 여기서 만들어지므로, 초기 활성 모드(Default: AI 검색) 를 이 시점에 동기화한다 */
+  $$('.mode-panel').forEach(p => p.classList.toggle('on', p.dataset.panel === S.mode));
+  $$('#modeRail button').forEach(b => b.classList.toggle('on', b.dataset.mode === S.mode));
   renderAimPanel();
+  /* 새 채팅 : 기존 대화가 있으면 '최근 대화' 로 저장 후 초기화 (사양서 1-1) */
+  $('#aimNew').onclick = () => {
+    if (AIM.log.length) {
+      S.recent = [{ id: 'r' + Date.now(), title: AIM.log[0].me, date: new Date().toISOString().slice(0, 10), pinned: false }, ...S.recent];
+    }
+    AIM.log = []; AIM.wait = false; S.aiStage = 'idle';
+    renderAimPanel(); render();
+  };
+  $('#aimRecent').onclick = () => { $('#aiRecent').hidden = false; renderRecent(); };
   $('#aimSend').onclick = () => {
     const v = ($('#aimQ').value || '').trim(); if (!v) return;
     AIM.log.push({ me: v }); $('#aimQ').value = '';
@@ -3466,7 +3755,7 @@ function renderAimPanel() {
   el.innerHTML = `<div class="aim-title"><i class="i-ai"></i>무엇을 도와드릴까요?</div>
     <div class="aim-sugg">${AI_SUGGESTIONS.map(s => `<button data-aims="${s}">${s}</button>`).join('')}</div>
     ${AIM.log.map(l => `<div class="aim-user">${l.me}</div>`).join('')}
-    ${AIM.wait ? `<div class="aim-wait"><i class="i-ai" style="width:13px;height:13px"></i>답변 생성중...</div>` : ''}`;
+    ${AIM.wait ? `<div class="aim-wait">${AI_LOADER}답변 생성중...</div>` : ''}`;
   $$('#aimScroll [data-aims]').forEach(b => b.onclick = () => {
     AIM.log.push({ me: b.dataset.aims }); AIM.wait = true; renderAimPanel();
     setTimeout(() => { AIM.wait = false; sendAI(b.dataset.aims); renderAimPanel(); }, 900);
@@ -3506,7 +3795,7 @@ runSearch = function (keep) { _runSearchA(keep); buildFilters(S.mode); renderTex
     <div class="aim-body">
       <div class="aim-scroll"></div>
       <div class="aim-input">
-        <textarea class="aim-q" placeholder="검정색 상의를 입은 남성"></textarea>
+        <textarea class="aim-q" placeholder="찾으시는 내용을 자유롭게 물어보세요."></textarea>
         <div class="aim-row"><button class="plus" title="첨부">+</button>
           <button class="aim-send" title="전송">↑</button></div>
       </div>
@@ -3519,6 +3808,8 @@ runSearch = function (keep) { _runSearchA(keep); buildFilters(S.mode); renderTex
 })();
 
 function toggleAiFloat(open) {
+  /* AI 없는 버전에서는 오버레이가 열리지 않는다 */
+  if (S.aiVer === 'off') open = false;
   $('#aiFloat').hidden = !open;
   $('#btnAI').classList.toggle('on', !!open);
   if (open) renderAim();
@@ -3530,7 +3821,7 @@ function renderAim() {
   const html = `<div class="aim-title"><i class="i-ai"></i>무엇을 도와드릴까요?</div>
     <div class="aim-sugg">${AI_SUGGESTIONS.map(s => `<button data-aims="${s}">${s}</button>`).join('')}</div>
     ${AIM.log.map(l => `<div class="aim-user">${l.me}</div>`).join('')}
-    ${AIM.wait ? `<div class="aim-wait"><i class="i-ai" style="width:13px;height:13px"></i>답변 생성중...</div>` : ''}`;
+    ${AIM.wait ? `<div class="aim-wait">${AI_LOADER}답변 생성중...</div>` : ''}`;
   $$('.aim-scroll').forEach(el => { el.innerHTML = html; el.scrollTop = el.scrollHeight; });
   $$('.aim-scroll [data-aims]').forEach(b => b.onclick = () => askAim(b.dataset.aims));
   $$('.aim-q').forEach(t => t.onkeydown = e => {
@@ -3558,13 +3849,56 @@ const MODE_LABEL = { aim: 'AI 검색', text: '텍스트 검색', image: '이미�
 
 /* 전환 스위치를 윈도우 크롬에 삽입 */
 (function initLayoutSwitch() {
-  const r = document.querySelector('.win-r'); if (!r) return;
+  /* 시안 검토용 스위치는 윈도우 탭 옆(좌측)에 둔다 — 시안 화면을 가리지 않도록 톤다운 */
+  const r = document.querySelector('.win-tabs'); if (!r) return;
   const sw = document.createElement('div');
   sw.className = 'layout-sw'; sw.id = 'layoutSw';
   sw.innerHTML = `<button data-lay="a">A안</button><button data-lay="b">B안</button>`;
-  r.insertBefore(sw, r.firstChild);
+  r.appendChild(sw);
   $$('#layoutSw [data-lay]').forEach(b => b.onclick = () => setLayout(b.dataset.lay));
 })();
+
+/* ============================================================
+   AI 검색 유무 시안 전환 (on / off) — 260826
+   원본 : GUI Tnihi6lixRR47N4RSAwUbF
+     · AI 있는 버전   섹션 `대시보드 공통 - GNB/LNB 개선`      (4345:26657)
+     · AI 없는 버전   섹션 `대시보드 공통 - AI 검색 없는 버전` (4307:27222)
+   off 에서 감추는 것 : 윈도우 AI pill · `AI 검색` 모드 칩 · AI 에이전트 오버레이 ·
+                       B안 진입 블록의 `AI 검색` 입력 박스
+   ※ 사건 상세의 `AI 생성 보고서` 는 검색 기능이 아니라 그대로 둔다
+     (섹션명이 "AI **검색** 없는 버전" 이고, off 시안에도 사건 화면은 포함돼 있지 않음)
+   ============================================================ */
+S.aiVer = localStorage.getItem('svms_ai') || 'on';
+
+(function initAiSwitch() {
+  const r = document.querySelector('.win-tabs'); if (!r) return;
+  const sw = document.createElement('div');
+  sw.className = 'layout-sw ai-sw'; sw.id = 'aiSw';
+  sw.innerHTML = `<button data-ai="on">AI 있음</button><button data-ai="off">AI 없음</button>`;
+  const lay = document.getElementById('layoutSw');
+  r.insertBefore(sw, lay || null);   /* AI 스위치가 앞, 레이아웃 스위치가 뒤 */
+  $$('#aiSw [data-ai]').forEach(b => b.onclick = () => setAiVer(b.dataset.ai));
+})();
+
+function setAiVer(k) {
+  S.aiVer = k;
+  localStorage.setItem('svms_ai', k);
+  $$('#aiSw [data-ai]').forEach(b => b.classList.toggle('on', b.dataset.ai === k));
+  document.body.classList.toggle('ai-off', k === 'off');
+
+  const off = (k === 'off');
+  /* 윈도우 크롬 AI pill */
+  const pill = $('#btnAI'); if (pill) pill.hidden = off;
+  /* AI 검색 모드 칩 — off 면 숨기고, 그 모드에 있었다면 텍스트로 되돌린다 */
+  const aimChip = document.querySelector('#modeRail button[data-mode="aim"]');
+  if (aimChip) aimChip.hidden = off || S.layout === 'b';
+  if (off) {
+    if (S.mode === 'aim') switchMode('text');
+    const fl = $('#aiFloat'); if (fl) fl.hidden = true;
+    if (S.aiMode) { S.aiMode = false; const ap = $('#aiPanel'); if (ap) ap.hidden = true; }
+  }
+  applyLayout();
+}
 
 function setLayout(k) {
   S.layout = k;
@@ -3580,10 +3914,13 @@ function applyLayout() {
   const chips = $('#modeRail');
   let bwrap = $('#bIntro');
 
-  /* --- 헤더 브레드크럼 --- */
+  /* --- 헤더 브레드크럼 ---
+     시안(4307:27229 진입 / 4307:27327 검색후) 기준 : 진입 상태에서는 타이틀 `검색`,
+     검색을 실행해 진입 블록이 접힌 뒤에만 브레드크럼으로 바뀐다. */
   const head = $('#sideHead');
   let crumb = $('#sideCrumb');
-  if (S.layout === 'b') {
+  const crumbOn = (S.layout === 'b' && !S.bPick && !!S.searched);
+  if (crumbOn) {
     if (!crumb) {
       crumb = document.createElement('span');
       crumb.className = 'side-crumb'; crumb.id = 'sideCrumb';
@@ -3607,14 +3944,16 @@ function applyLayout() {
       bwrap.className = 'bsec'; bwrap.id = 'bIntro';
       body.insertBefore(bwrap, chips);
     }
-    bwrap.innerHTML = `
+    /* AI 없는 버전에서는 `AI 검색` 입력 박스를 통째로 뺀다 (시안 4307:27229) */
+    const aiOff = (S.aiVer === 'off');
+    bwrap.innerHTML = aiOff ? '' : `
       <div class="lb">AI 검색</div>
       <div class="b-aibox" id="bAi">
         <span class="plus">+</span><span class="ph">무엇이든 물어보세요</span>
         <button class="go" title="AI 에이전트 열기"><i class="i-ai"></i></button>
       </div>
       <div class="lb" style="margin-top:16px">일반 검색</div>`;
-    $('#bAi').onclick = () => toggleAiFloat(true);
+    if (!aiOff) $('#bAi').onclick = () => toggleAiFloat(true);
     /* 일반 검색 칩에서 AI 검색 제외 */
     chips.classList.add('b-chips');
     $$('#modeRail button').forEach(b => { b.hidden = (b.dataset.mode === 'aim'); });
@@ -3622,13 +3961,15 @@ function applyLayout() {
   } else {
     if (bwrap) bwrap.remove();
     chips.classList.remove('b-chips');
-    $$('#modeRail button').forEach(b => { b.hidden = false; });
+    $$('#modeRail button').forEach(b => { b.hidden = (b.dataset.mode === 'aim' && S.aiVer === 'off'); });
+    if (S.aiVer === 'off' && S.mode === 'aim') switchMode('text');
   }
   /* B안 : 검색을 실행하면 진입 블록(AI 검색·일반 검색 칩)을 접고 조건+필터만 남긴다.
      헤더 브레드크럼의 ✕ 로 다시 검색 유형 선택 상태로 돌아간다. */
   const hideIntro = (S.layout === 'b' && !S.bPick && !!S.searched);
   chips.hidden = hideIntro;
   if (bwrap) bwrap.hidden = hideIntro;
+  if (typeof renderRecentBlk === 'function') renderRecentBlk();
 }
 
 /* 모드 전환 유틸 (칩 클릭과 동일 동작) */
@@ -3650,6 +3991,7 @@ document.addEventListener('click', e => {
 
 /* init */
 setLayout(S.layout);
+setAiVer(S.aiVer);
 /* ============================================================
    인물 관리 팝업 — GUI 정합 재작성 (Search main_003_4 / 003_5)
    목록 / 새 인물 등록 / 인물 상세 / 인물 수정
