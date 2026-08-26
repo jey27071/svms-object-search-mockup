@@ -5,6 +5,21 @@
 
 ---
 
+## 📦 Git 저장소
+
+이 문서와 **SVMS 목업 프로젝트 전체**가 아래 저장소에 있다. 다른 PC에서는 클론해서 이어가면 된다.
+
+| 항목 | 값 |
+|---|---|
+| 저장소 | **https://github.com/jey27071/svms-object-search-mockup** (Private) |
+| 클론 | `git clone https://github.com/jey27071/svms-object-search-mockup.git` |
+| 이 문서 위치 | 저장소 내 `_handoff/전자DS-설계시안슬라이드-핸드오프.md` |
+| 로컬 경로(작업 PC) | `C:\Users\S-1\_handoff\` · 목업은 `C:\Users\S-1\svms-object-search-mockup\` |
+
+⚠️ 사내 프록시에서 `api.github.com` 차단(403) → `gh` CLI 불가. clone/push 는 정상.
+
+---
+
 ## 1. 요청 내용 (사용자 원문 취지)
 
 - 이전에 만든 **미팅용 슬라이드 자료의 형식·뉘앙스·템플릿을 그대로 유지**하고 내용만 새로 작성

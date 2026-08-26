@@ -5,6 +5,23 @@
 
 ---
 
+## 📦 Git 저장소 (원본 위치)
+
+| 항목 | 값 |
+|---|---|
+| 저장소 | **https://github.com/jey27071/svms-object-search-mockup** (Private) |
+| 브랜치 | `main` |
+| 클론 | `git clone https://github.com/jey27071/svms-object-search-mockup.git` |
+| 로컬 경로(작업 PC) | `C:\Users\S-1\svms-object-search-mockup\` |
+
+- `_shots/`(검증 캡처 82MB)와 `_backup_pre-gui/` 는 `.gitignore` 로 제외. 캡처는 언제든 재생성 가능
+- **핸드오프 문서 2종은 저장소 안 `_handoff/` 에도 포함**되어 있다 → 클론하면 바로 읽을 수 있음
+- ⚠️ **사내 프록시 주의** — `api.github.com` 차단(403)이라 `gh` CLI / REST API 사용 불가.
+  `github.com` 으로의 git clone·push 는 정상. **저장소 생성 같은 API 작업은 브라우저로** 해야 한다.
+  (OAuth device flow 도 502 로 막힘 → 인증은 **PAT를 remote URL에 넣어 푸시**하는 방식 사용)
+
+---
+
 ## 0. 30초 요약
 
 - **위치**: `C:\Users\S-1\svms-object-search-mockup\`

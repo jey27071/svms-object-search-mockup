@@ -1,5 +1,8 @@
 # SVMS 대상 검색 — HTML 워킹 목업
 
+> 저장소: https://github.com/jey27071/svms-object-search-mockup (Private)
+> 이어서 작업할 땐 **`_handoff/SVMS-대상검색-목업-핸드오프.md`** 부터 읽으세요.
+
 ## 신규 사양 반영 (2026-08-24) — 진행 중
 
 사양 원본이 **UI 사양서_0807 (28장 → 85장)** 으로 확장됐다.
