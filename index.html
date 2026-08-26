@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>SVMS — 대상 검색 (Working Mockup)</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="assets/css/icons.css">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+<div class="app" id="app">
+
+  <!-- ============ Window chrome (Header tab-full) ============ -->
+  <header class="win">
+    <div class="win-l">
+      <span class="win-logo"><img src="assets/icons/logo.png" alt="S"></span>
+      <button class="win-btn"><i class="i i-16 i-hamburger"></i></button>
+      <button class="win-btn"><i class="i i-16 i-winhome"></i></button>
+    </div>
+    <div class="win-tabs">
+      <div class="win-tab on"><i class="i i-16 i-search"></i><span>대상 검색</span></div>
+      <button class="win-tab add"><i class="i i-12 i-plus"></i></button>
+    </div>
+    <div class="win-r">
+      <button class="btn-ai win-ai" id="btnAI"><i class="i-ai"></i>AI</button>
+      <button class="win-btn" id="btnAlarmTop" title="알림"><svg viewBox="0 0 16 16" class="ic"><path d="M8 2c2.2 0 3.6 1.6 3.6 3.7 0 2.6.9 3.6 1.3 4.1H3.1c.4-.5 1.3-1.5 1.3-4.1C4.4 3.6 5.8 2 8 2z" stroke="currentColor" stroke-width="1.3" fill="none" stroke-linejoin="round"/><path d="M6.5 12.2a1.6 1.6 0 003 0" stroke="currentColor" stroke-width="1.2" fill="none"/></svg></button>
+      <span class="win-profile"><i class="i i-16 i-profile"></i></span>
+      <button class="win-btn"><i class="i i-12 i-winmin"></i></button>
+      <button class="win-btn"><i class="i i-12 i-winmax"></i></button>
+      <button class="win-btn"><i class="i i-12 i-winclose"></i></button>
+    </div>
+  </header>
+
+  <!-- ============ Shell : LNB + 검색 패널 + 콘텐츠 (A타입) ============ -->
+  <div class="shell" id="shell">
+
+    <!-- ---- 좌: LNB (검색 · 북마크 · 사건관리 · 맵관리) ---- -->
+    <nav class="lnb" id="lnb"></nav>
+
+    <!-- ---- 좌: 검색 사이드 패널 ---- -->
+    <aside class="side" id="sidePanel">
+      <div class="side-head" id="sideHead">
+        <span class="side-title">검색</span>
+        <span class="side-head-btns">
+          <button class="btn-icon" id="btnDetach" title="분리"><i class="i i-detach"></i></button>
+          <button class="btn-icon" id="btnCollapse" title="접기"><i class="i i-collapse"></i></button>
+        </span>
+      </div>
+
+      <div class="side-body">
+        <!-- 검색 유형 레일 -->
+        <nav class="mode-chips" id="modeRail">
+          <button data-mode="aim" data-tip="AI 검색">AI 검색</button>
+          <button data-mode="text" class="on" data-tip="텍스트 검색">텍스트</button>
+          <button data-mode="image" data-tip="이미지 검색">이미지</button>
+          <button data-mode="car" data-tip="차량번호 검색">차량번호</button>
+          <button data-mode="person" data-tip="등록 인물 검색">등록인물</button>
+          <button data-mode="algo" data-tip="지능형 알고리즘 검색">지능형 알고리즘</button>
+        </nav>
+
+        <!-- 모드별 패널 -->
+        <div class="mode-panels" id="modePanels">
+
+          <!-- 1) 텍스트 검색 -->
+          <section class="mode-panel on" data-panel="text">
+            <div class="panel-top">
+              <span class="panel-label">텍스트 검색</span>
+              <div class="select sm" id="textOptSelect" data-value="자연어">
+                <button class="select-btn">자연어<i class="i i-16 i-chevron i-down caret"></i></button>
+                <div class="select-menu"><div data-v="자연어">자연어</div><div data-v="차량번호">차량번호</div></div>
+              </div>
+            </div>
+            <div class="textarea-wrap">
+              <textarea id="qText" placeholder="검색어를 입력해 주세요."></textarea>
+              <button class="clear-x" id="qTextClear" hidden>&#10005;</button>
+            </div>
+            <div class="filters" data-filters="text"></div>
+          </section>
+
+          <!-- 1-2) 차량번호 검색 (Search main_002_1) -->
+          <section class="mode-panel" data-panel="car">
+            <div class="panel-top"><span class="panel-label">차량번호 검색</span></div>
+            <div class="textarea-wrap">
+              <textarea id="qCar" placeholder="차량번호 전체 또는 뒷자리 4자리를 입력해 보세요. (예: 123가4567 또는 4567)"></textarea>
+              <button class="clear-x" id="qCarClear" hidden>&#10005;</button>
+            </div>
+            <div id="carRecent"></div>
+            <div class="filters" data-filters="car"></div>
+          </section>
+
+          <!-- 2) 이미지 검색 -->
+          <section class="mode-panel" data-panel="image">
+            <div class="panel-top"><span class="panel-label">이미지 검색</span></div>
+            <div class="upload-box" id="uploadBox">
+              <div class="dropzone" id="dropzone">
+                <svg viewBox="0 0 24 24" class="up-ic"><path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/><path d="M4 15v3a2 2 0 002 2h12a2 2 0 002-2v-3" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg>
+                <p class="dz-main">이미지를 드래그하거나 클릭하여 업로드</p>
+                <p class="dz-sub">JPG, PNG 지원 · 최대 10MB</p>
+                <button class="btn-primary sm" id="btnPickImage">이미지 선택</button>
+                <input type="file" id="fileImage" accept="image/png,image/jpeg" hidden>
+              </div>
+              <div class="uploaded" id="uploadedWrap" hidden>
+                <div class="uploaded-img"><img id="uploadedImg" alt=""><button class="clear-x" id="uploadedClear">&#10005;</button></div>
+              </div>
+            </div>
+            <div class="acc" id="extractedAcc">
+              <button class="acc-head" disabled>추출된 대상<i class="i i-16 i-chevron i-down caret"></i></button>
+              <div class="acc-body">
+                <label class="check sm all"><input type="checkbox" id="extAll"><i></i>전체 선택</label>
+                <div class="ext-grid" id="extGrid"></div>
+              </div>
+            </div>
+            <div class="filters" data-filters="image"></div>
+          </section>
+
+          <!-- 3) 등록 인물 검색 -->
+          <section class="mode-panel" data-panel="person">
+            <div class="panel-top">
+              <span class="panel-label">등록 인물 검색</span>
+              <input class="input sm" id="personQuery" placeholder="이름 검색">
+            </div>
+            <div class="person-box">
+              <div class="person-head">
+                <span class="panel-label" id="personCount">등록된 인물 (10)</span>
+                <button class="btn-icon" id="btnPersonMgr" title="인물 관리">
+                  <svg viewBox="0 0 16 16" class="ic"><circle cx="8" cy="8" r="2.2" stroke="currentColor" stroke-width="1.2" fill="none"/><path d="M8 1.6l.9 1.7 1.9-.3.5 1.85 1.75.83-.85 1.72.85 1.72-1.75.83-.5 1.85-1.9-.3L8 14.4l-.9-1.7-1.9.3-.5-1.85-1.75-.83.85-1.72-.85-1.72 1.75-.83.5-1.85 1.9.3z" stroke="currentColor" stroke-width="1" fill="none"/></svg>
+                </button>
+              </div>
+              <div class="person-tools">
+                <label class="check sm"><input type="checkbox" id="personAll"><i></i>전체 선택</label>
+                <div class="select xs" id="personSort" data-value="등록일순">
+                  <button class="select-btn">등록일순<i class="i i-16 i-chevron i-down caret"></i></button>
+                  <div class="select-menu"><div data-v="등록일순">등록일순</div><div data-v="이름순">이름순</div></div>
+                </div>
+              </div>
+              <div class="person-grid" id="personGrid"></div>
+              <div class="empty-inline" id="personEmpty" hidden>
+                등록된 인물이 없습니다.<br>대상 검색에 사용할 인물을 등록해 주세요.
+                <button class="btn-primary sm" id="btnNewPersonInline">새 인물 등록</button>
+              </div>
+            </div>
+            <div class="filters" data-filters="person"></div>
+          </section>
+
+          <!-- 4) 지능형 알고리즘 -->
+          <section class="mode-panel" data-panel="algo">
+            <div class="panel-top"><span class="panel-label">지능형 알고리즘 검색</span></div>
+            <div class="algo-box"><div class="algo-grid" id="algoGrid"></div></div>
+            <div class="filters" data-filters="algo"></div>
+          </section>
+
+        </div>
+      </div>
+    </aside>
+
+    <!-- ---- 좌: AI 에이전트 패널 ---- -->
+    <aside class="side ai-side" id="aiPanel" hidden>
+      <div class="side-head" id="aiHead">
+        <span class="side-title">
+          <svg viewBox="0 0 14 14" class="ic"><path d="M7 0l1.6 4.2L13 6l-4.4 1.8L7 12l-1.6-4.2L1 6l4.4-1.8z" fill="currentColor"/></svg>
+          AI 에이전트
+        </span>
+        <span class="side-head-btns">
+          <button class="btn-icon" id="btnAiMore" title="더보기">
+            <svg viewBox="0 0 16 16" class="ic"><circle cx="8" cy="3" r="1.3" fill="currentColor"/><circle cx="8" cy="8" r="1.3" fill="currentColor"/><circle cx="8" cy="13" r="1.3" fill="currentColor"/></svg>
+            <span class="menu" id="aiMoreMenu" hidden><b data-act="new">새 채팅</b><b data-act="recent">최근 채팅</b></span>
+          </button>
+          <button class="btn-icon" id="btnAiDetach" title="분리">
+            <svg viewBox="0 0 16 16" class="ic"><path d="M6 2H3a1 1 0 00-1 1v10a1 1 0 001 1h10a1 1 0 001-1v-3" stroke="currentColor" stroke-width="1.2" fill="none"/><path d="M9.5 2H14v4.5M14 2L8 8" stroke="currentColor" stroke-width="1.2" fill="none"/></svg>
+          </button>
+          <button class="btn-icon" id="btnAiCollapse" title="접기">
+            <svg viewBox="0 0 16 16" class="ic"><rect x="2" y="3" width="12" height="10" rx="1" stroke="currentColor" stroke-width="1.2" fill="none"/><path d="M6.5 3v10" stroke="currentColor" stroke-width="1.2"/></svg>
+          </button>
+          <button class="btn-icon" id="btnAiClose" title="닫기">
+            <svg viewBox="0 0 16 16" class="ic"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.3"/></svg>
+          </button>
+        </span>
+      </div>
+      <div class="ai-body" id="aiBody">
+        <div class="chat" id="chat"></div>
+        <div class="chat-input">
+          <textarea id="aiInput" placeholder="AI agents에게 물어보세요"></textarea>
+          <button class="btn-icon attach" title="첨부">
+            <svg viewBox="0 0 16 16" class="ic"><path d="M11.5 6.5l-4.6 4.6a2.2 2.2 0 01-3.1-3.1l5.3-5.3a1.5 1.5 0 012.1 2.1l-5.2 5.2a.7.7 0 01-1-1l4.6-4.6" stroke="currentColor" stroke-width="1.1" fill="none"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="ai-recent" id="aiRecent" hidden>
+        <div class="ai-recent-head"><span class="panel-label">최근 채팅</span>
+          <button class="btn-icon" id="btnRecentClose"><svg viewBox="0 0 16 16" class="ic"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.3"/></svg></button>
+        </div>
+        <div class="recent-list" id="recentList"></div>
+      </div>
+    </aside>
+
+    <!-- ---- 콘텐츠 : 탭바 + 결과 ---- -->
+    <div class="shell-main" id="shellMain">
+
+    <div class="tabbar">
+      <button class="btn-icon" id="btnHistory" title="검색 히스토리"><i class="i i-history"></i></button>
+      <div class="tabs" id="tabs"></div>
+      <button class="tab-add" id="btnTabAdd" title="새 검색 탭"><i class="i i-12 i-plus"></i></button>
+    </div>
+
+    <div class="workspace" id="workspace">
+
+    <!-- ---- 접힘 레일 ---- -->
+    <div class="collapsed-rail" id="collapsedRail" hidden>
+      <button class="btn-icon" id="btnExpand" title="펼치기">
+        <svg viewBox="0 0 16 16" class="ic"><rect x="2" y="3" width="12" height="10" rx="1" stroke="currentColor" stroke-width="1.2" fill="none"/><path d="M6.5 3v10" stroke="currentColor" stroke-width="1.2"/></svg>
+      </button>
+    </div>
+
+    <!-- ---- 중앙: 검색 결과 ---- -->
+    <main class="results" id="results">
+      <div class="results-head">
+        <span class="rh-label" id="resCount">검색 결과 (0건)</span>
+        <div class="chips" id="chips"></div>
+        <div class="rh-right">
+          <div class="select sm disabled" id="sortSelect" data-value="유사도순">
+            <button class="select-btn">유사도순<i class="i i-16 i-chevron i-down caret"></i></button>
+            <div class="select-menu"><div data-v="유사도순">유사도순</div><div data-v="최신순">최신순</div><div data-v="위치순">위치순</div></div>
+          </div>
+          <label class="check disabled" id="groupToggleWrap"><input type="checkbox" id="groupToggle" disabled><i></i>유사 대상별 보기</label>
+        </div>
+      </div>
+      <div class="results-body" id="resultsBody"></div>
+
+      <!-- 경로 비교 바 -->
+      <div class="compare-bar" id="compareBar" hidden>
+        <span class="cb-title">경로 비교</span>
+        <div class="cb-list" id="cbList"></div>
+        <div class="cb-actions">
+          <button class="btn-ghost" id="cbCancel">취소</button>
+          <button class="btn-primary" id="cbGo" disabled>경로 비교(0/4)</button>
+        </div>
+      </div>
+    </main>
+
+    <!-- ---- 우: 원본 영상 ---- -->
+    <aside class="preview" id="preview">
+      <div class="preview-head">원본 영상</div>
+      <div class="preview-list" id="previewList"></div>
+    </aside>
+
+    <!-- ---- 단일 대상 상세 ---- -->
+    <section class="detail" id="detail" hidden>
+      <div class="dt-main" id="dtMain">
+        <div class="dt-video" id="dtVideo">
+          <img id="dtVideoImg" src="assets/img/video.png" alt="">
+          <div class="ov ov-heat" id="ovHeat" hidden></div>
+          <div class="ov ov-path" id="ovPath" hidden></div>
+          <div class="ov ov-cctv" id="ovCctv" hidden></div>
+          <div class="ov ov-area" id="ovArea" hidden></div>
+          <div class="dt-multi" id="dtMulti" hidden></div>
+          <div class="dt-vhead" id="dtVhead">
+            <b id="dtCam">1F 메인 복도</b>
+            <svg viewBox="0 0 10 6" class="caret" id="dtCamCaret" hidden style="width:9px;height:6px;color:rgba(255,255,255,.6)"><path d="M1 1l4 4 4-4" stroke="currentColor" fill="none" stroke-width="1.3"/></svg>
+            <span id="dtRange">2026-06-29 오전 00:52:03 ~ 02:10:11</span>
+          </div>
+          <button class="btn-flt" id="btnTracks" hidden>
+            <svg viewBox="0 0 16 16" class="ic"><path d="M2 4h12M2 8h12M2 12h8" stroke="currentColor" stroke-width="1.4" fill="none" stroke-linecap="round"/></svg>
+            대상별 동선
+          </button>
+          <div class="flt-panel" id="pnlTracks" hidden>
+            <div class="flt-head">
+              <b>대상별 동선</b>
+              <button class="btn-icon" id="pnlTracksX"><svg viewBox="0 0 16 16" class="ic"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.3"/></svg></button>
+            </div>
+            <div class="select xs" id="trackSel" data-value="전체" style="margin-bottom:9px">
+              <button class="select-btn" style="width:88px">전체<i class="i i-16 i-chevron i-down caret"></i></button>
+              <div class="select-menu"><div data-v="전체">전체</div><div data-v="남성">남성</div><div data-v="여성">여성</div><div data-v="차량">차량</div></div>
+            </div>
+            <div class="flt-list" id="trackList"></div>
+          </div>
+          <div class="dt-box main" style="left:52%;top:14%;width:12%;height:52%"><i>인물 A</i></div>
+          <div class="dt-box sub"  style="left:53.5%;top:6%;width:5%;height:14%"><i>인물 B</i></div>
+          <div class="dt-ctrl" id="dtCtrl">
+            <div class="grp l" id="dtAreaTools">
+              <button class="btn-icon" data-area="shape" title="영역 검색 — 도형"><svg viewBox="0 0 16 16" class="ic"><path d="M2 5V2h3M14 5V2h-3M2 11v3h3M14 11v3h-3" stroke="currentColor" stroke-width="1.3" fill="none"/></svg></button>
+              <button class="btn-icon" data-area="line" title="영역 검색 — 선"><svg viewBox="0 0 16 16" class="ic"><path d="M2 14L14 2M4 11l2 2M7 8l2 2M10 5l2 2" stroke="currentColor" stroke-width="1.3" fill="none"/></svg></button>
+            </div>
+            <div class="grp c">
+              <button class="btn-icon" title="처음"><svg viewBox="0 0 16 16" class="ic"><path d="M4 3v10M13 3L6 8l7 5z" fill="currentColor"/></svg></button>
+              <button class="btn-icon" title="10초 뒤로"><svg viewBox="0 0 16 16" class="ic"><path d="M8 3.5a5 5 0 105 5" stroke="currentColor" stroke-width="1.3" fill="none"/><path d="M8 1.2v4.6L5 3.5z" fill="currentColor"/></svg></button>
+              <button class="btn-icon" title="배속 뒤로"><svg viewBox="0 0 16 16" class="ic"><path d="M8 3v10L2 8zM14 3v10L8 8z" fill="currentColor"/></svg></button>
+              <button class="btn-icon play" id="dtPlay" title="재생"><svg viewBox="0 0 16 16" class="ic"><path d="M4 2.5l9 5.5-9 5.5z" fill="currentColor"/></svg></button>
+              <button class="btn-icon" title="일시정지"><svg viewBox="0 0 16 16" class="ic"><path d="M4.5 3h2.5v10H4.5zM9 3h2.5v10H9z" fill="currentColor"/></svg></button>
+              <button class="btn-icon" title="배속 앞으로"><svg viewBox="0 0 16 16" class="ic"><path d="M8 3v10l6-5zM2 3v10l6-5z" fill="currentColor"/></svg></button>
+              <button class="btn-icon" title="10초 앞으로"><svg viewBox="0 0 16 16" class="ic"><path d="M8 3.5a5 5 0 11-5 5" stroke="currentColor" stroke-width="1.3" fill="none"/><path d="M8 1.2v4.6L11 3.5z" fill="currentColor"/></svg></button>
+              <button class="btn-icon" title="끝"><svg viewBox="0 0 16 16" class="ic"><path d="M12 3v10M3 3l7 5-7 5z" fill="currentColor"/></svg></button>
+              <button class="btn-icon" title="음량"><svg viewBox="0 0 16 16" class="ic"><path d="M3 6h2.5L9 3v10L5.5 10H3z" fill="currentColor"/><path d="M11 6a3 3 0 010 4" stroke="currentColor" stroke-width="1.2" fill="none"/></svg></button>
+            </div>
+            <div class="grp r" id="dtTools">
+              <button class="btn-icon on" data-tool="obj" title="대상 표시"><svg viewBox="0 0 16 16" class="ic"><circle cx="6" cy="6" r="2.6" stroke="currentColor" stroke-width="1.2" fill="none"/><path d="M2 14c0-2.4 1.8-3.6 4-3.6M11 8.5l3 3M14 8.5l-3 3" stroke="currentColor" stroke-width="1.2" fill="none"/></svg></button>
+              <button class="btn-icon" data-tool="path" title="이동 경로"><svg viewBox="0 0 16 16" class="ic"><path d="M3 13c0-4 4-2 4-5S11 3 13 4" stroke="currentColor" stroke-width="1.3" fill="none"/><circle cx="3" cy="13" r="1.4" fill="currentColor"/><circle cx="13" cy="4" r="1.4" fill="currentColor"/></svg></button>
+              <button class="btn-icon" data-tool="heat" title="히트맵"><svg viewBox="0 0 16 16" class="ic"><path d="M8 1.5s3.5 3 3.5 6a3.5 3.5 0 11-7 0c0-3 3.5-6 3.5-6z" stroke="currentColor" stroke-width="1.2" fill="none"/></svg></button>
+              <button class="btn-icon" data-tool="cctv" title="CCTV 표시"><svg viewBox="0 0 16 16" class="ic"><path d="M2.2 5.4l9.6-2.6 1.2 4.4-9.6 2.6z" stroke="currentColor" stroke-width="1.2" fill="none"/><path d="M5 9.5l1 4M13 7.2l1.4-.4" stroke="currentColor" stroke-width="1.2" fill="none"/></svg></button>
+              <button class="btn-icon" data-tool="mask" title="마스킹"><svg viewBox="0 0 16 16" class="ic"><rect x="3" y="3" width="10" height="10" rx="1.5" fill="currentColor"/></svg></button>
+              <button class="btn-icon" data-tool="multi" title="멀티뷰"><svg viewBox="0 0 16 16" class="ic"><rect x="2" y="2" width="5.4" height="5.4" rx=".8" fill="currentColor"/><rect x="8.6" y="2" width="5.4" height="5.4" rx=".8" fill="currentColor"/><rect x="2" y="8.6" width="5.4" height="5.4" rx=".8" fill="currentColor"/><rect x="8.6" y="8.6" width="5.4" height="5.4" rx=".8" fill="currentColor"/></svg></button>
+              <div class="select xs dt-sel" id="dtViewSel" data-value="Multi View">
+                <button class="select-btn">Multi View<i class="i i-16 i-chevron i-down caret"></i></button>
+                <div class="select-menu"><div data-v="Multi View">Multi View</div><div data-v="주변 카메라">주변 카메라</div><div data-v="맵뷰어">맵뷰어</div></div>
+              </div>
+              <button class="btn-icon" title="설정"><svg viewBox="0 0 16 16" class="ic"><circle cx="8" cy="8" r="2.2" stroke="currentColor" stroke-width="1.2" fill="none"/><path d="M8 1.6l.9 1.7 1.9-.3.5 1.85 1.75.83-.85 1.72.85 1.72-1.75.83-.5 1.85-1.9-.3L8 14.4l-.9-1.7-1.9.3-.5-1.85-1.75-.83.85-1.72-.85-1.72 1.75-.83.5-1.85 1.9.3z" stroke="currentColor" stroke-width="1" fill="none"/></svg></button>
+              <button class="btn-icon" id="dtFull" title="영상 전체보기"><svg viewBox="0 0 16 16" class="ic"><path d="M6 2H2v4M10 14h4v-4M2 10v4h4M14 6V2h-4" stroke="currentColor" stroke-width="1.3" fill="none"/></svg></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="dt-hist">
+          <div class="dt-hist-head">
+            <span class="dt-hist-title">
+              <svg viewBox="0 0 16 16" class="ic"><path d="M2 12c3 0 3-8 6-8s3 8 6 8" stroke="currentColor" stroke-width="1.3" fill="none"/></svg>
+              탐지 이력
+            </span>
+            <span class="side-head-btns" id="dtHistBtns">
+              <button class="btn-ghost sm" id="dtEdit">편집</button>
+            </span>
+          </div>
+          <div class="dt-ruler" id="dtRuler"></div>
+          <div class="dt-seg-row" id="dtSegRow" hidden></div>
+          <div class="dt-clips" id="dtClips"></div>
+        </div>
+      </div>
+
+      <!-- ---- 경로 비교 (대상 2개 / 4개) ---- -->
+      <div class="cmp-main" id="cmpMain" hidden>
+        <div class="cmp-stage">
+          <div class="cmp-grid n2" id="cmpGrid"></div>
+          <div class="dt-ctrl" id="cmpCtrl"></div>
+        </div>
+        <div class="dt-hist">
+          <div class="dt-hist-head">
+            <span class="dt-hist-title">
+              <svg viewBox="0 0 16 16" class="ic"><path d="M2 12c3 0 3-8 6-8s3 8 6 8" stroke="currentColor" stroke-width="1.3" fill="none"/></svg>
+              탐지 이력
+            </span>
+            <span class="side-head-btns" id="cmpHistBtns">
+              <button class="btn-ghost sm" id="cmpEdit">편집</button>
+            </span>
+          </div>
+          <div class="dt-ruler" id="cmpRuler"></div>
+          <div class="dt-lanes" id="cmpLanes"></div>
+          <div class="dt-clips" id="cmpClips"></div>
+        </div>
+      </div>
+
+      <aside class="dt-side">
+        <div class="dt-side-head">
+          <span class="dt-side-title">대상 상세</span>
+          <button class="btn-primary sm" id="dtCase">
+            <svg viewBox="0 0 16 16" class="ic" style="width:12px;height:12px"><path d="M3 2h7l3 3v9H3z" stroke="currentColor" stroke-width="1.2" fill="none"/><path d="M5.5 8h5M5.5 10.5h5" stroke="currentColor" stroke-width="1.2"/></svg>
+            사건 등록
+          </button>
+        </div>
+
+        <section class="dt-sec">
+          <div class="dt-sec-head">
+            <svg viewBox="0 0 16 16" class="ic"><circle cx="8" cy="5.5" r="2.6" stroke="currentColor" stroke-width="1.2" fill="none"/><path d="M3 14c0-2.9 2.4-4.4 5-4.4s5 1.5 5 4.4" stroke="currentColor" stroke-width="1.2" fill="none"/></svg>
+            대상 정보
+            <button class="btn-add" id="dtObjAdd" hidden style="margin-left:auto">+추가</button>
+          </div>
+          <div class="cmp-tabs" id="cmpTabs" hidden></div>
+          <div id="dtObjMulti" hidden></div>
+          <div class="dt-obj" id="dtObjSingle">
+            <div class="dt-obj-th"><img id="dtObjImg" src="assets/img/obj01.png" alt=""></div>
+            <div class="dt-obj-bd">
+              <div class="dt-obj-top">
+                <b id="dtObjName">인물 A</b><span class="badge" id="dtObjSim">94% 유사</span>
+                <button class="btn-icon" id="dtObjMore" style="margin-left:auto">
+                  <svg viewBox="0 0 16 16" class="ic"><circle cx="8" cy="3" r="1.3" fill="currentColor"/><circle cx="8" cy="8" r="1.3" fill="currentColor"/><circle cx="8" cy="13" r="1.3" fill="currentColor"/></svg>
+                </button>
+              </div>
+              <dl class="dt-obj-meta">
+                <div><dt>이벤트 시간</dt><dd id="dtObjTime">2026-06-30 14:52:03</dd></div>
+                <div><dt>이벤트</dt><dd id="dtObjEvent">이동/계수</dd></div>
+                <div><dt>색상</dt><dd class="sw-row"><span>상의<i class="dot-sw" id="dtSwTop"></i></span><span>하의<i class="dot-sw" id="dtSwBot"></i></span></dd></div>
+              </dl>
+            </div>
+          </div>
+        </section>
+
+        <section class="dt-sec">
+          <div class="dt-sec-head">
+            <svg viewBox="0 0 16 16" class="ic"><path d="M8 1.8c2.3 0 4.2 1.9 4.2 4.2 0 3.1-4.2 8.2-4.2 8.2S3.8 9.1 3.8 6c0-2.3 1.9-4.2 4.2-4.2z" stroke="currentColor" stroke-width="1.2" fill="none"/><circle cx="8" cy="6" r="1.5" fill="currentColor"/></svg>
+            맵뷰어
+            <div class="seg" id="dtMapSeg" style="margin-left:auto">
+              <button data-m="map">지도</button><button class="on" data-m="floor">층별</button>
+            </div>
+          </div>
+          <div class="dt-map" id="dtMap">
+            <img id="dtMapImg" src="assets/img/floor.png" alt="">
+            <div class="map-path" id="dtMapPath" hidden></div>
+            <div class="ov" id="dtMapCones" hidden style="pointer-events:auto"></div>
+            <div class="ov" id="dtMapWps" hidden style="pointer-events:auto"></div>
+            <span class="dt-floor" id="dtFloor">1층</span>
+            <div class="dt-map-tools" id="dtMapTools">
+              <button class="btn-icon" data-map="cctv" title="CCTV 표시"><svg viewBox="0 0 16 16" class="ic"><path d="M2.5 6l5-3.2 6 2.6-1 6.4-6.6 1.4z" stroke="currentColor" stroke-width="1.2" fill="none"/></svg></button>
+              <span class="sepv"></span>
+              <button class="btn-icon" data-map="path" title="이동경로"><svg viewBox="0 0 16 16" class="ic"><path d="M4 14V6a2 2 0 012-2h4a2 2 0 002-2" stroke="currentColor" stroke-width="1.3" fill="none"/></svg></button>
+              <button class="btn-icon" data-map="full" title="전체보기"><svg viewBox="0 0 16 16" class="ic"><path d="M6 2H2v4M10 14h4v-4M2 10v4h4M14 6V2h-4" stroke="currentColor" stroke-width="1.3" fill="none"/></svg></button>
+            </div>
+            <div class="dt-marker" id="dtMarker" style="left:60%;top:64%"><span>1F 메인 복도</span><i></i></div>
+            <div class="dt-zoom"><button>+</button><button>−</button></div>
+          </div>
+          <div class="dt-legend" id="dtLegend"><i></i>출현 지점 <em>( 1개 )</em></div>
+        </section>
+
+        <section class="dt-sec">
+          <div class="dt-sec-head">
+            <svg viewBox="0 0 16 16" class="ic"><circle cx="5.5" cy="6" r="2.2" stroke="currentColor" stroke-width="1.2" fill="none"/><circle cx="11" cy="6" r="2.2" stroke="currentColor" stroke-width="1.2" fill="none"/><path d="M1.5 13.5c0-2.1 1.8-3.2 4-3.2M8.5 13.5c0-2.1 1.8-3.2 4-3.2" stroke="currentColor" stroke-width="1.2" fill="none"/></svg>
+            주변 대상
+            <div class="dt-search" style="margin-left:auto">
+              <input class="input" id="dtNearQ" placeholder="검색">
+              <svg viewBox="0 0 16 16" class="ic"><circle cx="7" cy="7" r="4.2" stroke="currentColor" stroke-width="1.3" fill="none"/><path d="M10.2 10.2L14 14" stroke="currentColor" stroke-width="1.3"/></svg>
+            </div>
+          </div>
+          <div class="dt-near-count">
+            총 <em id="dtNearN">2</em>
+            <div class="select xs" id="dtNearSel" data-value="전체" hidden style="margin-left:auto">
+              <button class="select-btn" style="width:78px">전체<i class="i i-16 i-chevron i-down caret"></i></button>
+              <div class="select-menu"><div data-v="전체">전체</div><div data-v="인물 A">인물 A</div><div data-v="인물 B">인물 B</div></div>
+            </div>
+          </div>
+          <div class="dt-near" id="dtNear"></div>
+        </section>
+      </aside>
+    </section>
+
+  </div>
+
+  <!-- ============ 메뉴 화면 (북마크 · 사건 관리 · 맵 관리 · 알림) ============
+       #workspace 를 가리는 별도 컨테이너. 내용은 app.js renderMenu() 가 채운다. -->
+  <div class="menu-view" id="menuView" hidden></div>
+
+    </div><!-- /shell-main -->
+  </div><!-- /shell -->
+
+</div>
+
+<!-- 사건 관리 편집 : 대상 추가 / 영상 추가 팝업 -->
+<div class="modal md-lg" id="mdCaseAdd" hidden>
+  <div class="md-head" id="caHead"></div>
+  <div class="md-body" id="caBody" style="max-height:520px;overflow:auto"></div>
+  <div class="md-foot" id="caFoot"></div>
+</div>
+
+<!-- 관심 인물 관리 팝업 -->
+<div class="modal md-lg" id="mdWatchMgr" hidden>
+  <div class="md-head" id="wmHead"></div>
+  <div class="md-body" id="wmBody" style="max-height:560px;overflow:auto"></div>
+  <div class="md-foot" id="wmFoot"></div>
+</div>
+
+<!-- ============================ 팝업 ============================ -->
+<div class="overlay" id="overlay" hidden></div>
+
+<!-- 이미지 검색 팝업 -->
+<div class="modal md-lg" id="mdImage" hidden>
+  <div class="md-head">
+    <div><h3>이미지 검색</h3><p>이미지에서 자동 추출된 얼굴과 대상를 검색할 수 있습니다. (복수 선택 가능)</p></div>
+    <button class="btn-icon md-x" data-close><svg viewBox="0 0 16 16" class="ic"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.3"/></svg></button>
+  </div>
+  <div class="md-body img-md">
+    <div class="img-stage">
+      <div class="img-canvas" id="imgCanvas"><img id="mdImagePreview" alt=""><div class="bbox-layer" id="bboxLayer"></div></div>
+      <div class="img-stage-btns">
+        <button class="btn-ghost sm" id="btnReextract" disabled>재추출</button>
+        <button class="btn-ghost sm" id="btnRepick" disabled>이미지 재선택</button>
+      </div>
+    </div>
+    <div class="img-extract">
+      <div class="ie-head">
+        <span class="panel-label">추출된 대상 <em id="ieCount">0</em></span>
+        <div class="seg" id="ieFilter">
+          <button class="on" data-t="all" disabled>전체</button>
+          <button data-t="face" disabled>얼굴</button>
+          <button data-t="object" disabled>대상</button>
+        </div>
+      </div>
+      <div class="ie-grid" id="ieGrid"><div class="ie-loading">대상 추출 중</div></div>
+    </div>
+  </div>
+  <div class="md-foot">
+    <button class="btn-ghost" id="imgCancel" disabled>취소</button>
+    <button class="btn-primary" id="imgSearch" disabled>검색</button>
+  </div>
+</div>
+
+<!-- 인물 관리 팝업 -->
+<div class="modal md-lg" id="mdPerson" hidden>
+  <div class="md-head">
+    <div class="md-head-l">
+      <button class="btn-icon md-back" id="pmBack" hidden><svg viewBox="0 0 16 16" class="ic"><path d="M10 3l-5 5 5 5" stroke="currentColor" stroke-width="1.4" fill="none"/></svg></button>
+      <div><h3 id="pmTitle">인물 관리</h3><p id="pmDesc">대상 검색에 사용할 인물을 등록 · 관리할 수 있습니다.</p></div>
+    </div>
+    <button class="btn-icon md-x" data-close><svg viewBox="0 0 16 16" class="ic"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.3"/></svg></button>
+  </div>
+  <div class="md-body" id="pmBody"></div>
+  <div class="md-foot" id="pmFoot"></div>
+</div>
+
+<!-- 유사 대상 편집 / 대상 추가 팝업 -->
+<div class="modal md-lg" id="mdEdit" hidden>
+  <div class="md-head">
+    <div class="md-head-l">
+      <button class="btn-icon md-back" id="edBack" hidden><svg viewBox="0 0 16 16" class="ic"><path d="M10 3l-5 5 5 5" stroke="currentColor" stroke-width="1.4" fill="none"/></svg></button>
+      <div><h3 id="edTitle">유사 대상 편집</h3><p id="edDesc">AI 자동 그룹핑 결과를 편집할 수 있습니다.</p></div>
+    </div>
+    <button class="btn-icon md-x" data-close><svg viewBox="0 0 16 16" class="ic"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.3"/></svg></button>
+  </div>
+  <div class="md-body" id="edBody"></div>
+  <div class="md-foot" id="edFoot"></div>
+</div>
+
+<!-- 히스토리 팝업 -->
+<div class="modal md-sm" id="mdHistory" hidden>
+  <div class="md-head"><div><h3>검색 히스토리</h3><p>최근 7일 이내의 검색 내역</p></div>
+    <button class="btn-icon md-x" data-close><svg viewBox="0 0 16 16" class="ic"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.3"/></svg></button>
+  </div>
+  <div class="md-body" id="historyBody"></div>
+</div>
+
+<!-- ============ 맵뷰어 전체보기 (A안 리스트형 / B안 썸네일형) ============ -->
+<div class="modal md-xl" id="mdMapView" hidden>
+  <div class="md-head tight">
+    <span class="hd-ic">
+      <svg viewBox="0 0 16 16" class="ic"><path d="M8 1.8c2.3 0 4.2 1.9 4.2 4.2 0 3.1-4.2 8.2-4.2 8.2S3.8 9.1 3.8 6c0-2.3 1.9-4.2 4.2-4.2z" stroke="currentColor" stroke-width="1.3" fill="none"/><circle cx="8" cy="6" r="1.5" fill="currentColor"/></svg>
+      <h3>맵뷰어</h3>
+    </span>
+    <span class="side-head-btns">
+      <div class="seg" id="mvwPlan" title="WF에 A·B 두 안이 병기되어 있어 양측을 모두 확인할 수 있게 했습니다">
+        <button data-p="a">A안 리스트형</button><button class="on" data-p="b">B안 썸네일형</button>
+      </div>
+      <button class="btn-icon md-x" data-close><svg viewBox="0 0 16 16" class="ic"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.3"/></svg></button>
+    </span>
+  </div>
+  <div class="md-body flush" id="mvwBody"></div>
+</div>
+
+<!-- ============ 영상 조회 (전체보기) ============ -->
+<div class="modal md-full" id="mdVideo" hidden>
+  <div class="md-head tight">
+    <span class="hd-ic">
+      <svg viewBox="0 0 16 16" class="ic"><path d="M1.8 4.2h8.4v7.6H1.8z" stroke="currentColor" stroke-width="1.3" fill="none"/><path d="M10.6 7.4l3.6-2.2v5.6l-3.6-2.2z" fill="currentColor"/></svg>
+      <h3>영상 조회</h3>
+    </span>
+    <button class="btn-icon md-x" data-close><svg viewBox="0 0 16 16" class="ic"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.3"/></svg></button>
+  </div>
+  <div class="md-body flush" id="vwBody"></div>
+</div>
+
+<!-- ============ 관심인물 등록 ============ -->
+<div class="modal md-mid" id="mdWatch" hidden>
+  <div class="md-head"><div><h3>관심인물 등록</h3></div>
+    <button class="btn-icon md-x" data-close><svg viewBox="0 0 16 16" class="ic"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.3"/></svg></button>
+  </div>
+  <div class="md-body" id="watchBody"></div>
+  <div class="md-foot" id="watchFoot"></div>
+</div>
+
+<!-- ============ 비교 대상 추가 ============ -->
+<div class="modal md-mid" id="mdObjAdd" hidden>
+  <div class="md-head">
+    <div><h3>대상 추가</h3><p>주변 대상 중 경로를 비교할 대상를 선택해 주세요.</p></div>
+    <button class="btn-icon md-x" data-close><svg viewBox="0 0 16 16" class="ic"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.3"/></svg></button>
+  </div>
+  <div class="md-body" id="oaBody"></div>
+  <div class="md-foot" id="oaFoot"></div>
+</div>
+
+<!-- ============ 사건 등록 ============ -->
+<div class="modal md-mid" id="mdCase" hidden>
+  <div class="md-head">
+    <div><h3>사건 등록</h3><p>현재 대상와 경로를 사건으로 저장합니다.</p></div>
+    <button class="btn-icon md-x" data-close><svg viewBox="0 0 16 16" class="ic"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.3"/></svg></button>
+  </div>
+  <div class="md-body" id="caseBody"></div>
+  <div class="md-foot" id="caseFoot"></div>
+</div>
+
+<!-- ============ 영상 북마크 ============ -->
+<div class="modal md-sm" id="mdBookmark" hidden>
+  <div class="md-head">
+    <div><h3>북마크</h3><p>현재 영상을 메모와 함께 북마크에 저장합니다.</p></div>
+    <button class="btn-icon md-x" data-close><svg viewBox="0 0 16 16" class="ic"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.3"/></svg></button>
+  </div>
+  <div class="md-body" id="bmBody"></div>
+  <div class="md-foot" id="bmFoot"></div>
+</div>
+
+<!-- ============ 이동경로 (맵뷰어 경로 버튼) ============ -->
+<div class="flt-panel" id="pnlMovePath" hidden style="position:fixed;width:262px;z-index:120">
+  <div class="flt-head"><b>이동경로</b>
+    <button class="btn-icon" id="pnlMovePathX"><svg viewBox="0 0 16 16" class="ic"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.3"/></svg></button>
+  </div>
+  <div id="movePathBody"></div>
+</div>
+
+<!-- alert -->
+<div class="modal md-alert" id="mdAlert" hidden>
+  <div class="al-body"><h4 id="alTitle"></h4><p id="alDesc"></p></div>
+  <div class="md-foot"><button class="btn-ghost" id="alCancel">취소</button><button class="btn-danger" id="alOk">삭제</button></div>
+</div>
+
+<!-- 카드 컨텍스트 메뉴 -->
+<div class="ctx-menu" id="ctxMenu" hidden>
+  <div data-act="bookmark">북마크</div>
+  <div data-act="report">오대상 신고</div>
+</div>
+
+<div class="toast" id="toast" hidden></div>
+
+<script src="assets/js/data.js"></script>
+<script src="assets/js/app.js"></script>
+</body>
+</html>

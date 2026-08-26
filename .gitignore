@@ -1,0 +1,9 @@
+# 검증용 headless 캡처 (재생성 가능, 82MB)
+_shots/
+
+# GUI 반영 전 백업
+_backup_pre-gui/
+
+# OS
+Thumbs.db
+.DS_Store
