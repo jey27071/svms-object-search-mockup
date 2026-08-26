@@ -2638,6 +2638,9 @@ function applyMenuDemo() {
   if (d === 'noairesult'){ setAiVer('off'); setLayout('a'); S.q='검정색 모자를 쓴 배송기사'; $('#qText').value=S.q; $('#qTextClear').hidden=false; runSearch(false); }
   if (d === 'noaibresult'){ setAiVer('off'); setLayout('b'); S.q='검정색 모자를 쓴 배송기사'; $('#qText').value=S.q; $('#qTextClear').hidden=false; runSearch(false); }
   if (d === 'aiver')     { setAiVer('on'); setLayout('a'); }
+  if (d === 'aitypea') { setAiType('A'); toggleAiFloat(true); AIM.log=[{me:AI_SUGGESTIONS[2]}]; AIM.wait=true; renderAim(); }
+  if (d === 'aitypeb') { setAiType('B'); toggleAiFloat(true); AIM.log=[{me:AI_SUGGESTIONS[2]}]; AIM.wait=true; renderAim(); }
+  if (d === 'aitypec') { setAiType('C'); toggleAiFloat(true); AIM.log=[{me:AI_SUGGESTIONS[2]}]; AIM.wait=true; renderAim(); }
   if (d === 'aifloat') { toggleAiFloat(true); AIM.log=[{me:AI_SUGGESTIONS[2]}]; AIM.wait=true; renderAim(); }
   if (d === 'aim') {
     $$('#modeRail button').forEach(x => x.classList.toggle('on', x.dataset.mode === 'aim'));
@@ -3710,6 +3713,7 @@ const AI_LOADER = `<svg class="ai-load" viewBox="0 0 16 16" aria-hidden="true">
 </svg>`;
 
 const AIM = { log: [], wait: false };
+S.aiType = 'C';   /* 사양서 v0.6 : AI 에이전트 배치 A(팝업) · B(레이어) · C(도킹). 기본 C */
 (function initAimPanel() {
   const panels = $('#modePanels'); if (!panels) return;
   const sec = document.createElement('section');
@@ -3789,8 +3793,12 @@ runSearch = function (keep) { _runSearchA(keep); buildFilters(S.mode); renderTex
 (function initAiFloat() {
   const d = document.createElement('div');
   d.className = 'ai-float'; d.id = 'aiFloat'; d.hidden = true;
-  d.innerHTML = `<div class="afh">AI 에이전트
-      <button class="x" id="afClose" title="닫기"><svg viewBox="0 0 16 16" class="ic" style="width:14px;height:14px"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.3"/></svg></button>
+  d.innerHTML = `<div class="afh"><i class="i-ai afh-ic"></i>AI 에이전트
+      <span class="afh-btns">
+        <button class="x" id="afMore" title="더보기"><svg viewBox="0 0 16 16" class="ic"><circle cx="8" cy="3.2" r="1.2" fill="currentColor"/><circle cx="8" cy="8" r="1.2" fill="currentColor"/><circle cx="8" cy="12.8" r="1.2" fill="currentColor"/></svg></button>
+        <button class="x" id="afDock" title="팝업/고정 전환"><svg viewBox="0 0 16 16" class="ic"><rect x="2.2" y="3" width="11.6" height="10" rx="1.4" stroke="currentColor" stroke-width="1.3" fill="none"/><path d="M9.6 3v10" stroke="currentColor" stroke-width="1.3"/></svg></button>
+        <button class="x" id="afClose" title="닫기"><svg viewBox="0 0 16 16" class="ic"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.3"/></svg></button>
+      </span>
     </div>
     <div class="aim-body">
       <div class="aim-scroll"></div>
@@ -3799,19 +3807,40 @@ runSearch = function (keep) { _runSearchA(keep); buildFilters(S.mode); renderTex
         <div class="aim-row"><button class="plus" title="첨부">+</button>
           <button class="aim-send" title="전송">↑</button></div>
       </div>
-    </div>`;
+    </div>
+    <span class="af-grip" aria-hidden="true"></span>`;
   document.body.appendChild(d);
   $('#afClose').onclick = () => toggleAiFloat(false);
+  $('#afDock').onclick = () => setAiType({ A: 'B', B: 'C', C: 'A' }[S.aiType]);
   const btn = $('#btnAI');
   if (btn) btn.onclick = () => toggleAiFloat($('#aiFloat').hidden);
+  setAiType(S.aiType);
   renderAim();
 })();
 
+/* AI 에이전트 배치 — 사양서 v0.6 (AI Agent_001_01)
+   기본 : 우측 **고정 패널**(본문 가로 폭이 줄고 우측에 붙는다) · 메뉴 이동 시에도 위치 고정
+   패널 상단 버튼으로 기존 **팝업(오버레이)** 형태로 복원한다 */
+function setAiType(t) {
+  S.aiType = (t === 'A' || t === 'B' || t === 'C') ? t : 'C';
+  const p = $('#aiFloat'); if (!p) return;
+  const row = $('#mainRow');
+  p.classList.remove('ai-a', 'ai-b', 'ai-c');
+  p.classList.add('ai-' + S.aiType.toLowerCase());
+  /* C 만 레이아웃에 자리를 차지한다(본문 폭 축소). A·B 는 떠 있는 레이어. */
+  if (S.aiType === 'C') { if (row && p.parentElement !== row) row.appendChild(p); }
+  else if (p.parentElement !== document.body) document.body.appendChild(p);
+  document.body.classList.toggle('aidock-on', S.aiType === 'C' && !p.hidden);
+  const b = $('#afDock'); if (b) b.title = `AI 패널 배치 : ${S.aiType}타입 (클릭 시 전환)`;
+}
+
 function toggleAiFloat(open) {
-  /* AI 없는 버전에서는 오버레이가 열리지 않는다 */
+  /* AI 없는 버전에서는 패널이 열리지 않는다 */
   if (S.aiVer === 'off') open = false;
-  $('#aiFloat').hidden = !open;
+  const p = $('#aiFloat');
+  p.hidden = !open;
   $('#btnAI').classList.toggle('on', !!open);
+  document.body.classList.toggle('aidock-on', !!open && S.aiType === 'C');
   if (open) renderAim();
 }
 

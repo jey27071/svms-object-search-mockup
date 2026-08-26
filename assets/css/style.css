@@ -2233,3 +2233,136 @@ body.alarm-dim::before{
 @media (prefers-reduced-motion:reduce){ .ai-load path{animation:none;opacity:1} }
 
 .aim-wait{display:flex;align-items:center;gap:6px}
+
+/* ============================================================
+   하단 상태 표시줄 — 사양서 v0.6 (Search main_000_1 · 6) 하단 영역)
+   실측(검색 뷰어 시안 1694:20963) : 높이 32 · 배경 #1c1d23 · 좌우 padding 16
+   좌 : 날짜·시간(보조색) / 우 : `조치필요` pill 2종 + 목록 아이콘(빨간 점 배지)
+   ============================================================ */
+.app{padding-bottom:0}
+.statusbar{
+  height:32px;flex:0 0 32px;display:flex;align-items:center;justify-content:space-between;
+  padding:0 16px;background:var(--bg-2);border-top:1px solid var(--ln-subtle);
+  font-size:11.5px;color:var(--tx-tertiary)
+}
+.sb-time{letter-spacing:-.2px;color:var(--tx-tertiary)}
+.sb-actions{display:flex;align-items:center;gap:8px}
+.sb-pill{
+  height:22px;display:inline-flex;align-items:center;gap:6px;padding:0 12px;
+  border:1px solid var(--ln-border);border-radius:11px;background:transparent;cursor:pointer;
+  color:#ee5255;font-size:11.5px;font-weight:500;white-space:nowrap
+}
+.sb-pill .ic{width:13px;height:13px;color:var(--tx-secondary)}
+.sb-pill:hover{border-color:var(--tx-helper);background:rgba(238,82,85,.08)}
+.sb-icon{
+  position:relative;width:24px;height:22px;display:inline-flex;align-items:center;justify-content:center;
+  border:1px solid var(--ln-border);border-radius:11px;background:transparent;cursor:pointer;color:var(--tx-secondary)
+}
+.sb-icon .ic{width:13px;height:13px}
+.sb-icon:hover{border-color:var(--tx-helper);color:var(--tx-primary)}
+.sb-icon.has-dot::after{
+  content:'';position:absolute;right:2px;top:1px;width:5px;height:5px;border-radius:50%;background:#ee5255
+}
+
+/* ============================================================
+   AI 에이전트 우측 고정 패널 — 사양서 v0.6 (AI Agent_001_01)
+   기존 본문 영역의 가로 폭이 축소되며 우측에 고정 노출. 메뉴 이동 시에도 위치 고정.
+   패널 상단 버튼으로 기존 팝업(.ai-float) 형태로 복원.
+   실측(4169:99004) : 폭 345 · 우측 8px 거터
+   ============================================================ */
+.ai-dock{
+  position:static;flex:0 0 345px;width:345px;align-self:stretch;
+  display:flex;flex-direction:column;min-height:0;
+  background:var(--bg-2);border:1px solid var(--ln-subtle);border-radius:var(--r);
+  box-shadow:none;z-index:auto
+}
+.ai-dock[hidden]{display:none}
+.ai-dock .aim-body{flex:1;min-height:0;display:flex;flex-direction:column}
+.ai-dock .aim-scroll{flex:1;min-height:0;overflow-y:auto}
+
+/* 고정 패널이 열리면 원본 영상 패널을 줄여 자리를 만든다 */
+body.aidock-on .main-row > .preview{flex:0 0 300px;width:300px}
+
+/* 패널 헤더 : ✦ AI 에이전트 · ⋮ · 팝업/고정 전환 · ✕ */
+.afh{display:flex;align-items:center;gap:6px}
+.afh-ic{width:14px;height:14px;flex:0 0 14px}
+.afh-btns{margin-left:auto;display:flex;align-items:center;gap:2px}
+.afh-btns .x{width:22px;height:22px;display:flex;align-items:center;justify-content:center;
+  background:none;border:0;border-radius:4px;cursor:pointer;color:var(--tx-tertiary)}
+.afh-btns .x:hover{background:rgba(255,255,255,.08);color:var(--tx-primary)}
+.afh-btns .x .ic{width:14px;height:14px}
+
+/* ============================================================
+   AI 에이전트 배치 3타입 — GUI 4392:41963 실측
+   A : 360×470 우측 상단 플로팅 카드 (레이아웃 영향 없음) + 좌하단 리사이즈 그립
+   B : 440 × 전체높이 우측 레이어 오버레이 (레이아웃 영향 없음)
+   C : 360 × 전체높이 우측 도킹 (본문 폭이 축소된다)
+   공통 : 헤더 `✦ AI 에이전트` + ⋮ · 배치전환 · ✕
+   ============================================================ */
+#aiFloat{background:var(--bg-2);border:1px solid var(--ln-subtle);border-radius:8px;
+  display:flex;flex-direction:column;overflow:hidden}
+#aiFloat[hidden]{display:none}
+#aiFloat .aim-body{flex:1;min-height:0;display:flex;flex-direction:column}
+#aiFloat .aim-scroll{flex:1;min-height:0;overflow-y:auto}
+
+/* --- A타입 : 플로팅 카드 --- */
+#aiFloat.ai-a{
+  position:fixed;top:42px;right:178px;width:360px;height:470px;left:auto;bottom:auto;
+  z-index:60;box-shadow:0 16px 44px rgba(0,0,0,.6)
+}
+/* 좌하단 리사이즈 그립 (A타입 시안에 추가된 요소) */
+#aiFloat.ai-a .af-grip{
+  position:absolute;left:5px;bottom:5px;width:12px;height:12px;cursor:nesw-resize;
+  background:
+    linear-gradient(45deg,transparent 45%,var(--tx-helper) 45%,var(--tx-helper) 55%,transparent 55%) no-repeat,
+    linear-gradient(45deg,transparent 45%,var(--tx-helper) 45%,var(--tx-helper) 55%,transparent 55%) no-repeat;
+  background-size:12px 12px,7px 7px;background-position:0 0,0 5px;opacity:.55
+}
+#aiFloat:not(.ai-a) .af-grip{display:none}
+
+/* --- B타입 : 전체 높이 레이어 --- */
+#aiFloat.ai-b{
+  position:fixed;top:42px;right:8px;width:440px;height:calc(100vh - 42px - 40px);left:auto;bottom:auto;
+  z-index:60;box-shadow:0 16px 44px rgba(0,0,0,.6)
+}
+/* --- C타입 : 도킹 (main-row 의 마지막 칼럼) --- */
+#aiFloat.ai-c{
+  position:static;flex:0 0 360px;width:360px;height:auto;align-self:stretch;
+  z-index:auto;box-shadow:none
+}
+/* C타입일 때만 원본 영상 패널을 줄여 자리를 만든다 */
+body.aidock-on .main-row > .preview{flex:0 0 300px;width:300px}
+
+/* ============================================================
+   팝업·모달 표면 색 정합
+   GUI(인물 관리 팝업 3872:23757 등) 실측 : 모달 표면 #1c1d23(bg-2) · 내부 요소 #24252c(bg-3)
+   기존 값들은 GUI 토큰 전환 이전의 **파란 기운 레거시 색**(#0d131d·#141a24·#1b2431·#0b1220 등)이라
+   화면마다 팝업 배경이 달라 보였다. 아래에서 토큰으로 통일한다.
+   ============================================================ */
+/* 모달 본체 : 표면 bg-2 */
+.modal{background:var(--bg-2);border-color:var(--ln-subtle);border-radius:8px}
+/* 드롭다운·컨텍스트 메뉴 : bg-3 (select-menu 와 동일 레벨) */
+.ctx-menu,.menu{background:var(--bg-3);border-color:var(--ln-border);border-radius:var(--r)}
+/* 토스트·툴팁 : bg-3 */
+.toast,.seg-tip{background:var(--bg-3);border-color:var(--ln-border)}
+/* 영상 위 CCTV 미리보기 팝오버 : bg-2 */
+.cctv-pop{background:var(--bg-2);border-color:var(--ln-border)}
+/* 영상 재생 설정 팝업도 같은 레벨로 */
+.set-menu{background:var(--bg-3);border-color:var(--ln-border)}
+
+/* 모달 내부에서 쓰이던 레거시 파란 계열 면들 → 토큰 */
+.pm-card,.hs-item,.oa-card,.cs-item{background:var(--bg-3)}
+.bmk-card.on,.cs-card.on,.mp-card.on,.al-card.on{background:rgba(48,112,216,.16)}
+.oa-card.on,.cs-item.on{background:rgba(48,112,216,.16)}
+.date-fld,.chat-input textarea,.form-row input,.form-row textarea{background:var(--bg-1)}
+.form-row input:disabled{background:var(--bg-2)}
+.mvw-card,.mvw-wp{background:var(--bg-3)}
+.mvw-wp.on{background:rgba(48,112,216,.16)}
+.mvw-side,.mvw-strip,.vw-foot{background:var(--bg-1)}
+.person-box,.algo-box,.dt-hist,.compare-bar,.cs-dt,.fm-in,.bm-vid,.cs-obj{background:var(--bg-1)}
+.dropzone{background:var(--bg-1)}
+.dropzone:hover,.dropzone.drag{background:rgba(48,112,216,.12)}
+.rc{background:var(--bg-3)}
+.cmp-head{background:var(--bg-1)}
+.dt-multi,.cmp-grid{background:var(--bg-0)}
+.mv-tile.empty,.cmp-tile.empty{background:var(--bg-1)}
