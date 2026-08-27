@@ -2577,3 +2577,35 @@ body.rsz-drag .rsz::after{background:var(--primary)}
   display:flex;flex-direction:column;height:100%;box-sizing:border-box
 }
 .mode-panel[data-panel="aim"] .aim-body{height:auto;flex:1 1 auto;min-height:0}
+
+/* ── 원본 영상 미리보기 재생 (사양 §6-2 : 10초 내외 자동 반복) ────────────
+   영상 파일이 없는 목업이라 스틸에 팬/줌과 박스 이동을 걸어 재생처럼 보인다. */
+.pv-video{overflow:hidden}
+.pv-video img{animation:pvPan 10s linear infinite;transform-origin:52% 42%}
+.pv-video .bbox{animation:pvBox 10s linear infinite}
+.pv-video.paused img,
+.pv-video.paused .bbox{animation-play-state:paused}
+@keyframes pvPan{
+  0%{transform:scale(1.06) translate(1.2%,0.6%)}
+  50%{transform:scale(1.12) translate(-1.4%,-0.8%)}
+  100%{transform:scale(1.06) translate(1.2%,0.6%)}
+}
+@keyframes pvBox{
+  0%{left:32%;top:18%}
+  35%{left:38%;top:16%}
+  70%{left:29%;top:21%}
+  100%{left:32%;top:18%}
+}
+/* 타임코드 · 진행바 · 재생 버튼 */
+.pv-hud{
+  position:absolute;left:8px;top:8px;display:flex;align-items:baseline;gap:4px;
+  padding:2px 7px;border-radius:3px;background:rgba(0,0,0,.6);
+  font-family:var(--mono);font-size:10.5px;color:#e8eef6;pointer-events:none
+}
+.pv-hud .dur{color:#9aa7b4}
+/* 재생 중에는 화면을 가리지 않도록 호버할 때만 노출 (일시정지 상태면 계속 보인다) */
+.pv-video .play{opacity:0;cursor:pointer;border:0}
+.pv-video:hover .play,
+.pv-video.paused .play{opacity:1}
+.pv-bar{position:absolute;left:0;right:0;bottom:0;height:3px;background:rgba(255,255,255,.18)}
+.pv-bar i{display:block;height:100%;width:0;background:var(--primary);transition:width .1s linear}

@@ -26,6 +26,7 @@ const ICON = {
   cal:   '<svg viewBox="0 0 16 16"><rect x="2" y="3" width="12" height="11" rx="1" stroke="currentColor" stroke-width="1.2" fill="none"/><path d="M2 6.5h12M5.5 1.5v3M10.5 1.5v3" stroke="currentColor" stroke-width="1.2"/></svg>',
   clock: '<svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.2" fill="none"/><path d="M8 4.6V8l2.4 1.4" stroke="currentColor" stroke-width="1.2" fill="none"/></svg>',
   play:  '<svg viewBox="0 0 16 16" style="width:14px;height:14px"><path d="M5 3.2l8 4.8-8 4.8z" fill="#fff"/></svg>',
+  pause:  '<svg viewBox="0 0 16 16" class="ic"><rect x="4.6" y="3.6" width="2.4" height="8.8" rx=".6" fill="currentColor"/><rect x="9" y="3.6" width="2.4" height="8.8" rx=".6" fill="currentColor"/></svg>',
   pin:   '<svg viewBox="0 0 16 16" style="width:12px;height:12px"><path d="M9.5 1.5l5 5-2 .5-3 3-.5 3-5-5 3-3 .5-2z" stroke="currentColor" stroke-width="1.2" fill="none"/><path d="M4 12l-2.5 2.5" stroke="currentColor" stroke-width="1.2"/></svg>',
   trash: '<svg viewBox="0 0 16 16" style="width:12px;height:12px"><path d="M3 4.5h10M6.5 4.5V3h3v1.5M4.5 4.5l.7 9h5.6l.7-9" stroke="currentColor" stroke-width="1.2" fill="none"/></svg>'
 };
@@ -560,17 +561,50 @@ function renderChips() {
 }
 
 /* ===================== 원본 영상 ===================== */
+/* ---- 원본 영상 미리보기 재생 (사양 §6-2 : 10초 내외 자동 반복 재생) ----
+   실제 영상 파일이 없는 목업이라, 스틸 위에 팬/줌 + 바운딩 박스 이동 +
+   타임코드·진행바를 얹어 10초 루프로 재생되는 것처럼 보여준다. */
+const PV = { dur: 10, t: 0, playing: true, id: null, timer: null };
+
+function pvClock() {
+  clearInterval(PV.timer);
+  PV.timer = setInterval(() => {
+    const bar = document.getElementById('pvBar'), tc = document.getElementById('pvTime');
+    if (!bar || !tc) { clearInterval(PV.timer); PV.timer = null; return; }
+    if (!PV.playing) return;
+    PV.t = (PV.t + 0.1) % PV.dur;
+    bar.style.width = (PV.t / PV.dur * 100) + '%';
+    tc.textContent = '00:' + String(Math.floor(PV.t)).padStart(2, '0');
+  }, 100);
+}
+
+function bindPv() {
+  const v = document.getElementById('pvVideo'); if (!v) { clearInterval(PV.timer); PV.timer = null; return; }
+  const b = document.getElementById('pvPlay');
+  if (b) b.onclick = e => {
+    e.stopPropagation();
+    PV.playing = !PV.playing;
+    v.classList.toggle('paused', !PV.playing);
+    b.innerHTML = PV.playing ? ICON.pause : ICON.play;
+    b.title = PV.playing ? '일시정지' : '재생';
+  };
+  pvClock();
+}
+
 function renderPreview() {
   const box = $('#previewList'); box.innerHTML = '';
   if (!S.preview.length) { box.innerHTML = `<div class="pv-empty">대상 카드를 선택하면<br>원본 영상을 미리 볼 수 있습니다.</div>`; return; }
+  if (S.preview[0] && PV.id !== S.preview[0].uid) { PV.id = S.preview[0].uid; PV.t = 0; PV.playing = true; }
   S.preview.forEach((p, i) => {
     if (i === 0) {
       const bm = S.bookmarks.has(p.id);
       const n = el('div', 'pv', `
-        <div class="pv-video">
+        <div class="pv-video${PV.playing ? '' : ' paused'}" id="pvVideo">
           <img src="${p.img}" alt="">
           <div class="bbox" style="left:32%;top:18%;width:26%;height:56%"></div>
-          <div class="play">${ICON.play}</div>
+          <div class="pv-hud"><span class="tc" id="pvTime">00:00</span><span class="dur">/ 00:${String(PV.dur).padStart(2, '0')}</span></div>
+          <button class="play" id="pvPlay" title="${PV.playing ? '일시정지' : '재생'}">${PV.playing ? ICON.pause : ICON.play}</button>
+          <div class="pv-bar"><i id="pvBar"></i></div>
           <button class="x" data-close-pv="${p.uid}">${ICON.x}</button>
         </div>
         <div class="pv-info">
@@ -601,6 +635,7 @@ function renderPreview() {
     S.bookmarks.has(id) ? S.bookmarks.delete(id) : S.bookmarks.add(id);
     renderPreview(); renderResults();
   });
+  bindPv();
 }
 
 /* ===================== 경로 비교 ===================== */
@@ -2988,14 +3023,13 @@ function applyMenuDemo() {
     aimAsk('로비에서 나간 후 주차장으로 이동한 인물 검색');
     setTimeout(() => openCompareTab(['a1', 'a2']), 2000); }
   if (d === 'lybresult') { setLayout('b'); switchMode('text'); S.q='검정색 모자를 쓴 배송기사'; $('#qText').value=S.q; $('#qTextClear').hidden=false; runSearch(false); }
-  if (d === 'laya') setLayout('a');
   if (d === 'alarmpop') { setTimeout(openAlarmPop, 60); }
   /* AI 검색 없는 버전 (4307:27222) — A/B안 · 진입/검색후 4상태 */
-  if (d === 'noai')      { setAiVer('off'); setLayout('a'); }
+  if (d === 'noai')      { setAiVer('off'); setLayout('b'); }
   if (d === 'noaib')     { setAiVer('off'); setLayout('b'); }
-  if (d === 'noairesult'){ setAiVer('off'); setLayout('a'); switchMode('text'); S.q='검정색 모자를 쓴 배송기사'; $('#qText').value=S.q; $('#qTextClear').hidden=false; runSearch(false); }
+  if (d === 'noairesult'){ setAiVer('off'); setLayout('b'); switchMode('text'); S.q='검정색 모자를 쓴 배송기사'; $('#qText').value=S.q; $('#qTextClear').hidden=false; runSearch(false); }
   if (d === 'noaibresult'){ setAiVer('off'); setLayout('b'); switchMode('text'); S.q='검정색 모자를 쓴 배송기사'; $('#qText').value=S.q; $('#qTextClear').hidden=false; runSearch(false); }
-  if (d === 'aiver')     { setAiVer('on'); setLayout('a'); }
+  if (d === 'aiver')     { setAiVer('on'); setLayout('b'); }
   if (d === 'aitypea') { setAiType('A'); toggleAiFloat(true); AIM.log=[{me:AI_SUGGESTIONS[2]}]; AIM.wait=true; renderAim(); }
   if (d === 'aitypeb') { setAiType('B'); toggleAiFloat(true); AIM.log=[{me:AI_SUGGESTIONS[2]}]; AIM.wait=true; renderAim(); }
   if (d === 'aitypec') { setAiType('C'); toggleAiFloat(true); AIM.log=[{me:AI_SUGGESTIONS[2]}]; AIM.wait=true; renderAim(); }
@@ -4233,20 +4267,14 @@ buildFilters('text');
    검색화면 레이아웃 시안 전환 (A / B) — 260825
    A : 모드 칩 6종(AI 검색 포함)  ·  B : AI 검색 전용 입력 + 일반 검색 칩 5종 + 헤더 브레드크럼
    ============================================================ */
-S.layout = localStorage.getItem('svms_layout') || 'a';
+S.layout = 'b';   /* A안 폐기 — B안 고정 */
 
 const MODE_LABEL = { aim: 'AI 검색', text: '텍스트 검색', image: '이미지 검색', car: '차량번호 검색', person: '등록 인물 검색', algo: '지능형 알고리즘' };
 
 /* 전환 스위치를 윈도우 크롬에 삽입 */
-(function initLayoutSwitch() {
-  /* 시안 검토용 스위치는 윈도우 탭 옆(좌측)에 둔다 — 시안 화면을 가리지 않도록 톤다운 */
-  const r = document.querySelector('.win-tabs'); if (!r) return;
-  const sw = document.createElement('div');
-  sw.className = 'layout-sw'; sw.id = 'layoutSw';
-  sw.innerHTML = `<button data-lay="a">A안</button><button data-lay="b">B안</button>`;
-  r.appendChild(sw);
-  $$('#layoutSw [data-lay]').forEach(b => b.onclick = () => setLayout(b.dataset.lay));
-})();
+/* A안(모드 칩 6종에 AI 검색 포함)은 2026-08-27 폐기되었다.
+   화면은 B안(AI 검색 전용 입력 + 일반 검색 칩 5종 + 헤더 브레드크럼) 단일 구성이며,
+   A/B 시안 전환 스위치도 함께 걷어냈다. */
 
 /* ============================================================
    AI 검색 유무 시안 전환 (on / off) — 260826
@@ -4265,8 +4293,7 @@ S.aiVer = localStorage.getItem('svms_ai') || 'on';
   const sw = document.createElement('div');
   sw.className = 'layout-sw ai-sw'; sw.id = 'aiSw';
   sw.innerHTML = `<button data-ai="on">AI 있음</button><button data-ai="off">AI 없음</button>`;
-  const lay = document.getElementById('layoutSw');
-  r.insertBefore(sw, lay || null);   /* AI 스위치가 앞, 레이아웃 스위치가 뒤 */
+  r.appendChild(sw);
   $$('#aiSw [data-ai]').forEach(b => b.onclick = () => setAiVer(b.dataset.ai));
 })();
 
@@ -4291,9 +4318,8 @@ function setAiVer(k) {
 }
 
 function setLayout(k) {
-  S.layout = k;
+  S.layout = 'b';   /* A안 폐기 — 어떤 값이 와도 B안 */
   localStorage.setItem('svms_layout', k);
-  $$('#layoutSw [data-lay]').forEach(b => b.classList.toggle('on', b.dataset.lay === k));
   document.body.classList.toggle('lay-b', k === 'b');
   applyLayout();
 }
