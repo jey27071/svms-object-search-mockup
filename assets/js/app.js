@@ -1034,6 +1034,20 @@ $('#btnTabAdd').onclick = () => { S.activeTab = 'search'; renderTabs(); syncPane
    그룹마다 `사건 등록`, 행마다 북마크(선택 시 아이콘 활성화). */
 const HIST = { bm: new Set(), open: new Set() };
 
+/* 히스토리 항목을 눌렀을 때 : 팝업을 닫고 그 검색을 다시 실행한다.
+   AI 로 했던 검색이면 AI 대화로, 아니면 텍스트 검색으로 되돌린다. */
+function runHistoryQuery(q, isAi) {
+  closeModal('#mdHistory');
+  const clean = q.replace(/^↳\s*/, '');
+  if (isAi) { switchMode('aim'); askAim(clean); return; }
+  switchMode('text');
+  S.q = clean;
+  const t = $('#qText'); if (t) { t.value = clean; }
+  const x = $('#qTextClear'); if (x) x.hidden = false;
+  pushTextRecent(clean);
+  buildFilters('text'); runSearch(false);
+}
+
 function renderHistory() {
   $('#historyBody').innerHTML = HISTORY.map((d, di) => `
     <div class="hs-day"><div class="hs-date">${d.date}</div>
@@ -1050,7 +1064,7 @@ function renderHistory() {
         </div>
         ${it.sub.length ? `<div class="hs-sub">${it.sub.map((sb, j) => {
           const sk = `${key}-${j}`;
-          return `<div>
+          return `<div data-hssub="${key}-${j}">
             <span style="flex:1">${sb.q}</span>
             <span class="hs-n">${sb.n}건</span>
             <button class="btn-icon bk${HIST.bm.has(sk) ? ' on' : ''}" data-hsbk="${sk}" title="북마크">${ICON.bmark}</button>
@@ -1058,12 +1072,23 @@ function renderHistory() {
       </div>`; }).join('')}
     </div>`).join('');
 
-  /* 펼침/접힘 — 북마크·사건 등록 버튼 클릭은 통과시키지 않는다 */
+  /* 캐럿은 펼침/접힘, 행 본문은 **그 검색을 다시 실행**한다 */
   $$('#historyBody .hs-main').forEach(m => m.onclick = e => {
     if (e.target.closest('[data-hsbk]') || e.target.closest('[data-hscase]')) return;
     const k = m.parentElement.dataset.hs;
-    HIST.open.has(k) ? HIST.open.delete(k) : HIST.open.add(k);
-    renderHistory();
+    if (e.target.closest('.hs-cv')) {
+      HIST.open.has(k) ? HIST.open.delete(k) : HIST.open.add(k);
+      renderHistory(); return;
+    }
+    const [di, i] = k.split('-').map(Number);
+    const it = HISTORY[di].items[i];
+    runHistoryQuery(it.q, it.ai);
+  });
+  /* 연관 검색 행도 눌러서 다시 실행 */
+  $$('#historyBody .hs-sub [data-hssub]').forEach(r => r.onclick = e => {
+    if (e.target.closest('[data-hsbk]')) return;
+    const [di, i, j] = r.dataset.hssub.split('-').map(Number);
+    runHistoryQuery(HISTORY[di].items[i].sub[j].q, HISTORY[di].items[i].ai);
   });
   /* 행별 북마크 — 아이콘 활성화 전환 */
   $$('#historyBody [data-hsbk]').forEach(b => b.onclick = e => {
@@ -2189,10 +2214,11 @@ function renderMapView() {
   /* 사양서 Detail_000_4 · 4-4) : 주변 카메라 / 이동 경로 / 전체 보기
      이동 경로는 **단일 대상일 때 비활성** (그룹·경로비교에서만 사용) */
   const multiObj = !!(DT._tab && (DT._tab.kind === 'group' || DT._tab.kind === 'compare'));
+  /* 아이콘은 GUI 상세화면 맵뷰어 툴바에서 추출한 것 */
   const tools = `<div class="tools">
-      <button class="btn-icon${DT.mapTools.includes('cctv') ? ' on' : ''}" data-mvt="cctv" title="주변 카메라"><svg viewBox="0 0 16 16" class="ic"><path d="M2.2 5.4l9.6-2.6 1.2 4.4-9.6 2.6z" stroke="currentColor" stroke-width="1.2" fill="none"/><path d="M5 9.5l1 4M13 7.2l1.4-.4" stroke="currentColor" stroke-width="1.2" fill="none"/></svg></button>
+      <button class="btn-icon${DT.mapTools.includes('cctv') ? ' on' : ''}" data-mvt="cctv" title="주변 카메라"><i class="i i-16 i-tool-cctv"></i></button>
       <span class="sepv"></span>
-      <button class="btn-icon" data-mvt="path" title="이동 경로"${multiObj ? '' : ' disabled'}><svg viewBox="0 0 16 16" class="ic"><path d="M4 14V6a2 2 0 012-2h4a2 2 0 002-2" stroke="currentColor" stroke-width="1.3" fill="none"/></svg></button>
+      <button class="btn-icon" data-mvt="path" title="이동 경로"${multiObj ? '' : ' disabled'}><i class="i i-16 i-tool-path"></i></button>
     </div>`;
   const conesHTML = DT.mapTools.includes('cctv') ? MAP_CCTV.map((c, i) =>
     `<span class="map-cone" data-mvc="${i}" style="left:${c.x}%;top:${c.y}%;rotate:${c.deg}deg"><i></i><b></b></span>`).join('') : '';
@@ -3016,7 +3042,6 @@ function applyMenuDemo() {
   if (d === 'pmnew')    { switchMode('person'); renderPersonGrid(); openPersonMgr(); pmForm={name:'김보안',desc:'VIP',imgs:S.persons[0].imgs.concat(S.persons[1].imgs,S.persons[2].imgs,S.persons[3].imgs,S.persons[4].imgs).slice(0,5),kinds:['face','face','face','obj','obj']}; pmView='new'; renderPM(); }
   if (d === 'pmnew0')   { switchMode('person'); renderPersonGrid(); openPersonMgr(); pmForm={name:'',desc:'',imgs:[],kinds:[]}; pmView='new'; renderPM(); }
   if (d === 'pmdetail') { switchMode('person'); renderPersonGrid(); openPersonMgr(); pmTarget=S.persons[0]; pmView='detail'; renderPM(); }
-  if (d === 'autocomplete') { switchMode('text'); $('#qText').focus(); openAutocomplete(); }
   if (d === 'layb') setLayout('b');
   if (d === 'lybai') { setLayout('b'); switchMode('aim'); aimAsk('로비에서 나간 후 주차장으로 이동한 인물 검색'); }
   if (d === 'lybaicmp') { setLayout('b'); switchMode('aim');
@@ -4000,18 +4025,12 @@ S.textRecent = TEXT_RECENT.slice();
     b.onclick = () => { if (S.q.trim()) { pushTextRecent(S.q.trim()); runSearch(false); } };
     wrap.appendChild(b);
   }
-  /* 자동완성(최근 검색) — 입력창과 같은 박스 안에 붙인다 */
-  const box = document.createElement('div');
-  box.id = 'textRecent';
-  wrap.appendChild(box);
-  /* 상시 노출 `최근 검색` 블록 (시안 4307:27803) — 검색 실행 전에만 보인다.
-     입력창 포커스 시 뜨는 자동완성(001_2)과는 별개 컴포넌트다. */
+  /* `최근 검색` 은 입력창 아래 블록 하나만 쓴다.
+     입력창 안에 겹쳐 뜨던 자동완성(001_2)은 같은 목록이 두 번 보여 걷어냈다. */
   const blk = document.createElement('div');
   blk.className = 'recent-blk'; blk.id = 'recentBlk';
   wrap.parentElement.insertBefore(blk, wrap.nextSibling);
   renderTextRecent();
-  ta.addEventListener('focus', openAutocomplete);
-  ta.addEventListener('blur', () => setTimeout(closeAutocomplete, 160));
   ta.addEventListener('keydown', e => {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); const v = S.q.trim(); if (v) { pushTextRecent(v); runSearch(false); } }
   });
@@ -4021,26 +4040,8 @@ function pushTextRecent(v) {
   S.textRecent = [v, ...S.textRecent.filter(x => x !== v)].slice(0, 7);
   renderTextRecent();
 }
-/* 자동완성 드롭다운 (Search main_001_2) — 입력창과 한 박스, 행 + ✕ */
-function renderTextRecent() {
-  const box = $('#textRecent'); if (!box) return;
-  const wrap = box.closest('.textarea-wrap');
-  if (!S.textRecent.length) { box.innerHTML = ''; if (wrap) wrap.classList.remove('ac-open'); return; }
-  box.innerHTML = `<div class="lb">최근 검색</div>` + S.textRecent.map((v, i) =>
-    `<div class="ac-row" data-trc="${i}"><span class="t">${v}</span>
-       <button class="x" data-trx="${i}" title="삭제">✕</button></div>`).join('');
-  $$('#textRecent [data-trc]').forEach(p => p.onclick = e => {
-    if (e.target.closest('[data-trx]')) return;
-    const v = S.textRecent[+p.dataset.trc];
-    S.q = v; $('#qText').value = v; $('#qTextClear').hidden = false;
-    closeAutocomplete();
-    buildFilters('text'); runSearch(false);
-  });
-  $$('#textRecent [data-trx]').forEach(b => b.onclick = e => {
-    e.stopPropagation(); S.textRecent.splice(+b.dataset.trx, 1); renderTextRecent();
-  });
-  renderRecentBlk();
-}
+/* 최근 검색 — 입력창 아래 블록 하나로 통일 */
+function renderTextRecent() { renderRecentBlk(); }
 
 /* 상시 `최근 검색` 블록 — li 32 / pitch 38 / 텍스트 x12 / ✕ 12×12 (시안 실측) */
 function renderRecentBlk() {
@@ -4061,14 +4062,9 @@ function renderRecentBlk() {
     e.stopPropagation(); S.textRecent.splice(+b.dataset.rbx, 1); renderTextRecent();
   });
 }
-function openAutocomplete() {
-  const w = $('#textRecent') && $('#textRecent').closest('.textarea-wrap');
-  if (w && S.textRecent.length) w.classList.add('ac-open');
-}
-function closeAutocomplete() {
-  const w = $('#textRecent') && $('#textRecent').closest('.textarea-wrap');
-  if (w) w.classList.remove('ac-open');
-}
+/* 자동완성 제거 — 잔여 호출을 위해 no-op 로 남긴다 */
+function openAutocomplete() {}
+function closeAutocomplete() {}
 
 /* ---- AI 검색을 모드 칩으로 통합 ---- */
 /* ============================================================

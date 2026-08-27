@@ -2609,3 +2609,18 @@ body.rsz-drag .rsz::after{background:var(--primary)}
 .pv-video.paused .play{opacity:1}
 .pv-bar{position:absolute;left:0;right:0;bottom:0;height:3px;background:rgba(255,255,255,.18)}
 .pv-bar i{display:block;height:100%;width:0;background:var(--primary);transition:width .1s linear}
+
+/* ── 맵뷰어 전체보기 : 지도 위 오버레이 컨트롤 ─────────────────────────────
+   지도는 밝고 오버레이는 어두워서, .seg 의 기본 회색 글자로는 읽히지 않았다.
+   어두운 배경에 맞는 대비로 다시 잡는다. */
+.mvw-map .seg button{
+  border-color:rgba(255,255,255,.22);color:#c8d2dd;background:transparent
+}
+.mvw-map .seg button:hover{border-color:rgba(255,255,255,.45);color:#fff}
+.mvw-map .seg button.on{
+  background:var(--primary);border-color:var(--primary);color:#fff;font-weight:600
+}
+
+/* 히스토리 : 행 본문은 재검색, 캐럿만 펼침/접힘 */
+.hs-cv{cursor:pointer;padding:2px;margin:-2px}
+.hs-sub div[data-hssub]{cursor:pointer}
