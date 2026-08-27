@@ -377,7 +377,8 @@ function renderResults() {
   if (aiOn) {
     if (S.aiStage === 'idle')    { body.innerHTML = `<div class="empty">${EMPTY_TEXT.ai}</div>`; return; }
     if (S.aiStage === 'loading') { body.innerHTML = `<div class="empty wait">${EMPTY_TEXT.aiWait}</div>`; return; }
-    body.innerHTML = `<div class="grid">${aiList.map(o => cardHTML(o)).join('')}</div>`;
+    /* AI 결과에서도 두 명 이상 골라 **동선(경로) 비교** 를 할 수 있어야 한다 */
+    body.innerHTML = `<div class="grid">${aiList.map(o => cardHTML(o, { compare: true })).join('')}</div>`;
     bindCards(body); return;
   }
 
@@ -442,6 +443,16 @@ function renderResults() {
   $$('[data-edit]', body).forEach(n => n.onclick = e => { e.stopPropagation(); openEdit(n.dataset.edit); });
 }
 
+/* 결과 카드 → 상세 화면. 유사 대상별 보기의 대표 카드면 대상 그룹 상세로 연다. */
+function openCardDetail(id, cardEl) {
+  const o = findObj(id); if (!o) return;
+  const g = GROUPS.find(x => x.key === o.group);
+  const isRep = !!(cardEl && cardEl.closest('.rep'));
+  DT.clip = 0; DT.removed = new Set(); DT.edit = false; DT.area = null; DT.tracks = false; DT.tools = ['obj', 'single'];
+  if (isRep) newTab(`${(g && g.label) || '대상'}`, o, { kind: 'group' });
+  else newTab(`${o.cam}`, o);
+}
+
 function bindCards(root) {
   $$('.card', root).forEach(c => {
     const id = c.dataset.id;
@@ -450,18 +461,14 @@ function bindCards(root) {
       if (e.target.closest('[data-more]')) { openCtx(e, id); return; }
       if (e.target.closest('.cmp')) return;
       clearTimeout(clickT);
+      /* AI 대화로 나온 결과는 미리보기 단계 없이 **바로 상세**로 랜딩한다 */
+      if (S.aiMode || S.mode === 'aim') { openCardDetail(id, c); return; }
       clickT = setTimeout(() => selectCard(id), 190);
     };
     c.ondblclick = e => {
       if (e.target.closest('.cmp') || e.target.closest('[data-more]')) return;
       clearTimeout(clickT);
-      const o = findObj(id);
-      const g = GROUPS.find(x => x.key === o.group);
-      /* 유사 대상별 보기의 대표 카드 → 대상 그룹 상세 / 그 외 → 단일 대상 상세 */
-      const isRep = !!c.closest('.rep');
-      DT.clip = 0; DT.removed = new Set(); DT.edit = false; DT.area = null; DT.tracks = false; DT.tools = ['obj', 'single'];
-      if (isRep) newTab(`${(g && g.label) || '대상'}`, o, { kind: 'group' });
-      else newTab(`${o.cam}`, o);
+      openCardDetail(id, c);
     };
   });
   $$('[data-cmp]', root).forEach(cb => cb.onchange = e => {
@@ -2974,6 +2981,12 @@ function applyMenuDemo() {
   if (d === 'autocomplete') { switchMode('text'); $('#qText').focus(); openAutocomplete(); }
   if (d === 'layb') setLayout('b');
   if (d === 'lybai') { setLayout('b'); switchMode('aim'); aimAsk('로비에서 나간 후 주차장으로 이동한 인물 검색'); }
+  if (d === 'lybaicmp') { setLayout('b'); switchMode('aim');
+    aimAsk('로비에서 나간 후 주차장으로 이동한 인물 검색');
+    setTimeout(() => { S.compare = ['a1', 'a2']; renderCompare(); renderResults(); }, 2000); }
+  if (d === 'lybaicmpgo') { setLayout('b'); switchMode('aim');
+    aimAsk('로비에서 나간 후 주차장으로 이동한 인물 검색');
+    setTimeout(() => openCompareTab(['a1', 'a2']), 2000); }
   if (d === 'lybresult') { setLayout('b'); switchMode('text'); S.q='검정색 모자를 쓴 배송기사'; $('#qText').value=S.q; $('#qTextClear').hidden=false; runSearch(false); }
   if (d === 'laya') setLayout('a');
   if (d === 'alarmpop') { setTimeout(openAlarmPop, 60); }
