@@ -2495,3 +2495,17 @@ body.rsz-drag .rsz::after{background:var(--primary)}
 .area-bar button:hover{border-color:var(--accent)}
 .area-bar .ab-go{background:var(--primary);border-color:var(--primary)}
 .area-bar .ab-dir{background:rgba(0,153,255,.18);border-color:rgba(0,153,255,.55)}
+
+/* ── 사양 §12-2 : 관심인물 실시간 알림 스케줄 (요일 기본 미선택 · 필수) ──── */
+.wf-sch{margin-top:10px;display:flex;flex-direction:column;gap:8px}
+.wf-sch-item{background:var(--bg-2);border:1px solid var(--ln-subtle);border-radius:6px;padding:9px 10px}
+.wf-sch-h{display:flex;align-items:center;gap:6px;margin-bottom:8px}
+.wf-sch-h .nm{font-size:11.5px;font-weight:600;color:var(--tx-secondary)}
+.wf-sch-h .btn-icon{margin-left:auto;width:20px;height:20px}
+.wf-days{display:flex;gap:4px}
+.wf-day{
+  flex:1;height:26px;border-radius:4px;font-size:11px;font-weight:500;
+  background:var(--bg-3);border:1px solid var(--ln-border);color:var(--tx-tertiary);
+}
+.wf-day:hover{border-color:var(--ln-strong,#3e4049)}
+.wf-day.on{background:rgba(48,112,216,.18);border-color:var(--primary);color:var(--tx-primary)}

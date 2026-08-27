@@ -2201,9 +2201,14 @@ function openVideoView(src) {
    팝업 ③ 관심 인물 등록
    ============================================================ */
 let watchForm = null;
+const WEEKDAYS = ['월', '화', '수', '목', '금', '토', '일'];
+/* 사양 §12-2 : `스케줄 1`, `스케줄 2` 순으로 명칭을 자동 부여한다 */
+function renameScheds(f) { f.scheds.forEach((sc, i) => sc.name = `스케줄 ${i + 1}`); }
+function addSched(f) { f.scheds.push({ name: '', days: [], from: '18:00', to: '09:00' }); renameScheds(f); }
+
 function openWatch() {
   const o = (DT._tab && DT._tab.obj) || OBJECTS[0];
-  watchForm = { imgs: [o.img, ...WATCH_IMGS.filter(i => i !== o.img)].slice(0, 6), sel: 0, name: '', term: WATCH_TERMS[0], cls: WATCH_CLASSES[0], reason: '', alarm: '상시 사용' };
+  watchForm = { imgs: [o.img, ...WATCH_IMGS.filter(i => i !== o.img)].slice(0, 6), sel: 0, name: '', term: WATCH_TERMS[0], cls: WATCH_CLASSES[0], reason: '', alarm: '상시 사용', scheds: [] };
   renderWatch(); openModal('#mdWatch');
 }
 function renderWatch() {
@@ -2229,16 +2234,45 @@ function renderWatch() {
     <div class="fm-row"><span class="fm-lb">실시간 알림</span>
       <div class="radio-row">${['상시 사용', '미사용', '스케줄 설정'].map(a =>
         `<label class="radio"><input type="radio" name="wfal" data-wa="${a}" ${f.alarm === a ? 'checked' : ''}><i></i>${a}</label>`).join('')}</div>
-      ${f.alarm === '스케줄 설정' ? `<div style="display:flex;gap:8px;margin-top:10px">
-        <span class="cs-dt">${ICON.clock}<input type="time" value="18:00"></span>
-        <span style="align-self:center;color:var(--muted)">~</span>
-        <span class="cs-dt">${ICON.clock}<input type="time" value="09:00"></span></div>` : ''}
+      ${f.alarm === '스케줄 설정' ? `<div class="wf-sch">
+        ${f.scheds.map((sc, si) => `
+          <div class="wf-sch-item">
+            <div class="wf-sch-h"><span class="nm">${sc.name}</span>
+              <button class="btn-icon" data-wsdel="${si}" title="삭제">${ICON.xs}</button></div>
+            <div class="wf-days">${WEEKDAYS.map(d =>
+              `<button class="wf-day${sc.days.includes(d) ? ' on' : ''}" data-wsday="${si}:${d}">${d}</button>`).join('')}</div>
+            <div style="display:flex;gap:8px;margin-top:8px">
+              <span class="cs-dt">${ICON.clock}<input type="time" value="${sc.from}" data-wsfrom="${si}"></span>
+              <span style="align-self:center;color:var(--muted)">~</span>
+              <span class="cs-dt">${ICON.clock}<input type="time" value="${sc.to}" data-wsto="${si}"></span></div>
+          </div>`).join('')}
+        <button class="btn-ghost sm" id="wfSchAdd">＋ 스케줄 추가</button>
+        ${f.scheds.some(sc => !sc.days.length) ? '<p class="hintline">요일을 하나 이상 선택해 주세요.</p>' : ''}
+      </div>` : ''}
     </div>`;
-  const ok = f.name.trim() && f.reason.trim();
+  /* 사양 §12-2 : 요일은 기본 미선택이며 **필수 선택** */
+  const schedOk = f.alarm !== '스케줄 설정' || (f.scheds.length && f.scheds.every(sc => sc.days.length));
+  const ok = f.name.trim() && f.reason.trim() && schedOk;
   $('#watchFoot').innerHTML = `<button class="btn-ghost" data-close>취소</button><button class="btn-primary" id="wfOk" ${ok ? '' : 'disabled'}>완료</button>`;
   $$('#watchBody [data-wi]').forEach(n => n.onclick = () => { f.sel = +n.dataset.wi; renderWatch(); });
   $$('#watchBody [data-wc]').forEach(b => b.onclick = () => { f.cls = b.dataset.wc; renderWatch(); });
-  $$('#watchBody [data-wa]').forEach(r => r.onchange = () => { f.alarm = r.dataset.wa; renderWatch(); });
+  $$('#watchBody [data-wa]').forEach(r => r.onchange = () => {
+    f.alarm = r.dataset.wa;
+    /* 스케줄 설정으로 바꾸면 비어 있지 않도록 첫 스케줄을 만들어 준다 */
+    if (f.alarm === '스케줄 설정' && !f.scheds.length) addSched(f);
+    renderWatch();
+  });
+  const add = $('#wfSchAdd');
+  if (add) add.onclick = () => { addSched(f); renderWatch(); };
+  $$('#watchBody [data-wsday]').forEach(b => b.onclick = () => {
+    const [si, d] = b.dataset.wsday.split(':');
+    const days = f.scheds[+si].days;
+    const i = days.indexOf(d); i < 0 ? days.push(d) : days.splice(i, 1);
+    renderWatch();
+  });
+  $$('#watchBody [data-wsdel]').forEach(b => b.onclick = () => { f.scheds.splice(+b.dataset.wsdel, 1); renameScheds(f); renderWatch(); });
+  $$('#watchBody [data-wsfrom]').forEach(n => n.onchange = e => { f.scheds[+n.dataset.wsfrom].from = e.target.value; });
+  $$('#watchBody [data-wsto]').forEach(n => n.onchange = e => { f.scheds[+n.dataset.wsto].to = e.target.value; });
   bindSelect('#wfTerm', v => { f.term = v; });
   $('#wfName').oninput = e => { f.name = e.target.value; $('#wfOk').disabled = !(f.name.trim() && f.reason.trim()); };
   $('#wfReason').oninput = e => { f.reason = e.target.value; $('#wfOk').disabled = !(f.name.trim() && f.reason.trim()); };
@@ -2514,6 +2548,7 @@ function applyDemo() {
     mapviewa: () => { mvwPlan = 'a'; $$('#mvwPlan button').forEach(x => x.classList.toggle('on', x.dataset.p === 'a')); openMapView(); },
     videoview: () => openVideoView(),
     watch: () => openWatch(),
+    watchsched: () => { openWatch(); watchForm.alarm = '스케줄 설정'; addSched(watchForm); renderWatch(); },
     objadd: () => openObjAdd('detail'),
     objaddgrp: () => { CMP.objs = [{ ...OBJECTS[0], slot: 'A', label: '인물 A' }, { ...OBJECTS[10], slot: 'B', label: '인물 B' }]; openObjAdd('compare'); },
     casenew: () => openCase(),
