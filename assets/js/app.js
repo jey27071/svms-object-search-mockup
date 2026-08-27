@@ -1262,17 +1262,19 @@ function renderRuler() {
 
 /* 재생 컨트롤 바 — 상세 / 비교 / 영상 조회 / 북마크 공용 */
 const _cb = (t, cls, extra = '') => `<button class="btn-icon" title="${t}" ${extra}><i class="i i-18 ${cls}"></i></button>`;
-function playCtrlHTML() {
+function playCtrlHTML(opt = {}) {
   const b = _cb;
-  /* 아이콘은 GUI(Tnihi6lixRR47N4RSAwUbF) 상세화면 컨트롤 바에서 추출한 것을 쓴다 */
-  return `${b('이전 영상', 'i-pc-prev')}
+  /* 아이콘은 GUI(Tnihi6lixRR47N4RSAwUbF) 상세화면 컨트롤 바에서 추출한 것을 쓴다.
+     clips:false 면 이전/다음 영상 버튼을 뺀다 (북마크 상세는 단일 클립) */
+  const clips = opt.clips !== false;
+  return `${clips ? b('이전 영상', 'i-pc-prev') : ''}
     ${b('10초 뒤로', 'i-pc-back10')}
     ${b('배속 뒤로', 'i-pc-rewind')}
     ${b('재생', 'i-pc-play')}
     ${b('일시정지', 'i-pc-pause')}
     ${b('배속 앞으로', 'i-pc-forward')}
     ${b('10초 앞으로', 'i-pc-fwd10')}
-    ${b('다음 영상', 'i-pc-next')}
+    ${clips ? b('다음 영상', 'i-pc-next') : ''}
     ${b('음량', 'i-pc-volume')}`;
 }
 function ctrlHTML(opt = {}) {
@@ -2932,8 +2934,8 @@ function bmDetailHTML(b) {
           <img src="${b.img}" alt="">
           <span class="bm-hash">${ICON2.shield}원본 무결성 SHA-256 검증 완료</span>
           <div class="bm-bar">
-            <div class="bm-ruler bmk-tledit" id="bmTl">${bmRulerHTML(range, range[0] + range[1] / 2)}</div>
-            <div class="bm-ctrl">${playCtrlHTML()}</div>
+            <div class="bm-prog"><i style="width:38%"></i></div>
+            <div class="bm-ctrl">${playCtrlHTML({ clips: false })}</div>
           </div>
         </div>
         <div style="margin-top:12px">
@@ -2962,8 +2964,8 @@ function bmDetailHTML(b) {
         <img src="${b.img}" alt="">
         <span class="bm-hash">${ICON2.shield}원본 무결성 SHA-256 검증 완료</span>
         <div class="bm-bar">
-          <div class="bm-ruler">${bmRulerHTML(b.range, b.range[0] + b.range[1] / 2)}</div>
-          <div class="bm-ctrl">${playCtrlHTML()}</div>
+          <div class="bm-prog"><i style="width:38%"></i></div>
+          <div class="bm-ctrl">${playCtrlHTML({ clips: false })}</div>
         </div>
       </div>
       <div style="margin-top:12px">

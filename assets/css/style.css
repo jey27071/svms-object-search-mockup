@@ -2624,3 +2624,13 @@ body.rsz-drag .rsz::after{background:var(--primary)}
 /* 히스토리 : 행 본문은 재검색, 캐럿만 펼침/접힘 */
 .hs-cv{cursor:pointer;padding:2px;margin:-2px}
 .hs-sub div[data-hssub]{cursor:pointer}
+
+/* ── 북마크 화면 GUI 정합 ────────────────────────────────────────────────
+   좌:우 = 994:852 (GUI 시안 비율). 기존 1084 은 목록이 과하게 넓었다. */
+#menuView .mn-panel.mn-list:has(.bmk-grid){flex:0 0 994px;width:994px}
+/* 선택 카드는 파란 테두리만. 배경까지 물들이면 시안과 달라진다 */
+.bmk-card.on{background:var(--bg-3)}
+#menuView .bmk-card.on{background:var(--bg-3)}
+/* 북마크 상세 : 시간 눈금 대신 단순 진행바 */
+.bm-prog{height:4px;border-radius:2px;background:rgba(255,255,255,.18);margin:0 0 10px;overflow:hidden}
+.bm-prog i{display:block;height:100%;background:var(--primary)}
