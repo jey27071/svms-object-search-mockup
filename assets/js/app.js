@@ -663,7 +663,10 @@ $$('#modeRail button').forEach(b => b.onclick = () => {
   S.mode = b.dataset.mode;
   $$('.mode-panel').forEach(p => p.classList.toggle('on', p.dataset.panel === S.mode));
   buildFilters(S.mode);
-  runSearch(false);
+  /* AI 없음 버전 : 검색 방식을 바꿔도 **화면은 그대로 두고 탭만 전환**한다.
+     (AI 있는 버전은 기존대로 검색 상태를 초기화) */
+  if (S.aiVer === 'off') render();
+  else runSearch(false);
 });
 
 /* ---- 텍스트 검색 ---- */
