@@ -2484,3 +2484,14 @@ body.rsz-drag .rsz::after{background:var(--primary)}
    (닫힘=오른쪽 / 열림=아래)을 맞추려면 닫힘일 때 되돌려 세운다 */
 .hs-cv{display:inline-flex;transition:transform .12s;transform:rotate(-90deg)}
 .hs-item.open .hs-cv{transform:rotate(0)}
+
+/* ── 사양 §7-3 : 영역/선 검색 컨트롤 바 (방향 지정 · 재실행 · 검색/종료) ── */
+.area-bar{position:absolute;z-index:5;display:inline-flex;align-items:center;gap:4px;pointer-events:auto}
+.area-bar button{
+  display:inline-flex;align-items:center;gap:5px;height:24px;padding:0 10px;
+  border-radius:12px;background:rgba(10,16,26,.92);border:1px solid rgba(255,255,255,.2);
+  font-size:11px;font-weight:500;color:#fff;white-space:nowrap;
+}
+.area-bar button:hover{border-color:var(--accent)}
+.area-bar .ab-go{background:var(--primary);border-color:var(--primary)}
+.area-bar .ab-dir{background:rgba(0,153,255,.18);border-color:rgba(0,153,255,.55)}

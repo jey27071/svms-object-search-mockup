@@ -1416,6 +1416,18 @@ function setAreaTool(mode) {
   else DT.area = { mode, done: false, rect: null, line: null };
   renderArea(); applyTools(); renderNear(DT._tab);
 }
+/* 사양 §7-3 : 영역/선을 그린 뒤 컨트롤 바.
+   선 검색에는 `방향 지정`(Default `In`)이 붙고, 검색 전에는 `재실행`·`검색`,
+   검색 뒤에는 `재실행`·`종료` 가 된다. */
+function areaBar(left, top, a) {
+  return `<div class="area-bar" style="left:${left}%;top:${top}">
+    ${a.mode === 'line' ? `<button data-abdir class="ab-dir" title="방향 지정">방향 ${a.dir || 'In'}</button>` : ''}
+    <button data-abreset>${ICON2.reset}재실행</button>
+    ${a.searched ? `<button data-abend>종료</button>`
+                 : `<button data-abgo class="ab-go">검색</button>`}
+  </div>`;
+}
+
 function renderArea() {
   const box = $('#ovArea');
   box.hidden = !DT.area;
@@ -1427,7 +1439,7 @@ function renderArea() {
     h += `<div class="area-shape" style="left:${x}%;top:${y}%;width:${w}%;height:${hh}%">
       <span style="left:-5px;top:-5px"></span><span style="right:-5px;top:-5px"></span>
       <span style="left:-5px;bottom:-5px"></span><span style="right:-5px;bottom:-5px"></span></div>`;
-    if (a.done) h += `<button class="area-end" style="left:${x + w - 12}%;top:calc(${y + hh}% + 8px)">${ICON2.reset}종료</button>`;
+    if (a.done) h += areaBar(x + w - 20, `calc(${y + hh}% + 8px)`, a);
   }
   if (a.mode === 'line' && a.line) {
     const [x1, y1, x2, y2] = a.line;
@@ -1436,12 +1448,19 @@ function renderArea() {
       <path d="M${x1},${y1} L${x2},${y2}" stroke="#0099ff" stroke-width="2.4" stroke-dasharray="5 4" fill="none" marker-end="url(#lah)" vector-effect="non-scaling-stroke"/></svg>
       <span style="position:absolute;left:${x1}%;top:${y1}%;transform:translate(-50%,-50%);width:13px;height:13px;border-radius:50%;background:#0099ff;border:2px solid #fff"></span>
       <span style="position:absolute;left:${x2}%;top:${y2}%;transform:translate(-50%,-50%);width:13px;height:13px;border-radius:50%;background:#0099ff;border:2px solid #fff"></span></div>`;
-    if (a.done) h += `<button class="area-end" style="left:${(x1 + x2) / 2 + 4}%;top:${(y1 + y2) / 2 + 3}%">${ICON2.reset}종료</button>`;
+    if (a.done) h += areaBar((x1 + x2) / 2 - 4, `${(y1 + y2) / 2 + 4}%`, a);
   }
   if (!a.rect && !a.line) h += `<div style="position:absolute;left:50%;top:14px;transform:translateX(-50%);padding:4px 11px;border-radius:12px;background:rgba(10,16,26,.86);border:1px solid rgba(255,255,255,.16);font-size:11px">영상 위에 ${a.mode === 'shape' ? '드래그해 영역을' : '두 번 클릭해 기준선을'} 그려주세요</div>`;
   box.innerHTML = h;
-  const end = $('.area-end', box);
-  if (end) end.onclick = () => { DT.area = { mode: a.mode, done: false, rect: null, line: null }; renderArea(); renderNear(DT._tab); };
+  const redraw = () => { renderArea(); renderNear(DT._tab); };
+  const dir = $('[data-abdir]', box);
+  if (dir) dir.onclick = () => { a.dir = a.dir === 'Out' ? 'In' : 'Out'; redraw(); };
+  const rs = $('[data-abreset]', box);
+  if (rs) rs.onclick = () => { DT.area = { mode: a.mode, done: false, rect: null, line: null, dir: a.dir }; redraw(); };
+  const go = $('[data-abgo]', box);
+  if (go) go.onclick = () => { a.searched = true; redraw(); };
+  const en = $('[data-abend]', box);
+  if (en) en.onclick = () => { DT.area = null; redraw(); };
 }
 /* 영상 위 드로잉 */
 (function bindAreaDraw() {
