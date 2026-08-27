@@ -2475,3 +2475,12 @@ body.rsz-drag .rsz::after{background:var(--primary)}
 /* ── 사양 §10-6 : 대상 4개 도달 시 미추가 인물의 북마크 영상 선택 불가 ──── */
 .ev-card.off{opacity:.45}
 .ev-card.off:hover{background:transparent}
+
+/* ── 사양 §4 : 검색 히스토리 팝업 (그룹별 사건 등록 · 행별 북마크) ──────── */
+.hs-main .hs-case{flex:0 0 auto;font-size:11px;padding:3px 8px;white-space:nowrap}
+.hs-main .bk,.hs-sub .bk{flex:0 0 auto;width:24px;height:24px;display:flex;align-items:center;justify-content:center;color:var(--ic-gray)}
+.hs-main .bk.on,.hs-sub .bk.on{color:var(--st-low)}
+/* ICON.caret 는 기본이 '아래' 방향이라, 다른 아코디언(.acc)과 같은 규칙
+   (닫힘=오른쪽 / 열림=아래)을 맞추려면 닫힘일 때 되돌려 세운다 */
+.hs-cv{display:inline-flex;transition:transform .12s;transform:rotate(-90deg)}
+.hs-item.open .hs-cv{transform:rotate(0)}

@@ -904,23 +904,57 @@ function pmNew() { pmForm = { name: '', desc: '', imgs: [] }; pmView = 'new'; re
 $('#btnTabAdd').onclick = () => { S.activeTab = 'search'; renderTabs(); syncPanels(); toast('검색홈 탭으로 이동합니다. (새 탭은 카드 더블클릭으로 생성됩니다)'); };
 
 /* ===================== 히스토리 ===================== */
-$('#btnHistory').onclick = () => {
-  $('#historyBody').innerHTML = HISTORY.map(d => `
+/* 사양 §4 : 히스토리 버튼 → 화면 Dim + 팝업. 최근 7일 · 최신순.
+   대상을 지정해 이어간 연관 검색은 같은 그룹으로 묶고 펼침/접힘,
+   그룹마다 `사건 등록`, 행마다 북마크(선택 시 아이콘 활성화). */
+const HIST = { bm: new Set(), open: new Set() };
+
+function renderHistory() {
+  $('#historyBody').innerHTML = HISTORY.map((d, di) => `
     <div class="hs-day"><div class="hs-date">${d.date}</div>
-      ${d.items.map((it, i) => `<div class="hs-item" data-hs="${d.date}-${i}">
+      ${d.items.map((it, i) => {
+        const key = `${di}-${i}`;
+        return `<div class="hs-item${HIST.open.has(key) ? ' open' : ''}" data-hs="${key}">
         <div class="hs-main">
-          ${it.sub.length ? `<span style="color:var(--muted)">${ICON.caret}</span>` : '<span style="width:10px"></span>'}
+          ${it.sub.length ? `<span class="hs-cv">${ICON.caret}</span>` : '<span style="width:10px"></span>'}
           <span class="hs-q">${it.q}</span>
           ${it.ai ? '<span class="hs-ai">AI</span>' : ''}
           <span class="hs-n">${it.n}건</span>
-          <button class="btn-icon" title="북마크">${ICON.bmark}</button>
+          <button class="btn-ghost sm hs-case" data-hscase="${key}">사건 등록</button>
+          <button class="btn-icon bk${HIST.bm.has(key) ? ' on' : ''}" data-hsbk="${key}" title="북마크">${ICON.bmark}</button>
         </div>
-        ${it.sub.length ? `<div class="hs-sub">${it.sub.map(s => `<div><span style="flex:1">${s.q}</span><span class="hs-n">${s.n}건</span></div>`).join('')}</div>` : ''}
-      </div>`).join('')}
+        ${it.sub.length ? `<div class="hs-sub">${it.sub.map((sb, j) => {
+          const sk = `${key}-${j}`;
+          return `<div>
+            <span style="flex:1">${sb.q}</span>
+            <span class="hs-n">${sb.n}건</span>
+            <button class="btn-icon bk${HIST.bm.has(sk) ? ' on' : ''}" data-hsbk="${sk}" title="북마크">${ICON.bmark}</button>
+          </div>`; }).join('')}</div>` : ''}
+      </div>`; }).join('')}
     </div>`).join('');
-  $$('#historyBody .hs-main').forEach(m => m.onclick = () => m.parentElement.classList.toggle('open'));
-  openModal('#mdHistory');
-};
+
+  /* 펼침/접힘 — 북마크·사건 등록 버튼 클릭은 통과시키지 않는다 */
+  $$('#historyBody .hs-main').forEach(m => m.onclick = e => {
+    if (e.target.closest('[data-hsbk]') || e.target.closest('[data-hscase]')) return;
+    const k = m.parentElement.dataset.hs;
+    HIST.open.has(k) ? HIST.open.delete(k) : HIST.open.add(k);
+    renderHistory();
+  });
+  /* 행별 북마크 — 아이콘 활성화 전환 */
+  $$('#historyBody [data-hsbk]').forEach(b => b.onclick = e => {
+    e.stopPropagation();
+    const k = b.dataset.hsbk;
+    HIST.bm.has(k) ? HIST.bm.delete(k) : HIST.bm.add(k);
+    renderHistory();
+  });
+  /* 그룹별 사건 등록 — 히스토리를 닫고 사건 등록 팝업으로 */
+  $$('#historyBody [data-hscase]').forEach(b => b.onclick = e => {
+    e.stopPropagation();
+    closeModal('#mdHistory');
+    openCase();
+  });
+}
+$('#btnHistory').onclick = () => { renderHistory(); openModal('#mdHistory'); };
 
 /* ===================== AI 에이전트 ===================== */
 function renderChat(state) {
@@ -2447,7 +2481,7 @@ function applyDemo() {
     setTimeout(POPUPS[d], 60);
   }
   if (d === 'personmgr') { switchMode('person'); renderPersonGrid(); openPersonMgr(); }
-  if (d === 'history')   { $('#btnHistory').click(); }
+  if (d === 'history')   { HIST.open.add('0-0'); $('#btnHistory').click(); }
   if (d === 'imagemodal'){ setMode('image'); buildFilters('image'); loadImage('assets/img/obj01.png'); }
   if (d === 'person') { setMode('person'); S.selPersons = ['p1', 'p3']; renderPersonGrid(); buildFilters('person'); runSearch(false); }
   if (d === 'algo')   { setMode('algo'); S.algos = ['침입', '배회']; renderAlgoGrid(); buildFilters('algo'); runSearch(false); }
