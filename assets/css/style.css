@@ -2471,3 +2471,7 @@ body.rsz-drag .rsz::after{background:var(--primary)}
 /* ── 사양 §7-5 : 멀티뷰에서 이미 재생 중인 카메라는 선택 불가 ──────────── */
 .ctx-menu div.off{color:var(--tx-disabled,#55575f);cursor:default;pointer-events:auto}
 .ctx-menu div.off:hover{background:transparent}
+
+/* ── 사양 §10-6 : 대상 4개 도달 시 미추가 인물의 북마크 영상 선택 불가 ──── */
+.ev-card.off{opacity:.45}
+.ev-card.off:hover{background:transparent}

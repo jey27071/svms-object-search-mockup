@@ -696,7 +696,7 @@ function openEdit(gk) {
   const etc = S.results.filter(o => o.group === 'etc');
   edState = { gk, cand: list.map(o => o.id), etc: etc.map(o => o.id), selCand: list.map(o => o.id), selEtc: [] };
   $('#edTitle').textContent = '유사 대상 편집';
-  $('#edDesc').textContent = 'AI 자동 그룹핑 결과를 편집할 수 있습니다.';
+  $('#edDesc').textContent = 'AI 자동 그룹화 결과를 편집할 수 있습니다.';
   $('#edBack').hidden = true;
   renderEdit(); openModal('#mdEdit');
 }
@@ -709,7 +709,7 @@ function renderEdit() {
       <img src="${rep.img}">
       <dl>
         <div><dt>대상명</dt><dd>${g.label}</dd></div>
-        <div><dt>색상</dt><dd><i class="dot-sw" style="background:${colorHex(rep.top)}"></i><i class="dot-sw" style="background:${colorHex(rep.bottom)}"></i></dd></div>
+        <div><dt>성별</dt><dd>${rep.type === '인물' ? (rep.sex || '-') : '-'}</dd></div>
         <div><dt>위치</dt><dd>${rep.cam}</dd></div>
         <div><dt>포착 일시</dt><dd>${rep.t}</dd></div>
       </dl>
@@ -748,7 +748,7 @@ function openObjectAdd() {
   $('#edTitle').textContent = '대상 추가';
   $('#edDesc').textContent = '유사 대상 그룹에 추가할 대상을 검색하거나 북마크에서 선택합니다.';
   $('#edBack').hidden = false;
-  $('#edBack').onclick = () => { $('#edTitle').textContent = '유사 대상 편집'; $('#edDesc').textContent = 'AI 자동 그룹핑 결과를 편집할 수 있습니다.'; $('#edBack').hidden = true; renderEdit(); };
+  $('#edBack').onclick = () => { $('#edTitle').textContent = '유사 대상 편집'; $('#edDesc').textContent = 'AI 자동 그룹화 결과를 편집할 수 있습니다.'; $('#edBack').hidden = true; renderEdit(); };
   renderObjectAdd();
 }
 function renderObjectAdd() {
@@ -786,7 +786,7 @@ function renderObjectAdd() {
   $('#addGo').onclick = () => {
     edState.etc = [...edState.etc, ...addState.sel];
     edState.selEtc = [...edState.selEtc, ...addState.sel];
-    $('#edTitle').textContent = '유사 대상 편집'; $('#edDesc').textContent = 'AI 자동 그룹핑 결과를 편집할 수 있습니다.';
+    $('#edTitle').textContent = '유사 대상 편집'; $('#edDesc').textContent = 'AI 자동 그룹화 결과를 편집할 수 있습니다.';
     $('#edBack').hidden = true; renderEdit(); toast(`${addState.sel.length}건을 기타 유사 대상에 추가했습니다.`);
   };
 }
@@ -3640,15 +3640,23 @@ function renderCaseAdd() {
         }).join('');
     } else {
       const L = BOOKMARKS.filter(b => b.kind === 'video' && !BM.removed.has(b.id));
+      /* 사양 §10-6 : 북마크 영상을 고르면 그 인물이 사건 대상 정보에 자동 추가된다.
+         그래서 대상이 이미 4개면 **아직 추가되지 않은 인물**의 영상은 더 고를 수 없다. */
+      const full = CS.form.targets.length >= 4;
+      const already = n => CS.form.targets.some(t => t.name === n);
+      const LOCK = '이미 대상 4개가 모두 추가되어 더 이상 추가할 수 없습니다.';
       inner = `<div class="mn-count" style="margin-bottom:8px">총 <em>${CA.pickV.length}</em>건 선택</div>` +
-        (L.length ? L.map((b, i) => `
-          <label class="ev-card" style="cursor:pointer">
-            <input type="checkbox" class="cb" data-capv="bm-${i}" ${CA.pickV.includes('bm-' + i) ? 'checked' : ''} style="align-self:center">
+        `<p class="hintline">선택 시 인물이 대상 정보에 자동으로 추가됩니다.</p>` +
+        (L.length ? L.map((b, i) => {
+          const lock = full && !already(b.target);
+          return `
+          <label class="ev-card${lock ? ' off' : ''}" style="cursor:${lock ? 'default' : 'pointer'}"${lock ? ` title="${LOCK}"` : ''}>
+            <input type="checkbox" class="cb" data-capv="bm-${i}" ${CA.pickV.includes('bm-' + i) ? 'checked' : ''} ${lock ? 'disabled' : ''} style="align-self:center">
             <div class="th"><img src="${b.img}" alt=""><span class="bmk-dur">${b.dur}</span></div>
             <div class="info"><div class="pl">${b.place}</div>
               <div class="tg-kv">일시 <b>${b.shot}</b></div>
               <div class="tg-kv">대상 <b>${b.target}</b></div></div>
-          </label>`).join('') : '<div class="mn-empty">북마크한 영상이 없습니다.</div>');
+          </label>`; }).join('') : '<div class="mn-empty">북마크한 영상이 없습니다.</div>');
     }
   }
 
@@ -3667,6 +3675,7 @@ function renderCaseAdd() {
   });
   $$('#caBody [data-capv]').forEach(c => c.onclick = e => {
     e.stopPropagation();
+    if (c.disabled) return;
     const k = c.dataset.capv;
     CA.pickV = CA.pickV.includes(k) ? CA.pickV.filter(x => x !== k) : [...CA.pickV, k];
     renderCaseAdd();
