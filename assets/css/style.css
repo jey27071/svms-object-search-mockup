@@ -2568,3 +2568,12 @@ body.rsz-drag .rsz::after{background:var(--primary)}
 .ct-c{cursor:pointer}
 .ct-c .ct-nm{color:var(--tx-tertiary)}
 .ct-empty{padding:10px 4px;font-size:11px;color:var(--tx-helper)}
+
+/* ── 좌측 AI 검색 패널 : 입력창을 패널 바닥에 붙인다 ──────────────────────
+   .aim-body 가 `calc(100vh - 200px)` 로 고정돼 있어 실제 가용 높이보다 짧았고,
+   그만큼 입력창이 위로 떠 있었다. 부모를 채우도록 바꾼다.
+   (오버레이 #aiFloat · 도킹 .ai-dock 은 각자 규칙이 따로 있어 건드리지 않는다) */
+.mode-panel[data-panel="aim"].on{
+  display:flex;flex-direction:column;height:100%;box-sizing:border-box
+}
+.mode-panel[data-panel="aim"] .aim-body{height:auto;flex:1 1 auto;min-height:0}
