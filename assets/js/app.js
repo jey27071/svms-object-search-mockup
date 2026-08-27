@@ -1501,6 +1501,73 @@ document.addEventListener('click', e => {
   if (e.target.closest('[data-aiplus]')) { e.preventDefault(); pickAiFiles(); }
 });
 
+/* ============================================================
+   패널 좌우 리사이즈
+   ------------------------------------------------------------
+   대상 : 세로로 나란히 놓인 **레이아웃 패널**의 경계
+     · 검색 패널 ↔ 콘텐츠            (검색 화면)
+     · 콘텐츠 ↔ 원본 영상             (검색 화면)
+     · 콘텐츠 ↔ AI 에이전트(C타입 도킹) — A·B 타입은 떠 있는 레이어라 대상 아님
+     · 영상 영역 ↔ 대상 상세          (상세 화면)
+     · 목록 ↔ 상세                    (북마크·사건관리·맵관리·알림)
+   제외 : LNB(고정 아이콘 레일) · 탭바 · 하단 상태 표시줄 · 모달/팝업 내부 ·
+          세로 분할(탐지 이력) · 플로팅 AI 패널
+   조작 : 드래그로 폭 조절, **더블클릭으로 기본값 복원**
+   ============================================================ */
+const RSZ = [
+  { el: '#sidePanel', side: 'right', min: 260, max: 620, def: 320 },
+  { el: '#preview',   side: 'left',  min: 260, max: 680, def: 400 },
+  { el: '#aiFloat',   side: 'left',  min: 280, max: 620, def: 360, only: 'ai-c' },
+  { el: '.dt-side',   side: 'left',  min: 300, max: 720, def: null },
+  /* 메뉴 화면은 **목록(첫 패널)** 이 폭을 갖고 상세가 나머지를 채우므로 목록 쪽에 붙인다 */
+  { el: '#menuView > .mn-panel:first-child', side: 'right', min: 220, max: 1300, def: null }
+];
+
+function addResizer(node, cfg) {
+  if (!node || node.dataset.rszOn) return;
+  node.dataset.rszOn = '1';
+  const h = document.createElement('div');
+  h.className = 'rsz rsz-' + cfg.side;
+  node.appendChild(h);
+  const def = cfg.def || Math.round(node.getBoundingClientRect().width);
+  let sx = 0, sw = 0;
+  const move = e => {
+    const dx = e.clientX - sx;
+    let w = cfg.side === 'right' ? sw + dx : sw - dx;
+    w = Math.max(cfg.min, Math.min(cfg.max, w));
+    node.style.flex = `0 0 ${w}px`; node.style.width = w + 'px';
+  };
+  const up = () => {
+    document.removeEventListener('mousemove', move);
+    document.removeEventListener('mouseup', up);
+    document.body.classList.remove('rsz-drag');
+  };
+  h.addEventListener('mousedown', e => {
+    e.preventDefault(); e.stopPropagation();
+    sx = e.clientX; sw = node.getBoundingClientRect().width;
+    document.body.classList.add('rsz-drag');
+    document.addEventListener('mousemove', move);
+    document.addEventListener('mouseup', up);
+  });
+  /* 더블클릭 : 기본 폭 복원 */
+  h.addEventListener('dblclick', e => {
+    e.preventDefault(); e.stopPropagation();
+    node.style.flex = `0 0 ${def}px`; node.style.width = def + 'px';
+  });
+}
+
+function initResizers() {
+  RSZ.forEach(cfg => {
+    document.querySelectorAll(cfg.el).forEach(n => {
+      if (cfg.only && !n.classList.contains(cfg.only)) return;
+      addResizer(n, cfg);
+    });
+  });
+}
+/* 메뉴/상세 화면은 렌더될 때마다 다시 그려지므로 감시해서 핸들을 붙인다 */
+new MutationObserver(() => initResizers())
+  .observe(document.body, { childList: true, subtree: true });
+
 /* 알림 벨 — 사양서 : 선택 시 알림 팝업 노출 (핸들러가 아예 없었다) */
 if ($('#btnAlarmTop')) $('#btnAlarmTop').onclick = e => {
   e.stopPropagation();
@@ -2305,7 +2372,7 @@ function applyDemo() {
     selectCard('o01');
   }
   if (d === 'editmodal') {
-    S.q = '검정색 모자를 쓴 배송기사'; qText.value = S.q; buildFilters('text'); runSearch(false);
+    setMode('text'); S.q = '검정색 모자를 쓴 배송기사'; qText.value = S.q; buildFilters('text'); runSearch(false);
     S.grouped = true; $('#groupToggle').checked = true; S.openGroups.add('c1'); renderResults(); openEdit('c1');
   }
   /* ---- 상세화면 WF : 단일 / 그룹 상세 · 화면 변형 ---- */
@@ -2321,7 +2388,7 @@ function applyDemo() {
   };
   if (DETAIL_DEMOS[d]) {
     const c = DETAIL_DEMOS[d];
-    S.q = '검정색 모자를 쓴 배송기사'; qText.value = S.q; buildFilters('text'); runSearch(false);
+    setMode('text'); S.q = '검정색 모자를 쓴 배송기사'; qText.value = S.q; buildFilters('text'); runSearch(false);
     DT.tools = c.tools || ['obj', 'single'];
     DT.tracks = !!c.tracks; DT.mapTools = c.mapTools || []; DT.edit = !!c.edit;
     if (c.area) DT.area = { mode: c.area, done: !!c.drawn, rect: c.drawn && c.area === 'shape' ? [21, 5, 28, 43] : null, line: c.area === 'line' ? (c.drawn ? [26, 55, 30, 41] : null) : null };
@@ -2331,7 +2398,7 @@ function applyDemo() {
   }
   /* ---- 경로 비교 ---- */
   if (d === 'cmp2' || d === 'cmp4' || d === 'cmpopen') {
-    S.q = '검정색 모자를 쓴 배송기사'; qText.value = S.q; buildFilters('text'); runSearch(false);
+    setMode('text'); S.q = '검정색 모자를 쓴 배송기사'; qText.value = S.q; buildFilters('text'); runSearch(false);
     openCompareTab(d === 'cmp4' ? ['o01', 'o11', 'o16', 'o19'] : ['o01', 'o11']);
     if (d === 'cmpopen') { CMP.openLane = 'B'; renderCmpView(S.tabs[S.tabs.length - 1]); }
   }
@@ -2349,7 +2416,7 @@ function applyDemo() {
     movepath: () => { DT.mapTools = []; toggleMovePath($('#dtMapTools [data-map=path]')); }
   };
   if (POPUPS[d]) {
-    S.q = '검정색 모자를 쓴 배송기사'; qText.value = S.q; buildFilters('text'); runSearch(false);
+    setMode('text'); S.q = '검정색 모자를 쓴 배송기사'; qText.value = S.q; buildFilters('text'); runSearch(false);
     const o = OBJECTS[0];
     newTab(d === 'movepath' ? `인물 A` : `${o.cam}`, o, d === 'movepath' ? { kind: 'group' } : null);
     setTimeout(POPUPS[d], 60);
@@ -2686,16 +2753,16 @@ function applyMenuDemo() {
   if (d === 'pmnew')    { switchMode('person'); renderPersonGrid(); openPersonMgr(); pmForm={name:'김보안',desc:'VIP',imgs:S.persons[0].imgs.concat(S.persons[1].imgs,S.persons[2].imgs,S.persons[3].imgs,S.persons[4].imgs).slice(0,5),kinds:['face','face','face','obj','obj']}; pmView='new'; renderPM(); }
   if (d === 'pmnew0')   { switchMode('person'); renderPersonGrid(); openPersonMgr(); pmForm={name:'',desc:'',imgs:[],kinds:[]}; pmView='new'; renderPM(); }
   if (d === 'pmdetail') { switchMode('person'); renderPersonGrid(); openPersonMgr(); pmTarget=S.persons[0]; pmView='detail'; renderPM(); }
-  if (d === 'autocomplete') { $('#qText').focus(); openAutocomplete(); }
+  if (d === 'autocomplete') { switchMode('text'); $('#qText').focus(); openAutocomplete(); }
   if (d === 'layb') setLayout('b');
-  if (d === 'lybresult') { setLayout('b'); S.q='검정색 모자를 쓴 배송기사'; $('#qText').value=S.q; $('#qTextClear').hidden=false; runSearch(false); }
+  if (d === 'lybresult') { setLayout('b'); switchMode('text'); S.q='검정색 모자를 쓴 배송기사'; $('#qText').value=S.q; $('#qTextClear').hidden=false; runSearch(false); }
   if (d === 'laya') setLayout('a');
   if (d === 'alarmpop') { setTimeout(openAlarmPop, 60); }
   /* AI 검색 없는 버전 (4307:27222) — A/B안 · 진입/검색후 4상태 */
   if (d === 'noai')      { setAiVer('off'); setLayout('a'); }
   if (d === 'noaib')     { setAiVer('off'); setLayout('b'); }
-  if (d === 'noairesult'){ setAiVer('off'); setLayout('a'); S.q='검정색 모자를 쓴 배송기사'; $('#qText').value=S.q; $('#qTextClear').hidden=false; runSearch(false); }
-  if (d === 'noaibresult'){ setAiVer('off'); setLayout('b'); S.q='검정색 모자를 쓴 배송기사'; $('#qText').value=S.q; $('#qTextClear').hidden=false; runSearch(false); }
+  if (d === 'noairesult'){ setAiVer('off'); setLayout('a'); switchMode('text'); S.q='검정색 모자를 쓴 배송기사'; $('#qText').value=S.q; $('#qTextClear').hidden=false; runSearch(false); }
+  if (d === 'noaibresult'){ setAiVer('off'); setLayout('b'); switchMode('text'); S.q='검정색 모자를 쓴 배송기사'; $('#qText').value=S.q; $('#qTextClear').hidden=false; runSearch(false); }
   if (d === 'aiver')     { setAiVer('on'); setLayout('a'); }
   if (d === 'aitypea') { setAiType('A'); toggleAiFloat(true); AIM.log=[{me:AI_SUGGESTIONS[2]}]; AIM.wait=true; renderAim(); }
   if (d === 'aitypeb') { setAiType('B'); toggleAiFloat(true); AIM.log=[{me:AI_SUGGESTIONS[2]}]; AIM.wait=true; renderAim(); }
@@ -4085,6 +4152,7 @@ document.addEventListener('click', e => {
 /* init */
 setLayout(S.layout);
 setAiVer(S.aiVer);
+initResizers();
 /* ============================================================
    인물 관리 팝업 — GUI 정합 재작성 (Search main_003_4 / 003_5)
    목록 / 새 인물 등록 / 인물 상세 / 인물 수정

@@ -2421,3 +2421,46 @@ body.aidock-on .main-row > .preview{flex:0 0 300px;width:300px}
   align-items:center;justify-content:center;padding:0
 }
 .aim-files .x:hover{background:var(--st-mid)}
+
+/* ============================================================
+   북마크 목록 — 시안(Bookmark_001_01) 1920 스케일 실측 재보정
+   목록 패널 1084 / 상세 762 · 카드 532×161 · 썸네일 253×142
+   텍스트가 시안 대비 작아 카드가 비어 보였다 (위치명 13 → 18)
+   ============================================================ */
+#menuView .mn-panel.mn-list:has(.bmk-grid){flex:0 0 1084px;width:1084px}
+#menuView .mn-panel.mn-detail{flex:1;min-width:0}
+
+.bmk-thumb{width:253px;height:142px;flex:0 0 253px}
+.bmk-card.obj .bmk-thumb{width:168px;flex:0 0 168px;height:142px}
+.bmk-card{gap:14px;padding:10px}
+.bmk-place{font-size:18px;font-weight:600;line-height:1.35;margin-bottom:7px}
+.bmk-sub{font-size:13px;margin-bottom:8px}
+.bmk-time{font-size:13px;line-height:1.5}
+.bmk-star .ic{width:16px;height:16px}
+
+/* 카드 높이 고정 — 영상 카드(일시 2줄)와 대상 카드(1줄)의 높이가 달라 그리드가 들쭉날쭉했다.
+   시안은 두 타입 모두 161 로 동일하다. */
+.bmk-card{height:162px;box-sizing:border-box;align-items:flex-start}
+.bmk-meta{overflow:hidden}
+
+/* AI 로딩 애니메이션 : 크기 2배(14→28), 주기 2배(1.8s→3.6s) */
+.ai-load{width:28px;height:28px;flex:0 0 28px;vertical-align:-6px}
+.ai-load path{animation-duration:3.6s}
+.aim-wait{gap:8px}
+
+/* ============================================================
+   패널 좌우 리사이즈 핸들
+   레이아웃 패널 경계에만 붙는다. LNB·탭바·상태표시줄·모달 내부는 제외.
+   ============================================================ */
+.rsz{position:absolute;top:0;bottom:0;width:8px;z-index:20;cursor:col-resize;
+  background:transparent;transition:background .12s}
+.rsz-right{right:-4px}
+.rsz-left{left:-4px}
+.rsz::after{content:'';position:absolute;left:50%;top:0;bottom:0;width:2px;
+  transform:translateX(-50%);background:transparent;transition:background .12s}
+.rsz:hover::after{background:var(--primary)}
+body.rsz-drag{cursor:col-resize;user-select:none}
+body.rsz-drag .rsz::after{background:var(--primary)}
+/* 핸들을 담으려면 패널이 기준 컨테이너여야 한다 */
+#sidePanel,#preview,#aiFloat,.dt-side,.mn-detail{position:relative}
+#aiFloat.ai-a,#aiFloat.ai-b{position:fixed}
