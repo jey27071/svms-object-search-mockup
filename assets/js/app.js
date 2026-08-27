@@ -608,7 +608,7 @@ function finishExtract() {
   $('#imgCancel').disabled = false;
   $$('#ieFilter button').forEach(b => b.disabled = false);
   $('#bboxLayer').innerHTML = S.extracted.map(x =>
-    `<div class="bbox ${x.type}" style="left:${x.box.x}%;top:${x.box.y}%;width:${x.box.w}%;height:${x.box.h}%"><span>${x.type === 'face' ? '얼굴' : '대상'}</span></div>`).join('');
+    `<div class="bbox ${x.type}" style="left:${x.box.x}%;top:${x.box.y}%;width:${x.box.w}%;height:${x.box.h}%"><span>${x.type === 'face' ? '얼굴' : '전신'}</span></div>`).join('');
   renderExtractGrid('all');
 }
 
@@ -617,7 +617,7 @@ function renderExtractGrid(t) {
   $('#ieCount').textContent = S.extracted.length;
   if (!list.length) { $('#ieGrid').innerHTML = `<div class="ie-loading" style="color:#6b7785">이미지에서 추출된 대상이 없습니다.<br>다시 추출하거나 다른 이미지를 선택해 주세요.</div>`; return; }
   $('#ieGrid').innerHTML = list.map(x =>
-    `<div class="ext-item${S.extSel.includes(x.id) ? ' on' : ''}" data-x="${x.id}"><img src="${x.img}"><span class="tag">${x.type === 'face' ? '얼굴' : '대상'}</span></div>`).join('');
+    `<div class="ext-item${S.extSel.includes(x.id) ? ' on' : ''}" data-x="${x.id}"><img src="${x.img}"><span class="tag">${x.type === 'face' ? '얼굴' : '전신'}</span></div>`).join('');
   $$('#ieGrid .ext-item').forEach(n => n.onclick = () => {
     const id = n.dataset.x;
     S.extSel = S.extSel.includes(id) ? S.extSel.filter(x => x !== id) : [...S.extSel, id];
@@ -649,7 +649,7 @@ $('#extAll').onchange = e => { S.extSel = e.target.checked ? S.extracted.map(x =
 
 function renderSideExtract() {
   $('#extGrid').innerHTML = S.extracted.map(x =>
-    `<div class="ext-item${S.extSel.includes(x.id) ? ' on' : ''}" data-sx="${x.id}"><img src="${x.img}"><span class="tag">${x.type === 'face' ? '얼굴' : '대상'}</span></div>`).join('');
+    `<div class="ext-item${S.extSel.includes(x.id) ? ' on' : ''}" data-sx="${x.id}"><img src="${x.img}"><span class="tag">${x.type === 'face' ? '얼굴' : '전신'}</span></div>`).join('');
   $$('#extGrid .ext-item').forEach(n => n.onclick = () => {
     const id = n.dataset.sx;
     S.extSel = S.extSel.includes(id) ? S.extSel.filter(x => x !== id) : [...S.extSel, id];
@@ -848,7 +848,7 @@ function renderPM() {
       <div>
         <div class="form-row"><label>이미지 <i>*</i> <span style="float:right;font-family:var(--mono)">${f.imgs.length}/10</span></label></div>
         ${f.imgs.length ? `<div class="up-list">
-          ${f.imgs.map((im, i) => `<div class="up-card"><img src="${im}">${i === 0 ? '<span class="rep-chip">대표</span>' : ''}<span class="ty-chip">얼굴</span>${i === 0 ? '' : `<button class="x" data-rmimg="${i}">✕</button>`}</div>`).join('')}
+          ${f.imgs.map((im, i) => `<div class="up-card"><img src="${im}">${i === 0 ? '<span class="rep-chip">대표</span>' : ''}<span class="ty-chip">${i % 2 === 0 ? '얼굴' : '전신'}</span>${i === 0 ? '' : `<button class="x" data-rmimg="${i}">✕</button>`}</div>`).join('')}
           ${f.imgs.length < 10 ? '<div class="up-add" id="upAdd">+</div>' : ''}
         </div>`
         : `<div class="dropzone" id="upDrop">
