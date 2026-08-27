@@ -1,5 +1,7 @@
 # SVMS 동선 추적 검색 — HTML 워킹 목업
 
+> ⚠️ **목업은 확정 사양을 따른다.** 사양서(v0.6)와 어긋나는 지점은 `_handoff/사양서-수정필요-목록.md` 에 모아 두었다 — 목업이 아니라 **사양서를 고쳐야 하는 건**이다.
+
 > **🔗 배포 URL : https://jey27071.github.io/svms-object-search-mockup/**
 > 저장소: https://github.com/jey27071/svms-object-search-mockup (**Public**)
 > 이어서 작업할 땐 **`_handoff/SVMS-대상검색-목업-핸드오프.md`** 부터 읽으세요.
