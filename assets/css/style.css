@@ -2464,3 +2464,10 @@ body.rsz-drag .rsz::after{background:var(--primary)}
 /* 핸들을 담으려면 패널이 기준 컨테이너여야 한다 */
 #sidePanel,#preview,#aiFloat,.dt-side,.mn-detail{position:relative}
 #aiFloat.ai-a,#aiFloat.ai-b{position:fixed}
+
+/* ── 사양 §6-1 : 유사도·날짜 Chip (기본 적용 필터 · X 미제공) ───────────── */
+.chip.chip-fixed{padding:0 12px}          /* X 자리가 없으므로 좌우 패딩 동일 */
+
+/* ── 사양 §7-5 : 멀티뷰에서 이미 재생 중인 카메라는 선택 불가 ──────────── */
+.ctx-menu div.off{color:var(--tx-disabled,#55575f);cursor:default;pointer-events:auto}
+.ctx-menu div.off:hover{background:transparent}

@@ -10,7 +10,7 @@ const fmtTS = t => t.replace(' ', ' ');
 /* 유사도 Chip 구간별 컬러 (사양서 v0.5 항목) — GUI 검색 결과 화면 실측으로 확정.
    98·97·93% = 초록(#3fbe7e) / 87·84·78·72·64% = 주황(#e88038) → 경계 90, **2구간**.
    결과 영역 전체를 스캔해도 배지 색은 이 두 가지뿐이라 기존 3구간(<80 노랑)은 잘못이었다. */
-const simCls = v => v >= 90 ? 'hi' : 'mid';
+const simCls = v => v >= 85 ? 'hi' : v >= 70 ? 'mid' : 'low';   // 사양 v0.5 : 85%↑ / 70~84% / 70%↓ 3구간
 const colorHex = k => (COLORS.find(c => c.k === k) || {}).hex || '#666';
 
 /* 아이콘 — Figma export SVG를 CSS mask로 렌더 (.i / .i-*), 나머지는 기존 인라인 유지 */
@@ -65,6 +65,20 @@ function alertBox({ title, desc, ok = '삭제', danger = true, onOk }) {
   b.onclick = () => { closeModal('#mdAlert'); onOk && onOk(); };
   openModal('#mdAlert');
 }
+
+/* ── 사양 §14 공통 Alert (문구·버튼 고정) ───────────────────────────
+   본문은 사양서 표기 그대로. 입력·변경 내용이 없으면 호출하지 않는다(§14 공통 규칙). */
+const ALERT = {
+  chatDel:    { title: '대화 목록 삭제', desc: '선택한 대화 내용이 삭제됩니다.',                              ok: '삭제', danger: true  },
+  regCancel:  { title: '등록 취소',      desc: '작성 중인 내용이 저장되지 않습니다. 종료하시겠습니까?',        ok: '확인', danger: false },
+  imgDel:     { title: '이미지 삭제',    desc: '선택한 이미지를 삭제하시겠습니까?',                            ok: '삭제', danger: true  },
+  vidDel:     { title: '영상 삭제',      desc: '선택한 영상이 삭제됩니다. 삭제하시겠습니까?',                   ok: '삭제', danger: true  },
+  personDel:  { title: '인물 삭제',      desc: '선택한 인물이 삭제됩니다. 삭제하시겠습니까?',                   ok: '삭제', danger: true  },
+  editCancel: { title: '편집 취소',      desc: '저장하지 않고 나가시겠습니까? 현재 편집 중인 내용은 저장되지 않습니다.', ok: '확인', danger: false },
+  caseDel:    { title: '사건 삭제',      desc: '선택한 사건이 삭제됩니다. 삭제하시겠습니까?',                   ok: '삭제', danger: true  },
+  mapDel:     { title: '맵 삭제',        desc: '선택한 맵이 삭제됩니다. 삭제하시겠습니까?',                     ok: '삭제', danger: true  }
+};
+const alertSpec = (key, onOk) => alertBox({ ...ALERT[key], onOk });
 
 /* ===================== 탭 ===================== */
 function renderTabs() {
@@ -411,25 +425,41 @@ document.addEventListener('click', e => { if (!e.target.closest('#ctxMenu') && !
 /* ===================== 칩 ===================== */
 function renderChips() {
   const box = $('#chips'); box.innerHTML = '';
-  const chips = [];
-  if (S.cams.length) chips.push({ k: 'cam', label: `위치 ${S.cams.length}` });
-  if (S.top.length || S.bottom.length) chips.push({ k: 'color', label: `색상 ${S.top.length + S.bottom.length}` });
-  if (S.period !== '오늘') chips.push({ k: 'period', label: S.period });
-  if (S.allResults) chips.push({ k: 'all', label: '모든 결과 출력' });
   if (!S.searched) return;
-  chips.forEach(c => {
+
+  const colorLabel = k => (COLORS.find(c => c.k === k) || {}).label || k;
+
+  /* 사양 §6-1 : 유사도·날짜는 **기본 적용** 필터라 Chip 은 띄우되 X 를 주지 않는다.
+     나머지 필터만 X 로 개별 해제하고, 호버하면 선택한 값 목록을 툴팁으로 보여준다. */
+  const fixed = [
+    { label: S.allResults ? '유사도 모든 결과' : `유사도 ${S.sim}% 이상` },
+    { label: S.period }
+  ];
+  const removable = [];
+  if (S.cams.length)
+    removable.push({ k: 'cam',   label: `위치 ${S.cams.length}`,                        tip: S.cams.join(', ') });
+  if (S.top.length || S.bottom.length)
+    removable.push({ k: 'color', label: `색상 ${S.top.length + S.bottom.length}`,
+      tip: [...S.top.map(c => '상의 ' + colorLabel(c)), ...S.bottom.map(c => '하의 ' + colorLabel(c))].join(', ') });
+  if (S.carTypes && S.carTypes.length)
+    removable.push({ k: 'car',   label: `차종 ${S.carTypes.length}`,                    tip: S.carTypes.join(', ') });
+
+  fixed.forEach(c => box.appendChild(el('span', 'chip chip-fixed', c.label)));
+
+  removable.forEach(c => {
     const n = el('span', 'chip', `${c.label}<button>${ICON.remove}</button>`);
+    if (c.tip) n.title = c.tip;
     n.querySelector('button').onclick = () => {
-      if (c.k === 'cam') S.cams = [];
+      if (c.k === 'cam')   S.cams = [];
       if (c.k === 'color') { S.top = []; S.bottom = []; }
-      if (c.k === 'period') S.period = '오늘';
-      if (c.k === 'all') { S.allResults = false; S.sim = 80; }
+      if (c.k === 'car')   S.carTypes = [];
       buildFilters(S.mode); runSearch(true);
     };
     box.appendChild(n);
   });
-  /* 사양서(Search main_002_1) : 필터칩 우측 `초기화` — 적용된 필터를 한 번에 해제 */
-  if (chips.length) {
+
+  /* 사양 §6-1 : `초기화` 는 유사도·날짜까지 Default 값으로 되돌린다 */
+  if (removable.length || S.allResults || S.sim !== 80 || S.period !== '오늘') {
     const r = el('button', 'chips-reset', '초기화');
     r.onclick = () => {
       S.cams = []; S.top = []; S.bottom = []; S.period = '오늘';
@@ -744,7 +774,7 @@ function renderObjectAdd() {
       `<div class="pick${addState.sel.includes(o.id) ? ' on' : ''}" data-add="${o.id}"><img src="${o.img}"></div>`).join('')
       : `<div class="ie-loading" style="grid-column:1/-1;color:#6b7785">${addState.tab === '검색' ? '검색어를 입력해 주세요.' : '북마크한 대상이 없습니다.'}</div>`}</div>`;
 
-  $('#edFoot').innerHTML = `<button class="btn-ghost" id="addBack">뒤로</button><button class="btn-primary" id="addGo" ${addState.sel.length ? '' : 'disabled'}>추가</button>`;
+  $('#edFoot').innerHTML = `<button class="btn-ghost" id="addBack">뒤로가기</button><button class="btn-primary" id="addGo" ${addState.sel.length ? '' : 'disabled'}>추가</button>`;
   $$('[data-tab]', $('#edBody')).forEach(b => b.onclick = () => { addState.tab = b.dataset.tab; renderObjectAdd(); });
   const q = $('#addQ'); if (q) q.oninput = e => { addState.q = e.target.value; renderObjectAdd(); $('#addQ').focus(); };
   $$('[data-add]', $('#edBody')).forEach(n => n.onclick = () => {
@@ -767,12 +797,12 @@ $('#btnPersonMgr').onclick = () => openPersonMgr();
 function openPersonMgr() { pmView = 'list'; pmSel = []; renderPM(); openModal('#mdPerson'); }
 
 function renderPM() {
-  const head = { list: ['인물 관리', '대상 검색에 사용할 인물을 등록 · 관리할 수 있습니다.'], new: ['새 인물 등록', '대상 검색에 사용할 인물 이미지와 정보를 등록합니다.'], detail: ['인물 상세', ''], edit: ['인물 수정', ''] }[pmView];
+  const head = { list: ['인물 관리', '대상 검색에 사용할 인물을 등록 · 관리할 수 있습니다.'], new: ['새 인물 등록', '검색에 활용할 인물 프로필 및 이미지를 등록합니다.'], detail: ['인물 상세', ''], edit: ['인물 수정', ''] }[pmView];
   $('#pmTitle').textContent = head[0]; $('#pmDesc').textContent = head[1]; $('#pmDesc').hidden = !head[1];
   $('#pmBack').hidden = pmView === 'list';
   $('#pmBack').onclick = () => {
     if (pmView === 'new' && pmForm && (pmForm.name || pmForm.imgs.length)) {
-      alertBox({ title: '등록을 취소하시겠습니까?', desc: '작성한 내용은 저장되지 않습니다.', ok: '확인', danger: false, onOk: () => { pmView = 'list'; renderPM(); } });
+      alertSpec('regCancel', () => { pmView = 'list'; renderPM(); });
     } else { pmView = pmView === 'edit' ? 'detail' : 'list'; renderPM(); }
   };
 
@@ -804,10 +834,7 @@ function renderPM() {
       $('#pmDel').disabled = !pmSel.length;
     });
     $('#pmAll').onchange = e => { pmSel = e.target.checked ? S.persons.map(p => p.id) : []; renderPM(); };
-    $('#pmDel').onclick = () => alertBox({
-      title: '선택한 인물을 삭제하시겠습니까?', desc: `${pmSel.length}명의 인물 데이터가 삭제됩니다.`,
-      onOk: () => { S.persons = S.persons.filter(p => !pmSel.includes(p.id)); S.selPersons = S.selPersons.filter(id => !pmSel.includes(id)); pmSel = []; renderPM(); renderPersonGrid(); runSearch(false); }
-    });
+    $('#pmDel').onclick = () => alertSpec('personDel', () => { S.persons = S.persons.filter(p => !pmSel.includes(p.id)); S.selPersons = S.selPersons.filter(id => !pmSel.includes(id)); pmSel = []; renderPM(); renderPersonGrid(); runSearch(false); });
     $$('.pm-card').forEach(c => c.onclick = e => { if (e.target.closest('.cb')) return; pmTarget = S.persons.find(p => p.id === c.dataset.pm); pmView = 'detail'; renderPM(); });
   }
 
@@ -838,10 +865,7 @@ function renderPM() {
     const addImg = () => { f.imgs.push([IMG_POOL[f.imgs.length % IMG_POOL.length]]); f.imgs = f.imgs.flat(); renderPM(); };
     if ($('#upDrop')) $('#upDrop').onclick = addImg;
     if ($('#upAdd')) $('#upAdd').onclick = addImg;
-    $$('[data-rmimg]').forEach(b => b.onclick = () => alertBox({
-      title: '이미지를 삭제하시겠습니까?', desc: '선택한 이미지가 삭제됩니다.', ok: '확인', danger: false,
-      onOk: () => { f.imgs.splice(+b.dataset.rmimg, 1); renderPM(); }
-    }));
+    $$('[data-rmimg]').forEach(b => b.onclick = () => alertSpec('imgDel', () => { f.imgs.splice(+b.dataset.rmimg, 1); renderPM(); }));
     $('#pfName').oninput = e => { f.name = e.target.value; $('#pfSave').disabled = !(f.name.trim() && f.imgs.length); };
     $('#pfDesc').oninput = e => f.desc = e.target.value;
     $('#pfCancel').onclick = $('#pmBack').onclick;
@@ -868,10 +892,7 @@ function renderPM() {
       </div></div>`;
     $('#pmFoot').innerHTML = `<button class="btn-ghost" id="pdDel">삭제</button><button class="btn-primary" id="pdEdit">수정</button>`;
     $('#pdEdit').onclick = () => { pmView = 'edit'; renderPM(); };
-    $('#pdDel').onclick = () => alertBox({
-      title: '인물을 삭제하시겠습니까?', desc: `${p.name} 님의 등록 정보가 삭제됩니다.`,
-      onOk: () => { S.persons = S.persons.filter(x => x.id !== p.id); S.selPersons = S.selPersons.filter(id => id !== p.id); pmView = 'list'; renderPM(); renderPersonGrid(); runSearch(false); }
-    });
+    $('#pdDel').onclick = () => alertSpec('personDel', () => { S.persons = S.persons.filter(x => x.id !== p.id); S.selPersons = S.selPersons.filter(id => id !== p.id); pmView = 'list'; renderPM(); renderPersonGrid(); runSearch(false); });
   }
   $$('[data-close]', $('#mdPerson')).forEach(b => b.onclick = () => closeModal('#mdPerson'));
   const ok = $('#pmOk'); if (ok) ok.onclick = () => { closeModal('#mdPerson'); renderPersonGrid(); };
@@ -957,7 +978,7 @@ function renderRecent() {
   $$('[data-pin]').forEach(b => b.onclick = e => { e.stopPropagation(); const r = S.recent.find(x => x.id === b.dataset.pin); r.pinned = !r.pinned; renderRecent(); });
   $$('[data-del]').forEach(b => b.onclick = e => {
     e.stopPropagation();
-    alertBox({ title: '대화를 삭제하시겠습니까?', desc: '선택한 대화 내용이 삭제됩니다.', onOk: () => { S.recent = S.recent.filter(x => x.id !== b.dataset.del); renderRecent(); } });
+    alertSpec('chatDel', () => { S.recent = S.recent.filter(x => x.id !== b.dataset.del); renderRecent(); });
   });
   $$('#recentList .rc').forEach(n => n.onclick = () => { $('#aiRecent').hidden = true; sendAI(S.recent.find(r => r.id === n.dataset.r).title); });
 }
@@ -1341,10 +1362,14 @@ function renderMulti() {
 function openCamPicker(e, tile, idx) {
   e.stopPropagation();
   const m = $('#ctxMenu');
-  m.innerHTML = CAMERAS.map(c => `<div data-cam="${c}">${c}</div>`).join('');
+  /* 사양 §7-5 : 이미 다른 슬롯에서 재생 중인 카메라는 목록에서 비활성(중복 방지) */
+  const used = new Set(MULTI_TILES.filter((_, i) => i !== idx).map(t => t.cam));
+  m.innerHTML = CAMERAS.map(c =>
+    `<div data-cam="${c}"${used.has(c) ? ' class="off" title="다른 화면에서 재생 중인 카메라입니다."' : ''}>${c}</div>`).join('');
   const r = e.target.getBoundingClientRect();
   m.style.left = r.left + 'px'; m.style.top = (r.bottom + 4) + 'px'; m.hidden = false;
   $$('div', m).forEach(d => d.onclick = () => {
+    if (d.classList.contains('off')) return;
     MULTI_TILES[idx].cam = d.dataset.cam; m.hidden = true; m.innerHTML = CTX_DEFAULT; renderMulti();
   });
 }
@@ -2706,11 +2731,7 @@ function bindBmDetail(b) {
     }
     if (a === 'cancel') {
       if (!BM.dirty) { BM.edit = false; renderBmView(); return; }
-      alertBox({
-        title: '편집을 취소할까요?', desc: '변경한 내용은 저장되지 않습니다.',
-        ok: '편집 취소', danger: true,
-        onOk: () => { BM.edit = false; BM.dirty = false; renderBmView(); }
-      });
+      alertSpec('editCancel', () => { BM.edit = false; BM.dirty = false; renderBmView(); });
     }
   });
 
@@ -2939,11 +2960,7 @@ function bindCsDetail(c) {
   const mp = $('#menuView [data-csmap]'); if (mp) mp.onclick = () => openMapView();
   $$('#menuView [data-csact]').forEach(b => b.onclick = () => {
     const a = b.dataset.csact;
-    if (a === 'del') alertBox({
-      title: '사건을 삭제할까요?', desc: `<b>${c.name}</b> 사건과 연계된 증거 목록이 함께 삭제됩니다.`,
-      ok: '삭제', danger: true,
-      onOk: () => { const i = CASE_DB.findIndex(x => x.id === c.id); CASE_DB.splice(i, 1); CS.sel = null; renderCsView(); }
-    });
+    if (a === 'del') alertSpec('caseDel', () => { const i = CASE_DB.findIndex(x => x.id === c.id); CASE_DB.splice(i, 1); CS.sel = null; renderCsView(); });
     if (a === 'edit') { CS.mode = 'edit'; CS.form = csForm(c); renderCsView(); }
     if (a === 'export') alertBox({
       title: '내보내기', desc: 'AI 생성 보고서와 증거 자료(대상 정보 · 영상 클립)를 ZIP으로 패키징합니다.',
@@ -3063,10 +3080,7 @@ function bindMpDetail(m) {
   $$('#menuView [data-mpact]').forEach(b => b.onclick = () => {
     const a = b.dataset.mpact;
     if (a === 'edit') { MP.mode = 'edit'; MP.form = mpNewForm(m); renderMpView(); }
-    if (a === 'del') alertBox({
-      title: '맵을 삭제할까요?', desc: `<b>${m.name}</b> 과 배치된 카메라 정보가 함께 삭제됩니다.`, ok: '삭제', danger: true,
-      onOk: () => { MAPS.splice(MAPS.findIndex(x => x.id === m.id), 1); MP.sel = null; renderMpView(); }
-    });
+    if (a === 'del') alertSpec('mapDel', () => { MAPS.splice(MAPS.findIndex(x => x.id === m.id), 1); MP.sel = null; renderMpView(); });
   });
 }
 
@@ -3137,11 +3151,8 @@ function bindMpForm() {
     if (a === 'cancel') {
       const dirty = MP.mode === 'new' ? (f.name || f.place || f.img || f.cams.length) : true;
       if (!dirty) { MP.mode = 'view'; renderMpView(); return; }
-      alertBox({
-        title: MP.mode === 'new' ? '등록을 취소할까요?' : '편집을 취소할까요?',
-        desc: '입력한 내용은 저장되지 않습니다.', ok: MP.mode === 'new' ? '등록 취소' : '편집 취소', danger: true,
-        onOk: () => { MP.mode = 'view'; renderMpView(); }
-      });
+      alertSpec(MP.mode === 'new' ? 'regCancel' : 'editCancel',
+        () => { MP.mode = 'view'; renderMpView(); });
     }
   });
 }
@@ -3325,11 +3336,7 @@ function renderWatchMgr() {
       AL.wsel = r.dataset.wm; AL.wrep = 0; AL.wv = 'detail'; renderWatchMgr();
     });
     $('#wmAll').onclick = () => { AL.wpick = AL.wpick.length === WATCHES.length ? [] : WATCHES.map(w => w.id); renderWatchMgr(); };
-    $('#wmDel').onclick = () => alertBox({
-      title: '인물을 삭제할까요?', desc: `선택한 <b>${AL.wpick.length}명</b>의 관심 인물이 삭제되며 알림이 중지됩니다.`,
-      ok: '삭제', danger: true,
-      onOk: () => { AL.wpick.forEach(id => WATCHES.splice(WATCHES.findIndex(w => w.id === id), 1)); AL.wpick = []; renderWatchMgr(); }
-    });
+    $('#wmDel').onclick = () => alertSpec('personDel', () => { AL.wpick.forEach(id => WATCHES.splice(WATCHES.findIndex(w => w.id === id), 1)); AL.wpick = []; renderWatchMgr(); });
     return;
   }
 
@@ -3349,10 +3356,7 @@ function renderWatchMgr() {
     foot.innerHTML = `<button class="btn-ghost" id="wmDel1">삭제</button><button class="btn-primary" id="wmEdit">수정</button>`;
     $('#wmBack').onclick = () => { AL.wv = 'list'; renderWatchMgr(); };
     $('#wmEdit').onclick = () => { AL.wform = { ...w }; AL.wv = 'edit'; renderWatchMgr(); };
-    $('#wmDel1').onclick = () => alertBox({
-      title: '인물을 삭제할까요?', desc: `<b>${w.name}</b> 의 관심 인물 등록이 삭제되며 알림이 중지됩니다.`, ok: '삭제', danger: true,
-      onOk: () => { WATCHES.splice(WATCHES.findIndex(x => x.id === w.id), 1); AL.wv = 'list'; renderWatchMgr(); }
-    });
+    $('#wmDel1').onclick = () => alertSpec('personDel', () => { WATCHES.splice(WATCHES.findIndex(x => x.id === w.id), 1); AL.wv = 'list'; renderWatchMgr(); });
     return;
   }
 
@@ -3383,10 +3387,7 @@ function renderWatchMgr() {
   $$('#wmBody [data-wfm]').forEach(b => b.onclick = () => { f.mode = b.dataset.wfm; renderWatchMgr(); });
   const back = () => {
     if (!dirty()) { AL.wv = 'detail'; renderWatchMgr(); return; }
-    alertBox({
-      title: '등록을 취소할까요?', desc: '변경한 내용은 저장되지 않습니다.', ok: '등록 취소', danger: true,
-      onOk: () => { AL.wv = 'detail'; renderWatchMgr(); }
-    });
+    alertSpec('regCancel', () => { AL.wv = 'detail'; renderWatchMgr(); });
   };
   $('#wmBack').onclick = back; $('#wfCancel').onclick = back;
   $('#wfOk').onclick = () => { Object.assign(w, { name: f.name, cls: f.cls, reason: f.reason, mode: f.mode }); AL.wv = 'detail'; renderWatchMgr(); };
@@ -3546,17 +3547,11 @@ function bindCsEdit() {
   $$('#menuView [data-cskd]').forEach(b => b.onclick = () => { f.kind = b.dataset.cskd; renderCsView(); });
   $$('#menuView [data-cstx]').forEach(b => b.onclick = () => {
     const i = +b.dataset.cstx, t = f.targets[i];
-    alertBox({
-      title: '대상을 삭제할까요?', desc: `<b>${t.name}</b> 이 사건에서 제외됩니다.`, ok: '삭제', danger: true,
-      onOk: () => { f.targets.splice(i, 1); renderCsView(); }
-    });
+    alertSpec('personDel', () => { f.targets.splice(i, 1); renderCsView(); });
   });
   $$('#menuView [data-csvdel]').forEach(b => b.onclick = () => {
     const i = +b.dataset.csvdel;
-    alertBox({
-      title: '영상을 삭제할까요?', desc: '증거 목록에서 해당 영상이 제외됩니다.', ok: '삭제', danger: true,
-      onOk: () => { f.videos.splice(i, 1); renderCsView(); }
-    });
+    alertSpec('vidDel', () => { f.videos.splice(i, 1); renderCsView(); });
   });
   $$('#menuView [data-csvid]').forEach(b => b.onclick = () => openVideoView(f.videos[+b.dataset.csvid].img));
   $$('#menuView [data-csact]').forEach(b => b.onclick = () => {
@@ -3570,10 +3565,7 @@ function bindCsEdit() {
     }
     if (a === 'ecancel') {
       if (!csDirty()) { CS.mode = 'view'; renderCsView(); return; }
-      alertBox({
-        title: '편집을 취소할까요?', desc: '변경한 내용은 저장되지 않습니다.', ok: '편집 취소', danger: true,
-        onOk: () => { CS.mode = 'view'; renderCsView(); }
-      });
+      alertSpec('editCancel', () => { CS.mode = 'view'; renderCsView(); });
     }
   });
 }
@@ -3686,10 +3678,7 @@ function renderCaseAdd() {
 
   const close = () => {
     if (!picked.length) { closeModal('#mdCaseAdd'); return; }
-    alertBox({
-      title: '등록을 취소할까요?', desc: '선택한 항목은 추가되지 않습니다.', ok: '등록 취소', danger: true,
-      onOk: () => closeModal('#mdCaseAdd')
-    });
+    alertSpec('regCancel', () => closeModal('#mdCaseAdd'));
   };
   $('#caX').onclick = close; $('#caCancel').onclick = close;
   $('#caOk').onclick = () => {
@@ -4181,8 +4170,7 @@ renderPM = function () {
 
   const backTo = () => {
     if (pmView === 'new' && pmForm && (pmForm.name || pmForm.imgs.length)) {
-      alertBox({ title: '등록을 취소할까요?', desc: '작성한 내용은 저장되지 않습니다.', ok: '등록 취소', danger: true,
-        onOk: () => { pmForm = null; pmView = 'list'; renderPM(); } });
+      alertSpec('regCancel', () => { pmForm = null; pmView = 'list'; renderPM(); });
     } else { pmForm = null; pmView = (pmView === 'edit' ? 'detail' : 'list'); renderPM(); }
   };
 
@@ -4231,10 +4219,7 @@ renderPM = function () {
       renderPM();
     });
     $('#pmAll').onchange = e => { pmSel = e.target.checked ? S.persons.map(p => p.id) : []; renderPM(); };
-    $('#pmDel').onclick = () => alertBox({
-      title: '선택한 인물을 삭제할까요?', desc: `<b>${pmSel.length}명</b>의 인물 데이터가 삭제됩니다.`, ok: '삭제', danger: true,
-      onOk: () => { S.persons = S.persons.filter(p => !pmSel.includes(p.id)); S.selPersons = S.selPersons.filter(id => !pmSel.includes(id)); pmSel = []; renderPM(); renderPersonGrid(); runSearch(false); }
-    });
+    $('#pmDel').onclick = () => alertSpec('personDel', () => { S.persons = S.persons.filter(p => !pmSel.includes(p.id)); S.selPersons = S.selPersons.filter(id => !pmSel.includes(id)); pmSel = []; renderPM(); renderPersonGrid(); runSearch(false); });
     $$('#pmBody [data-pm]').forEach(c => c.onclick = e => {
       if (e.target.closest('.cb')) return;
       pmTarget = S.persons.find(p => p.id === c.dataset.pm); pmView = 'detail'; renderPM();
@@ -4291,10 +4276,7 @@ renderPM = function () {
   if (ro) {
     $('#pmFoot').innerHTML = `<button class="btn-ghost" id="pfEdit">수정</button><button class="btn-primary" id="pfDel">삭제</button>`;
     $('#pfEdit').onclick = () => { pmView = 'edit'; pmForm = null; renderPM(); };
-    $('#pfDel').onclick = () => alertBox({
-      title: '인물을 삭제할까요?', desc: `<b>${pmTarget.name}</b> 의 등록 정보가 삭제됩니다.`, ok: '삭제', danger: true,
-      onOk: () => { S.persons = S.persons.filter(x => x.id !== pmTarget.id); S.selPersons = S.selPersons.filter(id => id !== pmTarget.id); pmView = 'list'; renderPM(); renderPersonGrid(); runSearch(false); }
-    });
+    $('#pfDel').onclick = () => alertSpec('personDel', () => { S.persons = S.persons.filter(x => x.id !== pmTarget.id); S.selPersons = S.selPersons.filter(id => id !== pmTarget.id); pmView = 'list'; renderPM(); renderPersonGrid(); runSearch(false); });
   } else {
     const canSave = f.name.trim() && f.imgs.length;
     $('#pmFoot').innerHTML = `<button class="btn-ghost" id="pfCancel">취소</button>
@@ -4307,10 +4289,7 @@ renderPM = function () {
     };
     if ($('#pmDrop')) $('#pmDrop').onclick = addImg;
     if ($('#pmAdd')) $('#pmAdd').onclick = addImg;
-    $$('#pmBody [data-rmimg]').forEach(b => b.onclick = () => alertBox({
-      title: '이미지를 삭제할까요?', desc: '선택한 이미지가 삭제됩니다.', ok: '삭제', danger: true,
-      onOk: () => { const i = +b.dataset.rmimg; f.imgs.splice(i, 1); f.kinds.splice(i, 1); renderPM(); }
-    }));
+    $$('#pmBody [data-rmimg]').forEach(b => b.onclick = () => alertSpec('imgDel', () => { const i = +b.dataset.rmimg; f.imgs.splice(i, 1); f.kinds.splice(i, 1); renderPM(); }));
     $('#pfName').oninput = e => { f.name = e.target.value; $('#pfSave').disabled = !(f.name.trim() && f.imgs.length); };
     $('#pfDesc').oninput = e => f.desc = e.target.value;
     $('#pfCancel').onclick = backTo;
