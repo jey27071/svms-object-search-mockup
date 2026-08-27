@@ -34,7 +34,7 @@ const ICON = {
 const S = {
   mode: 'aim', aiMode: false, aiStage: 'idle', aiResults: [],
   textOpt: '자연어', q: '',
-  sim: 80, allResults: false,
+  sim: 80, allResults: false, camQ: '', camOpen: new Set(['본관', '본관/지하 1층']),
   cams: [], top: [], bottom: [],
   period: '오늘', dFrom: '2025-06-05', tFrom: '00:00', dTo: '2025-06-05', tTo: '00:00',
   searched: false, sort: '유사도순', grouped: false,
@@ -131,12 +131,17 @@ function syncPanels() {
 }
 
 /* ===================== 필터 UI ===================== */
+/* 검색 유형별 필터 구성
+   · 공통(기본)  : 위치(카메라) · 기간
+   · 유사도      : 유사도 점수가 나오는 텍스트 · 이미지 검색만
+   · 색상        : **텍스트 검색에만**
+   · 차종        : 차량번호 검색만 */
 const FILTER_DEF = {
   text:   ['sim', 'cam', 'color', 'period'],
   image:  ['sim', 'cam', 'period'],
   person: ['cam', 'period'],
-  algo:   ['cam', 'color', 'period'],
-  car:    ['cam', 'color', 'cartype', 'period'],
+  algo:   ['cam', 'period'],
+  car:    ['cam', 'cartype', 'period'],
   aim:    []
 };
 
@@ -156,6 +161,57 @@ function accBlock(key, title, bodyHTML, open) {
   </div>`;
 }
 
+/* ---- 위치(카메라) 폴더 트리 ----
+   운영 환경에서 카메라가 수천 대인 것을 전제로, 건물 > 층 > 카메라 3단으로 접어 둔다.
+   폴더 체크는 하위 일괄 선택이고, 일부만 선택되면 중간 상태로 보인다. */
+function camTreeHTML() {
+  const sel = new Set(S.cams);
+  const q = (S.camQ || '').trim();
+  const hit = c => !q || c.includes(q);
+  const key = (a, b) => b ? `${a}/${b}` : a;
+  const openOf = k => S.camOpen.has(k) || !!q;   /* 검색 중에는 전부 펼친다 */
+
+  const rows = CAM_TREE.map(b => {
+    const groups = b.groups.map(g => ({ ...g, cams: g.cams.filter(hit) })).filter(g => g.cams.length);
+    if (!groups.length) return '';
+    const all = groups.flatMap(g => g.cams);
+    const n = all.filter(c => sel.has(c)).length;
+    const bk = key(b.name);
+    return `
+      <div class="ct-node">
+        <div class="ct-row ct-b${openOf(bk) ? ' open' : ''}" data-ctog="${bk}">
+          <span class="ct-cv">${ICON.caret}</span>
+          <input type="checkbox" class="cb" data-ctall="${all.join('|')}"
+            ${n === all.length ? 'checked' : ''} ${n && n < all.length ? 'data-part="1"' : ''}>
+          ${ICON2.folder}<span class="ct-nm">${b.name}</span><span class="ct-n">${all.length}</span>
+        </div>
+        <div class="ct-kids"${openOf(bk) ? '' : ' hidden'}>
+          ${groups.map(g => {
+            const gk = key(b.name, g.name);
+            const gn = g.cams.filter(c => sel.has(c)).length;
+            return `<div class="ct-node">
+              <div class="ct-row ct-g${openOf(gk) ? ' open' : ''}" data-ctog="${gk}">
+                <span class="ct-cv">${ICON.caret}</span>
+                <input type="checkbox" class="cb" data-ctall="${g.cams.join('|')}"
+                  ${gn === g.cams.length ? 'checked' : ''} ${gn && gn < g.cams.length ? 'data-part="1"' : ''}>
+                ${ICON2.folder}<span class="ct-nm">${g.name}</span><span class="ct-n">${g.cams.length}</span>
+              </div>
+              <div class="ct-kids"${openOf(gk) ? '' : ' hidden'}>
+                ${g.cams.map(c => `<label class="ct-row ct-c">
+                  <input type="checkbox" class="cb" data-cam="${c}" ${sel.has(c) ? 'checked' : ''}>
+                  ${ICON2.cam}<span class="ct-nm">${c}</span></label>`).join('')}
+              </div></div>`;
+          }).join('')}
+        </div></div>`;
+  }).join('');
+
+  return `<div class="cam-tree">
+    <div class="ct-search"><input id="fCamQ" placeholder="카메라 검색" value="${S.camQ || ''}">${GICON.search}</div>
+    <label class="check sm ct-all"><input type="checkbox" data-cam="__all" ${sel.size === 0 ? 'checked' : ''}><i></i>전체</label>
+    ${rows || '<div class="ct-empty">일치하는 카메라가 없습니다.</div>'}
+  </div>`;
+}
+
 function buildFilters(mode) {
   const on = filterEnabled();
   const parts = [];
@@ -168,11 +224,7 @@ function buildFilters(mode) {
       </div>
       <label class="check sm"><input type="checkbox" id="fAll" ${S.allResults ? 'checked' : ''}><i></i>모든 결과 출력</label>`, on));
 
-    if (f === 'cam') parts.push(accBlock('cam', '위치', `
-      <div class="cam-list">
-        <label class="check sm"><input type="checkbox" data-cam="__all" ${S.cams.length === 0 ? 'checked' : ''}><i></i>전체</label>
-        ${CAMERAS.map(c => `<label class="check sm sub"><input type="checkbox" data-cam="${c}" ${S.cams.includes(c) ? 'checked' : ''}><i></i>${c}</label>`).join('')}
-      </div>`, on));
+    if (f === 'cam') parts.push(accBlock('cam', '위치', camTreeHTML(), on));
 
     if (f === 'color') parts.push(accBlock('color', '색상', `
       <div class="color-label">상의</div>
@@ -204,6 +256,31 @@ function buildFilters(mode) {
 
 function bindFilters(box) {
   $$('.acc-head', box).forEach(h => h.onclick = () => h.parentElement.classList.toggle('open'));
+
+  /* ---- 위치 트리 : 폴더 접기 · 폴더 일괄선택 · 카메라 검색 ---- */
+  $$('[data-ctog]', box).forEach(r => r.onclick = e => {
+    if (e.target.closest('input')) return;
+    const k = r.dataset.ctog;
+    S.camOpen.has(k) ? S.camOpen.delete(k) : S.camOpen.add(k);
+    buildFilters(S.mode);
+  });
+  $$('[data-ctall]', box).forEach(c => c.onclick = e => {
+    e.stopPropagation();
+    const list = c.dataset.ctall.split('|');
+    const set = new Set(S.cams);
+    const allOn = list.every(x => set.has(x));
+    list.forEach(x => allOn ? set.delete(x) : set.add(x));
+    S.cams = [...set];
+    buildFilters(S.mode); runSearch(true);
+  });
+  /* 일부만 선택된 폴더는 중간 상태로 */
+  $$('[data-part]', box).forEach(c => { c.indeterminate = true; });
+  const cq = $('#fCamQ', box);
+  if (cq) cq.oninput = e => {
+    S.camQ = e.target.value; const p = e.target.selectionStart;
+    buildFilters(S.mode);
+    const n = $('#fCamQ'); if (n) { n.focus(); n.setSelectionRange(p, p); }
+  };
 
   const sim = $('#fSim', box);
   if (sim) {
@@ -1089,6 +1166,7 @@ const SLOT = k => CMP_SLOTS.find(s => s.k === k) || CMP_SLOTS[0];
 const slotColor = k => SLOT(k).color;
 
 const ICON2 = {
+  folder: '<svg viewBox="0 0 16 16" class="ic"><path d="M2 4.4a1 1 0 011-1h3.2l1.2 1.4H13a1 1 0 011 1v5.8a1 1 0 01-1 1H3a1 1 0 01-1-1z" stroke="currentColor" stroke-width="1.2" fill="none"/></svg>',
   person: '<svg viewBox="0 0 16 16" class="ic"><circle cx="8" cy="5.4" r="2.4" stroke="currentColor" stroke-width="1.2" fill="none"/><path d="M3.4 13.4c0-2.6 2.1-3.9 4.6-3.9s4.6 1.3 4.6 3.9" stroke="currentColor" stroke-width="1.2" fill="none"/></svg>',
   cam:    '<svg viewBox="0 0 16 16" class="ic"><rect x="1.6" y="4.4" width="8.8" height="7.2" rx="1" stroke="currentColor" stroke-width="1.2" fill="none"/><path d="M10.8 7.6l3.6-2.2v5.2l-3.6-2.2z" fill="currentColor"/></svg>',
   cctv:   '<svg viewBox="0 0 16 16" class="ic"><path d="M2.2 5.4l9.6-2.6 1.2 4.4-9.6 2.6z" stroke="currentColor" stroke-width="1.2" fill="none"/><path d="M5 9.5l1 4" stroke="currentColor" stroke-width="1.2"/></svg>',

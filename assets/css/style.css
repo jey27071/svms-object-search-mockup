@@ -2539,3 +2539,32 @@ body.rsz-drag .rsz::after{background:var(--primary)}
 .aim-acts button:hover{background:rgba(48,112,216,.28)}
 .aim-sugg-t{margin:12px 0 6px;font-size:10.5px;font-weight:600;color:var(--tx-helper)}
 .aim-sugg.in button{width:100%;text-align:left}
+
+/* ── 위치(카메라) 폴더 트리 — 수천 대 규모를 전제로 접어서 다룬다 ────────── */
+.cam-tree{display:flex;flex-direction:column;gap:2px}
+.ct-search{position:relative;margin-bottom:6px}
+.ct-search input{
+  width:100%;height:30px;padding:0 28px 0 10px;border-radius:5px;
+  background:var(--bg-1);border:1px solid var(--ln-border);
+  font-size:11.5px;color:var(--tx-primary);font-family:inherit;outline:0
+}
+.ct-search input::placeholder{color:var(--tx-helper)}
+.ct-search input:focus{border-color:var(--primary)}
+.ct-search .i{position:absolute;right:8px;top:7px;width:15px;height:15px;color:var(--ic-gray);pointer-events:none}
+.ct-all{margin-bottom:4px}
+.ct-row{
+  display:flex;align-items:center;gap:6px;height:28px;padding:0 4px;border-radius:4px;
+  font-size:11.5px;color:var(--tx-secondary);cursor:pointer
+}
+.ct-row:hover{background:rgba(255,255,255,.04)}
+.ct-row .ic{width:14px;height:14px;color:var(--ic-gray);flex:0 0 14px}
+.ct-nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ct-n{font-size:10px;color:var(--tx-helper);font-family:var(--mono)}
+.ct-cv{display:inline-flex;flex:0 0 12px;transition:transform .12s;transform:rotate(-90deg);color:var(--ic-gray)}
+.ct-cv .i{width:12px;height:12px}
+.ct-row.open .ct-cv{transform:rotate(0)}
+.ct-b{font-weight:600;color:var(--tx-primary)}
+.ct-kids{padding-left:14px}
+.ct-c{cursor:pointer}
+.ct-c .ct-nm{color:var(--tx-tertiary)}
+.ct-empty{padding:10px 4px;font-size:11px;color:var(--tx-helper)}
