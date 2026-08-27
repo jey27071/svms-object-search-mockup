@@ -387,7 +387,8 @@ function renderResults() {
   if (!S.results.length) { body.innerHTML = `<div class="empty">${EMPTY_TEXT.none}</div>`; return; }
 
   if (!S.grouped) {
-    body.innerHTML = `<div class="grid">${S.results.map(o => cardHTML(o)).join('')}</div>`;
+    /* 일반 결과 목록에서도 경로 비교를 걸 수 있어야 한다 (최대 4개) */
+    body.innerHTML = `<div class="grid">${S.results.map(o => cardHTML(o, { compare: true })).join('')}</div>`;
     bindCards(body); return;
   }
 
