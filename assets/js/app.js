@@ -85,7 +85,7 @@ const alertSpec = (key, onOk) => alertBox({ ...ALERT[key], onOk });
 function renderTabs() {
   const box = $('#tabs'); box.innerHTML = '';
   S.tabs.forEach(t => {
-    const n = el('div', 'tab' + (t.id === S.activeTab ? ' on' : ''));
+    const n = el('div', 'tab' + (t.id === S.activeTab ? ' on' : '') + (t.fixed ? ' fixed' : ''));
     /* 사양서 Search main_000_1 · 4-1) : 검색 탭은 기본 탭으로 **닫기 불가** → ✕ 자체를 두지 않는다 */
     n.innerHTML = `<span>${t.title}</span>` + (t.fixed ? '' : `<button class="x">${ICON.xs}</button>`);
     n.onclick = e => {
@@ -3781,7 +3781,7 @@ function csEditHTML() {
         <button class="btn-ghost sm" data-csact="ecancel">취소</button>
         <button class="btn-primary sm" data-csact="save" ${f.name.trim() && f.desc.trim() ? '' : 'disabled'}>저장</button>
       </div></div>
-    <div class="mn-body">
+    <div class="mn-body cs-edit">
       <div class="fm-row"><span class="k">사건명<span class="req">*</span></span>
         <span class="v"><input class="fm-in" id="cfName" value="${f.name}"></span></div>
       <div class="fm-row"><span class="k">상태<span class="req">*</span></span><span class="v">${chips(CS_STATUS, f.status, 'csst')}</span></div>
