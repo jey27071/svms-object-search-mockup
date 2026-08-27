@@ -3171,7 +3171,7 @@ function mpFormHTML() {
             `<button class="mn-chip${f.place === z ? ' on' : ''}" data-mpz="${z}">${z}</button>`).join('')}</div></span></div>
         <div class="panel-label" style="margin:12px 0 7px">카메라<span class="req">*</span>
           ${f.place ? `<em>${f.cams.length}/${zone.length}</em>
-            <button class="btn-ghost sm" style="margin-left:auto" data-mpact="reset" ${f.cams.length ? '' : 'disabled'}>초기화</button>` : ''}</div>
+            <button class="btn-ghost sm" style="margin-left:auto" data-mpact="reset" ${f.cams.length ? '' : 'disabled'}>배치 초기화</button>` : ''}</div>
         ${f.place
           ? zone.map(n => `<div class="mp-camrow${placed(n) ? ' placed' : ''}" draggable="true" data-mpcam="${n}">
               ${ICON2.cam}${n}<button class="plus" data-mptoggle="${n}">${placed(n) ? '−' : '+'}</button></div>`).join('')
