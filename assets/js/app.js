@@ -91,8 +91,10 @@ function renderTabs() {
       if (e.target.closest('.x')) {
         if (t.fixed) { S.activeTab = t.id; }
         else {
+          /* 사양 §2 : 탭을 닫으면 **이전 탭**으로 포커스가 자동 전환된다(검색 탭 고정 아님) */
+          const i = S.tabs.findIndex(x => x.id === t.id);
           S.tabs = S.tabs.filter(x => x.id !== t.id);
-          if (S.activeTab === t.id) S.activeTab = 'search';
+          if (S.activeTab === t.id) S.activeTab = (S.tabs[i - 1] || S.tabs[0] || { id: 'search' }).id;
         }
       } else S.activeTab = t.id;
       renderTabs(); syncPanels();
@@ -1708,7 +1710,8 @@ function openCompareTab(ids) {
   });
   CMP.objs = objs; CMP.tab = '전체'; CMP.openLane = null;
   const first = objs[0];
-  newTab(`경로 비교 > ${first ? first.cam : ''}`, first, { kind: 'compare' });
+  /* 사양 §2 : 경로 비교 탭 타이틀은 `경로 비교 > 대상명, 대상명` (위치명 아님) */
+  newTab(`경로 비교 > ${objs.map(o => o.label).join(', ')}`, first, { kind: 'compare' });
 }
 
 /* 타일을 16:9로 유지하며 스테이지에 맞춘다 (n2 = 1×2, n4 = 2×2) */
