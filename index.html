@@ -290,21 +290,21 @@
           <div class="dt-box sub"  style="left:53.5%;top:6%;width:5%;height:14%"><i>인물 B</i></div>
           <div class="dt-ctrl" id="dtCtrl">
             <div class="grp l" id="dtAreaTools">
-              <button class="btn-icon" data-area="shape" title="영역 검색"><svg viewBox="0 0 16 16" class="ic"><path d="M2 5V2h3M14 5V2h-3M2 11v3h3M14 11v3h-3" stroke="currentColor" stroke-width="1.3" fill="none"/></svg></button>
+              <button class="btn-icon" data-area="shape" title="영역 검색"><i class="i i-18 i-tool-shape"></i></button>
               <button class="btn-icon" data-area="line" title="선 검색"><svg viewBox="0 0 16 16" class="ic"><path d="M2 14L14 2M4 11l2 2M7 8l2 2M10 5l2 2" stroke="currentColor" stroke-width="1.3" fill="none"/></svg></button>
             </div>
             <div class="grp c">
-              <button class="btn-icon" id="dtPrevClip" title="이전 영상"><svg viewBox="0 0 16 16" class="ic"><path d="M4 3v10M13 3L6 8l7 5z" fill="currentColor"/></svg></button>
-              <button class="btn-icon" title="10초 뒤로"><svg viewBox="0 0 16 16" class="ic"><path d="M8 3.5a5 5 0 105 5" stroke="currentColor" stroke-width="1.3" fill="none"/><path d="M8 1.2v4.6L5 3.5z" fill="currentColor"/></svg></button>
-              <button class="btn-icon" title="배속 뒤로"><svg viewBox="0 0 16 16" class="ic"><path d="M8 3v10L2 8zM14 3v10L8 8z" fill="currentColor"/></svg></button>
-              <button class="btn-icon play" id="dtPlay" title="재생"><svg viewBox="0 0 16 16" class="ic"><path d="M4 2.5l9 5.5-9 5.5z" fill="currentColor"/></svg></button>
+              <button class="btn-icon" id="dtPrevClip" title="이전 영상"><i class="i i-18 i-pc-prev"></i></button>
+              <button class="btn-icon" title="10초 뒤로"><i class="i i-18 i-pc-back10"></i></button>
+              <button class="btn-icon" title="배속 뒤로"><i class="i i-18 i-pc-rewind"></i></button>
+              <button class="btn-icon play" id="dtPlay" title="재생"><i class="i i-18 i-pc-play"></i></button>
               <button class="btn-icon" title="일시정지"><svg viewBox="0 0 16 16" class="ic"><path d="M4.5 3h2.5v10H4.5zM9 3h2.5v10H9z" fill="currentColor"/></svg></button>
-              <button class="btn-icon" title="배속 앞으로"><svg viewBox="0 0 16 16" class="ic"><path d="M8 3v10l6-5zM2 3v10l6-5z" fill="currentColor"/></svg></button>
-              <button class="btn-icon" title="10초 앞으로"><svg viewBox="0 0 16 16" class="ic"><path d="M8 3.5a5 5 0 11-5 5" stroke="currentColor" stroke-width="1.3" fill="none"/><path d="M8 1.2v4.6L11 3.5z" fill="currentColor"/></svg></button>
-              <button class="btn-icon" id="dtNextClip" title="다음 영상"><svg viewBox="0 0 16 16" class="ic"><path d="M12 3v10M3 3l7 5-7 5z" fill="currentColor"/></svg></button>
+              <button class="btn-icon" title="배속 앞으로"><i class="i i-18 i-pc-forward"></i></button>
+              <button class="btn-icon" title="10초 앞으로"><i class="i i-18 i-pc-fwd10"></i></button>
+              <button class="btn-icon" id="dtNextClip" title="다음 영상"><i class="i i-18 i-pc-next"></i></button>
               <!-- 사양서 2-6) 음량 : 호버 시 슬라이더 노출 · 선택 시 음소거 토글 -->
               <span class="vol-wrap" id="dtVolWrap">
-                <button class="btn-icon" id="dtVol" title="음량"><svg viewBox="0 0 16 16" class="ic" id="dtVolIc"><path d="M3 6h2.5L9 3v10L5.5 10H3z" fill="currentColor"/><path d="M11 6a3 3 0 010 4" stroke="currentColor" stroke-width="1.2" fill="none"/></svg></button>
+                <button class="btn-icon" id="dtVol" title="음량"><i class="i i-18 i-pc-volume" id="dtVolIc"></i></button>
                 <input type="range" class="vol-slider" id="dtVolRange" min="0" max="100" value="70">
               </span>
             </div>
@@ -312,17 +312,17 @@
               <!-- 사양서 Detail_000_2 · 2-5) 영상 분석 및 뷰어 도구 :
                    히트맵 / 경로 확인 / 주변 카메라 / 단일 영상 view(1X1, Default) / 다중 영상 view(2X2)
                    ※ 대상 바운딩 박스는 2-2)에 따라 상시 표시라 토글 버튼을 두지 않는다 -->
-              <button class="btn-icon" data-tool="heat" title="히트맵"><svg viewBox="0 0 16 16" class="ic"><path d="M8 1.5s3.5 3 3.5 6a3.5 3.5 0 11-7 0c0-3 3.5-6 3.5-6z" stroke="currentColor" stroke-width="1.2" fill="none"/></svg></button>
-              <button class="btn-icon" data-tool="path" title="경로 확인"><svg viewBox="0 0 16 16" class="ic"><path d="M3 13c0-4 4-2 4-5S11 3 13 4" stroke="currentColor" stroke-width="1.3" fill="none"/><circle cx="3" cy="13" r="1.4" fill="currentColor"/><circle cx="13" cy="4" r="1.4" fill="currentColor"/></svg></button>
-              <button class="btn-icon" data-tool="cctv" title="주변 카메라"><svg viewBox="0 0 16 16" class="ic"><path d="M2.2 5.4l9.6-2.6 1.2 4.4-9.6 2.6z" stroke="currentColor" stroke-width="1.2" fill="none"/><path d="M5 9.5l1 4M13 7.2l1.4-.4" stroke="currentColor" stroke-width="1.2" fill="none"/></svg></button>
-              <button class="btn-icon on" data-tool="single" title="단일 영상 view"><svg viewBox="0 0 16 16" class="ic"><rect x="2.4" y="2.4" width="11.2" height="11.2" rx="1" fill="currentColor"/></svg></button>
-              <button class="btn-icon" data-tool="multi" title="다중 영상 view"><svg viewBox="0 0 16 16" class="ic"><rect x="2" y="2" width="5.4" height="5.4" rx=".8" fill="currentColor"/><rect x="8.6" y="2" width="5.4" height="5.4" rx=".8" fill="currentColor"/><rect x="2" y="8.6" width="5.4" height="5.4" rx=".8" fill="currentColor"/><rect x="8.6" y="8.6" width="5.4" height="5.4" rx=".8" fill="currentColor"/></svg></button>
+              <button class="btn-icon" data-tool="heat" title="히트맵"><i class="i i-18 i-tool-heatmap"></i></button>
+              <button class="btn-icon" data-tool="path" title="경로 확인"><i class="i i-18 i-tool-path"></i></button>
+              <button class="btn-icon" data-tool="cctv" title="주변 카메라"><i class="i i-18 i-tool-cctv"></i></button>
+              <button class="btn-icon on" data-tool="single" title="단일 영상 view"><i class="i i-18 i-tool-single"></i></button>
+              <button class="btn-icon" data-tool="multi" title="다중 영상 view"><i class="i i-18 i-tool-multi"></i></button>
               <div class="select xs dt-sel" id="dtViewSel" data-value="Multi View">
                 <button class="select-btn">Multi View<i class="i i-16 i-chevron i-down caret"></i></button>
                 <div class="select-menu"><div data-v="Multi View">Multi View</div><div data-v="주변 카메라">주변 카메라</div><div data-v="맵뷰어">맵뷰어</div></div>
               </div>
-              <button class="btn-icon" id="dtSet" title="설정"><svg viewBox="0 0 16 16" class="ic"><circle cx="8" cy="8" r="2.2" stroke="currentColor" stroke-width="1.2" fill="none"/><path d="M8 1.6l.9 1.7 1.9-.3.5 1.85 1.75.83-.85 1.72.85 1.72-1.75.83-.5 1.85-1.9-.3L8 14.4l-.9-1.7-1.9.3-.5-1.85-1.75-.83.85-1.72-.85-1.72 1.75-.83.5-1.85 1.9.3z" stroke="currentColor" stroke-width="1" fill="none"/></svg></button>
-              <button class="btn-icon" id="dtFull" title="영상 전체보기"><svg viewBox="0 0 16 16" class="ic"><path d="M6 2H2v4M10 14h4v-4M2 10v4h4M14 6V2h-4" stroke="currentColor" stroke-width="1.3" fill="none"/></svg></button>
+              <button class="btn-icon" id="dtSet" title="설정"><i class="i i-18 i-tool-setting"></i></button>
+              <button class="btn-icon" id="dtFull" title="영상 전체보기"><i class="i i-18 i-tool-expand"></i></button>
             </div>
           </div>
         </div>
@@ -415,10 +415,10 @@
             <div class="ov" id="dtMapWps" hidden style="pointer-events:auto"></div>
             <span class="dt-floor" id="dtFloor">1층</span>
             <div class="dt-map-tools" id="dtMapTools">
-              <button class="btn-icon" data-map="cctv" title="CCTV 표시"><svg viewBox="0 0 16 16" class="ic"><path d="M2.5 6l5-3.2 6 2.6-1 6.4-6.6 1.4z" stroke="currentColor" stroke-width="1.2" fill="none"/></svg></button>
+              <button class="btn-icon" data-map="cctv" title="CCTV 표시"><i class="i i-16 i-tool-cctv"></i></button>
               <span class="sepv"></span>
-              <button class="btn-icon" data-map="path" title="이동경로"><svg viewBox="0 0 16 16" class="ic"><path d="M4 14V6a2 2 0 012-2h4a2 2 0 002-2" stroke="currentColor" stroke-width="1.3" fill="none"/></svg></button>
-              <button class="btn-icon" data-map="full" title="전체보기"><svg viewBox="0 0 16 16" class="ic"><path d="M6 2H2v4M10 14h4v-4M2 10v4h4M14 6V2h-4" stroke="currentColor" stroke-width="1.3" fill="none"/></svg></button>
+              <button class="btn-icon" data-map="path" title="이동경로"><i class="i i-16 i-tool-path"></i></button>
+              <button class="btn-icon" data-map="full" title="전체보기"><i class="i i-16 i-mv-expand"></i></button>
             </div>
             <div class="dt-marker" id="dtMarker" style="left:60%;top:64%"><span>1F 메인 복도</span><i></i></div>
             <div class="dt-zoom"><button>+</button><button>−</button></div>

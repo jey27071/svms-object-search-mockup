@@ -1235,34 +1235,36 @@ function renderRuler() {
 }
 
 /* 재생 컨트롤 바 — 상세 / 비교 / 영상 조회 / 북마크 공용 */
-const _cb = (t, p, extra = '') => `<button class="btn-icon" title="${t}" ${extra}><svg viewBox="0 0 16 16" class="ic">${p}</svg></button>`;
+const _cb = (t, cls, extra = '') => `<button class="btn-icon" title="${t}" ${extra}><i class="i i-18 ${cls}"></i></button>`;
 function playCtrlHTML() {
   const b = _cb;
-  return `${b('처음', '<path d="M4 3v10M13 3L6 8l7 5z" fill="currentColor"/>')}
-    ${b('10초 뒤로', '<path d="M8 3.5a5 5 0 105 5" stroke="currentColor" stroke-width="1.3" fill="none"/><path d="M8 1.2v4.6L5 3.5z" fill="currentColor"/>')}
-    ${b('배속 뒤로', '<path d="M8 3v10L2 8zM14 3v10L8 8z" fill="currentColor"/>')}
-    ${b('재생', '<path d="M4 2.5l9 5.5-9 5.5z" fill="currentColor"/>')}
-    ${b('일시정지', '<path d="M4.5 3h2.5v10H4.5zM9 3h2.5v10H9z" fill="currentColor"/>')}
-    ${b('배속 앞으로', '<path d="M8 3v10l6-5zM2 3v10l6-5z" fill="currentColor"/>')}
-    ${b('10초 앞으로', '<path d="M8 3.5a5 5 0 11-5 5" stroke="currentColor" stroke-width="1.3" fill="none"/><path d="M8 1.2v4.6L11 3.5z" fill="currentColor"/>')}
-    ${b('끝', '<path d="M12 3v10M3 3l7 5-7 5z" fill="currentColor"/>')}
-    ${b('음량', '<path d="M3 6h2.5L9 3v10L5.5 10H3z" fill="currentColor"/><path d="M11 6a3 3 0 010 4" stroke="currentColor" stroke-width="1.2" fill="none"/>')}`;
+  /* 아이콘은 GUI(Tnihi6lixRR47N4RSAwUbF) 상세화면 컨트롤 바에서 추출한 것을 쓴다 */
+  return `${b('이전 영상', 'i-pc-prev')}
+    ${b('10초 뒤로', 'i-pc-back10')}
+    ${b('배속 뒤로', 'i-pc-rewind')}
+    ${b('재생', 'i-pc-play')}
+    ${b('일시정지', 'i-pc-pause')}
+    ${b('배속 앞으로', 'i-pc-forward')}
+    ${b('10초 앞으로', 'i-pc-fwd10')}
+    ${b('다음 영상', 'i-pc-next')}
+    ${b('음량', 'i-pc-volume')}`;
 }
 function ctrlHTML(opt = {}) {
   const b = _cb;
   const center = `<div class="grp c">${playCtrlHTML()}</div>`;
+  /* 아이콘은 GUI 상세화면(4282:48721) 컨트롤 바에서 추출한 것 */
   const left = `<div class="grp l">
-    ${b('영역 검색 — 도형', '<path d="M2 5V2h3M14 5V2h-3M2 11v3h3M14 11v3h-3" stroke="currentColor" stroke-width="1.3" fill="none"/>')}
-    ${b('영역 검색 — 선', '<path d="M2 14L14 2M4 11l2 2M7 8l2 2M10 5l2 2" stroke="currentColor" stroke-width="1.3" fill="none"/>')}
+    ${b('영역 검색', 'i-tool-shape')}
+    ${b('선 검색', 'i-tool-path')}
   </div>`;
   const right = `<div class="grp r" style="opacity:${opt.dimRight ? '.4' : '1'}">
-    ${b('대상 표시', '<circle cx="6" cy="6" r="2.6" stroke="currentColor" stroke-width="1.2" fill="none"/><path d="M2 14c0-2.4 1.8-3.6 4-3.6M11 8.5l3 3M14 8.5l-3 3" stroke="currentColor" stroke-width="1.2" fill="none"/>')}
-    ${b('이동 경로', '<path d="M3 13c0-4 4-2 4-5S11 3 13 4" stroke="currentColor" stroke-width="1.3" fill="none"/><circle cx="3" cy="13" r="1.4" fill="currentColor"/><circle cx="13" cy="4" r="1.4" fill="currentColor"/>')}
-    ${b('히트맵', '<path d="M8 1.5s3.5 3 3.5 6a3.5 3.5 0 11-7 0c0-3 3.5-6 3.5-6z" stroke="currentColor" stroke-width="1.2" fill="none"/>')}
-    <button class="btn-icon on" title="마스킹"><svg viewBox="0 0 16 16" class="ic"><rect x="3" y="3" width="10" height="10" rx="1.5" fill="currentColor"/></svg></button>
-    ${b('멀티뷰', '<rect x="2" y="2" width="5.4" height="5.4" rx=".8" fill="currentColor"/><rect x="8.6" y="2" width="5.4" height="5.4" rx=".8" fill="currentColor"/><rect x="2" y="8.6" width="5.4" height="5.4" rx=".8" fill="currentColor"/><rect x="8.6" y="8.6" width="5.4" height="5.4" rx=".8" fill="currentColor"/>')}
-    ${b('설정', '<circle cx="8" cy="8" r="2.2" stroke="currentColor" stroke-width="1.2" fill="none"/><path d="M8 1.6l.9 1.7 1.9-.3.5 1.85 1.75.83-.85 1.72.85 1.72-1.75.83-.5 1.85-1.9-.3L8 14.4l-.9-1.7-1.9.3-.5-1.85-1.75-.83.85-1.72-.85-1.72 1.75-.83.5-1.85 1.9.3z" stroke="currentColor" stroke-width="1" fill="none"/>')}
-    ${b('전체보기', '<path d="M6 2H2v4M10 14h4v-4M2 10v4h4M14 6V2h-4" stroke="currentColor" stroke-width="1.3" fill="none"/>', 'data-vwfull')}
+    ${b('히트맵', 'i-tool-heatmap')}
+    ${b('경로 확인', 'i-tool-path')}
+    ${b('주변 카메라', 'i-tool-cctv')}
+    <button class="btn-icon on" title="단일 영상"><i class="i i-18 i-tool-single"></i></button>
+    ${b('다중 영상', 'i-tool-multi')}
+    ${b('설정', 'i-tool-setting')}
+    ${b('전체보기', 'i-tool-expand', 'data-vwfull')}
   </div>`;
   return left + center + right;
 }
