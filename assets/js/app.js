@@ -1579,6 +1579,7 @@ const RSZ = [
   { el: '#sidePanel', side: 'right', min: 260, max: 620, def: 320 },
   { el: '#preview',   side: 'left',  min: 260, max: 680, def: 400 },
   { el: '#aiFloat',   side: 'left',  min: 280, max: 620, def: 360, only: 'ai-c' },
+  { el: '#aiFloat',   side: 'left',  min: 320, max: 720, def: 440, only: 'ai-b' },
   { el: '.dt-side',   side: 'left',  min: 300, max: 720, def: null },
   /* 메뉴 화면은 **목록(첫 패널)** 이 폭을 갖고 상세가 나머지를 채우므로 목록 쪽에 붙인다 */
   { el: '#menuView > .mn-panel:first-child', side: 'right', min: 220, max: 1300, def: null }
@@ -1617,6 +1618,30 @@ function addResizer(node, cfg) {
   });
 }
 
+/* 사양 §3 : AI 에이전트 팝업(A타입) 좌측 하단 핸들을 잡아 폭·높이를 함께 조절한다.
+   top/right 로 고정돼 있으므로 폭은 왼쪽으로, 높이는 아래로 자란다. */
+function initAiGrip() {
+  const p = $('#aiFloat'); if (!p) return;
+  const g = p.querySelector('.af-grip');
+  if (!g || g.dataset.gripOn) return;
+  g.dataset.gripOn = '1';
+  let st = null;
+  g.addEventListener('mousedown', e => {
+    if (!p.classList.contains('ai-a')) return;
+    const r = p.getBoundingClientRect();
+    st = { x: e.clientX, y: e.clientY, w: r.width, h: r.height };
+    document.body.style.userSelect = 'none';
+    e.preventDefault(); e.stopPropagation();
+  });
+  document.addEventListener('mousemove', e => {
+    if (!st) return;
+    const w = Math.max(300, Math.min(640, st.w - (e.clientX - st.x)));
+    const h = Math.max(320, Math.min(innerHeight - 90, st.h + (e.clientY - st.y)));
+    p.style.width = w + 'px'; p.style.height = h + 'px';
+  });
+  document.addEventListener('mouseup', () => { st = null; document.body.style.userSelect = ''; });
+}
+
 function initResizers() {
   RSZ.forEach(cfg => {
     document.querySelectorAll(cfg.el).forEach(n => {
@@ -1626,7 +1651,7 @@ function initResizers() {
   });
 }
 /* 메뉴/상세 화면은 렌더될 때마다 다시 그려지므로 감시해서 핸들을 붙인다 */
-new MutationObserver(() => initResizers())
+new MutationObserver(() => { initResizers(); initAiGrip(); })
   .observe(document.body, { childList: true, subtree: true });
 
 /* 알림 벨 — 사양서 : 선택 시 알림 팝업 노출 (핸들러가 아예 없었다) */
