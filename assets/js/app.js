@@ -32,7 +32,7 @@ const ICON = {
 
 /* ===================== 상태 ===================== */
 const S = {
-  mode: 'aim', aiMode: false, aiStage: 'idle',
+  mode: 'aim', aiMode: false, aiStage: 'idle', aiResults: [],
   textOpt: '자연어', q: '',
   sim: 80, allResults: false,
   cams: [], top: [], bottom: [],
@@ -291,13 +291,16 @@ function renderResults() {
     return;
   }
 
-  $('#resCount').textContent = `검색 결과 (${(S.aiMode && S.aiStage === 'done' ? AI_RESULT.length : S.results.length)}건)`;
+  /* AI 대화(우측 에이전트 · 좌측 AI 검색) 결과도 가운데 목록에 싣는다 */
+  const aiOn = (S.aiMode || S.mode === 'aim');
+  const aiList = (S.aiResults && S.aiResults.length) ? S.aiResults : AI_RESULT;
+  $('#resCount').textContent = `검색 결과 (${(aiOn && S.aiStage === 'done' ? aiList.length : S.results.length)}건)`;
 
   /* AI 모드 */
-  if (S.aiMode) {
+  if (aiOn) {
     if (S.aiStage === 'idle')    { body.innerHTML = `<div class="empty">${EMPTY_TEXT.ai}</div>`; return; }
     if (S.aiStage === 'loading') { body.innerHTML = `<div class="empty wait">${EMPTY_TEXT.aiWait}</div>`; return; }
-    body.innerHTML = `<div class="grid">${AI_RESULT.map(o => cardHTML(o)).join('')}</div>`;
+    body.innerHTML = `<div class="grid">${aiList.map(o => cardHTML(o)).join('')}</div>`;
     bindCards(body); return;
   }
 
@@ -393,7 +396,7 @@ function bindCards(root) {
   });
 }
 
-const findObj = id => OBJECTS.find(o => o.id === id) || AI_RESULT.find(o => o.id === id);
+const findObj = id => OBJECTS.find(o => o.id === id) || AI_RESULT.find(o => o.id === id) || (S.aiResults || []).find(o => o.id === id);
 
 function selectCard(id) {
   S.selected = id;
@@ -2892,6 +2895,7 @@ function applyMenuDemo() {
   if (d === 'pmdetail') { switchMode('person'); renderPersonGrid(); openPersonMgr(); pmTarget=S.persons[0]; pmView='detail'; renderPM(); }
   if (d === 'autocomplete') { switchMode('text'); $('#qText').focus(); openAutocomplete(); }
   if (d === 'layb') setLayout('b');
+  if (d === 'lybai') { setLayout('b'); switchMode('aim'); aimAsk('로비에서 나간 후 주차장으로 이동한 인물 검색'); }
   if (d === 'lybresult') { setLayout('b'); switchMode('text'); S.q='검정색 모자를 쓴 배송기사'; $('#qText').value=S.q; $('#qTextClear').hidden=false; runSearch(false); }
   if (d === 'laya') setLayout('a');
   if (d === 'alarmpop') { setTimeout(openAlarmPop, 60); }
@@ -3953,7 +3957,8 @@ const AI_LOADER = `<svg class="ai-load" viewBox="0 0 16 16" aria-hidden="true">
 </svg>`;
 
 const AIM = { log: [], wait: false };
-S.aiType = 'C';   /* 사양서 v0.6 : AI 에이전트 배치 A(팝업) · B(레이어) · C(도킹). 기본 C */
+S.aiType = 'A';   /* 사양서 v0.6 : AI 에이전트 배치 A(팝업) · B(레이어) · C(도킹).
+                     우측 GNB 의 AI 버튼은 **작은 팝업(A)** 으로 뜨는 것이 기본이다. */
 (function initAimPanel() {
   const panels = $('#modePanels'); if (!panels) return;
   const sec = document.createElement('section');
@@ -3976,37 +3981,33 @@ S.aiType = 'C';   /* 사양서 v0.6 : AI 에이전트 배치 A(팝업) · B(레�
   /* aim 패널은 여기서 만들어지므로, 초기 활성 모드(Default: AI 검색) 를 이 시점에 동기화한다 */
   $$('.mode-panel').forEach(p => p.classList.toggle('on', p.dataset.panel === S.mode));
   $$('#modeRail button').forEach(b => b.classList.toggle('on', b.dataset.mode === S.mode));
-  renderAimPanel();
+  renderAim();
   /* 새 채팅 : 기존 대화가 있으면 '최근 대화' 로 저장 후 초기화 (사양서 1-1) */
   $('#aimNew').onclick = () => {
     if (AIM.log.length) {
       S.recent = [{ id: 'r' + Date.now(), title: AIM.log[0].me, date: new Date().toISOString().slice(0, 10), pinned: false }, ...S.recent];
     }
-    AIM.log = []; AIM.wait = false; S.aiStage = 'idle';
-    renderAimPanel(); render();
+    AIM.log = []; AIM.wait = false; S.aiStage = 'idle'; S.aiResults = [];
+    renderAim(); render();
   };
   $('#aimRecent').onclick = () => { $('#aiRecent').hidden = false; renderRecent(); };
   $('#aimSend').onclick = () => {
     const v = ($('#aimQ').value || '').trim(); if (!v) return;
-    AIM.log.push({ me: v }); $('#aimQ').value = '';
-    renderAimPanel();
-    setTimeout(() => { AIM.wait = false; sendAI(v); renderAimPanel(); }, 900);
-    AIM.wait = true; renderAimPanel();
+    $('#aimQ').value = ''; aimAsk(v);
+  };
+  $('#aimQ').onkeydown = e => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); $('#aimSend').click(); }
   };
 })();
 
-function renderAimPanel() {
-  const el = $('#aimScroll'); if (!el) return;
-  el.innerHTML = `<div class="aim-title"><i class="i-ai"></i>무엇을 도와드릴까요?</div>
-    <div class="aim-sugg">${AI_SUGGESTIONS.map(s => `<button data-aims="${s}">${s}</button>`).join('')}</div>
-    ${AIM.log.map(l => `<div class="aim-user">${l.me}</div>`).join('')}
-    ${AIM.wait ? `<div class="aim-wait">${AI_LOADER}답변 생성중...</div>` : ''}`;
-  $$('#aimScroll [data-aims]').forEach(b => b.onclick = () => {
-    AIM.log.push({ me: b.dataset.aims }); AIM.wait = true; renderAimPanel();
-    setTimeout(() => { AIM.wait = false; sendAI(b.dataset.aims); renderAimPanel(); }, 900);
-  });
+/* 질문 키워드로 시나리오를 고른다 (실패 시 fallback) */
+function aiReply(q) {
+  const t = (q || '').toLowerCase();
+  return AI_DIALOGS.find(d => d.key.some(k => t.includes(k.toLowerCase()))) || AI_FALLBACK;
 }
 
+/* 좌측 AI 검색 패널에 질문을 넣고 답변까지 진행한다.
+   답변이 끝나면 가운데 `검색 결과` 목록에 해당 결과 세트를 채운다. */
 const _buildFilters = buildFilters;
 
 /* init */
@@ -4087,14 +4088,30 @@ function toggleAiFloat(open) {
 }
 
 /* ---- 3) AI 렌더 : 좌측 패널(A타입 칩) + 오버레이(B안) 공용 ---- */
-renderAimPanel = renderAim;
 function renderAim() {
-  const html = `<div class="aim-title"><i class="i-ai"></i>무엇을 도와드릴까요?</div>
-    <div class="aim-sugg">${AI_SUGGESTIONS.map(s => `<button data-aims="${s}">${s}</button>`).join('')}</div>
-    ${AIM.log.map(l => `<div class="aim-user">${l.me}</div>`).join('')}
-    ${AIM.wait ? `<div class="aim-wait">${AI_LOADER}답변 생성중...</div>` : ''}`;
+  const started = AIM.log.length > 0;
+  const html =
+    /* 대화 시작 전에만 인사말 + 추천 질문 3개 (사양 §3) */
+    (started ? '' : `<div class="aim-title"><i class="i-ai"></i>무엇을 도와드릴까요?</div>
+      <div class="aim-sugg">${AI_SUGGESTIONS.map(s => `<button data-aims="${s}">${s}</button>`).join('')}</div>`) +
+    AIM.log.map(l => l.me
+      ? `<div class="aim-user">${l.me}</div>`
+      : `<div class="aim-ai">
+           <div class="aim-ai-h"><i class="i-ai"></i></div>
+           <div class="aim-ai-b">
+             <p>${l.ai.head}</p>
+             <ul>${l.ai.items.map(i => `<li>${i}</li>`).join('')}</ul>
+             ${l.ai.actions ? `<div class="aim-acts">${l.ai.actions.map(x => `<button data-aima="${x}">${x}</button>`).join('')}</div>` : ''}
+             <div class="aim-sugg-t">추천 질문</div>
+             <div class="aim-sugg in">${l.ai.follow.map(f => `<button data-aims="${f}">${f}</button>`).join('')}</div>
+           </div>
+         </div>`).join('') +
+    (AIM.wait ? `<div class="aim-wait">${AI_LOADER}답변 생성중...</div>` : '');
+
   $$('.aim-scroll').forEach(el => { el.innerHTML = html; el.scrollTop = el.scrollHeight; });
   $$('.aim-scroll [data-aims]').forEach(b => b.onclick = () => askAim(b.dataset.aims));
+  /* 추천 액션은 사양 미정의(§17)라 목업에서는 안내만 */
+  $$('.aim-scroll [data-aima]').forEach(b => b.onclick = () => toast(`'${b.dataset.aima}' 는 시연용 목업에서 동작하지 않습니다.`));
   $$('.aim-q').forEach(t => t.onkeydown = e => {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); const v = t.value.trim(); if (v) { t.value = ''; askAim(v); } }
   });
@@ -4103,10 +4120,21 @@ function renderAim() {
     const v = (t.value || '').trim(); if (!v) return; t.value = ''; askAim(v);
   });
 }
+/* 질문을 넣고 답변까지 진행한다. 답변이 끝나면 가운데 `검색 결과` 목록에 결과 세트를 싣는다. */
 function askAim(q) {
-  AIM.log.push({ me: q }); AIM.wait = true; renderAim();
-  setTimeout(() => { AIM.wait = false; try { sendAI(q); } catch (_) { } renderAim(); }, 900);
+  AIM.log.push({ me: q });
+  AIM.wait = true; S.aiStage = 'loading';
+  renderAim(); renderResults();
+  setTimeout(() => {
+    const d = aiReply(q);
+    AIM.wait = false;
+    AIM.log.push({ ai: d });
+    S.aiStage = 'done';
+    S.aiResults = (d.res || []).map(id => AI_RESULT.find(r => r.id === id)).filter(Boolean);
+    renderAim(); renderResults();
+  }, 1800);
 }
+const aimAsk = askAim;   /* B안 진입 입력창에서 쓰는 이름 */
 
 /* 초기 상태 : 필터 숨김 */
 buildFilters('text');
@@ -4220,14 +4248,28 @@ function applyLayout() {
     bwrap.innerHTML = aiOff ? '' : `
       <div class="lb">AI 검색</div>
       <div class="b-aibox" id="bAi">
-        <span class="plus">+</span><span class="ph">무엇이든 물어보세요</span>
-        <button class="go" title="AI 에이전트 열기"><i class="i-ai"></i></button>
+        <span class="plus">+</span>
+        <input id="bAiQ" class="ph" placeholder="무엇이든 물어보세요" autocomplete="off">
+        <button class="go" id="bAiGo" title="검색"><i class="i-ai"></i></button>
       </div>
       <div class="lb" style="margin-top:16px">일반 검색</div>`;
     /* 좌측 `AI 검색` 진입은 **좌측 패널의 AI 대화**로 전환한다.
        우측 AI 에이전트 패널은 윈도우 크롬의 AI 버튼 전용이며 서로 독립이다.
        (사양서 : AI Agent_001_01 진입경로 = 패널 영역 상단 사이드바 버튼) */
-    if (!aiOff) $('#bAi').onclick = () => { S.bPick = false; switchMode('aim'); applyLayout(); };
+    /* 입력창을 누르는 것만으로는 화면을 바꾸지 않는다.
+       **대화를 입력해 전송한 뒤에** AI 검색 화면으로 넘어간다. */
+    if (!aiOff) {
+      const q = $('#bAiQ'), go = $('#bAiGo');
+      $('#bAi').onclick = e => { if (!e.target.closest('#bAiGo')) q.focus(); };
+      const fire = () => {
+        const v = (q.value || '').trim(); if (!v) return;
+        q.value = '';
+        S.bPick = false; switchMode('aim'); applyLayout();
+        aimAsk(v);
+      };
+      go.onclick = fire;
+      q.onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); fire(); } };
+    }
     /* 일반 검색 칩에서 AI 검색 제외 — 단, aim 모드 자체는 위 AI 검색 박스로 진입 가능하므로
        모드를 강제로 되돌리지 않는다 */
     chips.classList.add('b-chips');
