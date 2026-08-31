@@ -2658,3 +2658,21 @@ body.rsz-drag .rsz::after{background:var(--primary)}
 /* 증거 영상 행 : 버튼을 정보 쪽으로 당겨 빈 공간을 줄인다 */
 .cs-edit .ev-card{gap:12px}
 .cs-edit .ev-card .info{flex:1;min-width:0}
+
+/* ── 검색 패널 하단 고정 실행 영역 ──────────────────────────────────────
+   카메라 선택이 필수라, 미선택 상태에서는 안내문구와 함께 비활성으로 둔다. */
+.side-foot{
+  flex:0 0 auto;border-top:1px solid var(--ln-subtle);background:var(--bg-1);
+  padding:10px 12px;display:flex;flex-direction:column;gap:7px
+}
+.side-foot .sf-hint{margin:0;font-size:11px;color:var(--st-mid);line-height:1.4}
+.side-foot .sf-hint[hidden]{display:none}
+.side-foot .sf-go{width:100%;height:36px;font-size:13px;font-weight:600;border-radius:6px}
+.side-foot .sf-go:disabled{opacity:.45;cursor:default}
+/* 본문이 스크롤되고 실행 영역은 바닥에 붙는다 */
+.side{display:flex;flex-direction:column}
+.side .side-body{flex:1 1 auto;min-height:0;overflow-y:auto}
+/* 카메라를 많이 고르면 소요 시간 안내 */
+.ct-warn{margin:0 0 6px;font-size:10.5px;line-height:1.45;color:var(--st-mid)}
+/* `+` 로 색상 필터를 열었을 때 잠깐 강조 */
+.acc.flash{outline:1px solid var(--primary);outline-offset:2px;border-radius:4px;transition:outline-color .3s}

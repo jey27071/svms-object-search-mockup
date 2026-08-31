@@ -206,9 +206,11 @@ function camTreeHTML() {
         </div></div>`;
   }).join('');
 
+  const picked = sel.size;
   return `<div class="cam-tree">
     <div class="ct-search"><input id="fCamQ" placeholder="카메라 검색" value="${S.camQ || ''}">${GICON.search}</div>
-    <label class="check sm ct-all"><input type="checkbox" data-cam="__all" ${sel.size === 0 ? 'checked' : ''}><i></i>전체</label>
+    ${picked > 20 ? `<p class="ct-warn">선택한 카메라가 많으면 검색에 시간이 걸릴 수 있습니다. (${picked}대)</p>` : ''}
+    <label class="check sm ct-all"><input type="checkbox" data-cam="__all" ${sel.size === CAMERAS.length ? 'checked' : ''}><i></i>전체</label>
     ${rows || '<div class="ct-empty">일치하는 카메라가 없습니다.</div>'}
   </div>`;
 }
@@ -285,7 +287,7 @@ function bindFilters(box) {
 
   const sim = $('#fSim', box);
   if (sim) {
-    sim.oninput = () => { S.sim = +sim.value; $('#fSimVal', box).textContent = S.sim + '%';
+    sim.oninput = () => { S.sim = +sim.value; $('#fSimVal', box).textContent = S.sim + '%'; savePrefs();
       const sc = $('#fSimScale', box); if (sc) sc.style.setProperty('--p', S.sim);
       if (S.allResults) { S.allResults = false; $('#fAll', box).checked = false; } runSearch(true); };
     $('#fAll', box).onchange = e => { S.allResults = e.target.checked; if (S.allResults) { S.sim = 0; sim.value = 0; $('#fSimVal', box).textContent = '0%';
@@ -293,27 +295,66 @@ function bindFilters(box) {
   }
   $$('[data-cam]', box).forEach(cb => cb.onchange = () => {
     const v = cb.dataset.cam;
-    if (v === '__all') { S.cams = []; }
+    if (v === '__all') { S.cams = cb.checked ? CAMERAS.slice() : []; }
     else { S.cams = cb.checked ? [...S.cams, v] : S.cams.filter(x => x !== v); }
-    buildFilters(S.mode); runSearch(true);
+    savePrefs(); buildFilters(S.mode); if (S.searched) runSearch(true); else syncSearchBtn();
   });
   $$('.sw', box).forEach(s => s.onclick = () => {
     const p = s.dataset.part, c = s.dataset.c;
     S[p] = S[p].includes(c) ? S[p].filter(x => x !== c) : [...S[p], c];
-    s.classList.toggle('on'); runSearch(true);
+    s.classList.toggle('on'); savePrefs(); if (S.searched) runSearch(true);
   });
   $$('[name=fp]', box).forEach(r => r.onchange = () => {
     S.period = r.dataset.p;
     const w = $('.date-wrap', box); if (w) w.hidden = S.period !== '날짜 지정';
-    runSearch(true);
+    savePrefs(); if (S.searched) runSearch(true);
   });
   ['dFrom', 'tFrom', 'dTo', 'tTo'].forEach(id => { const n = $('#' + id, box); if (n) n.onchange = () => { S[id] = n.value; runSearch(true); }; });
+}
+
+/* ============================================================
+   검색 실행 · 설정값 기억 (2026-08-31 개편)
+   · 카메라(위치) 선택은 필수. 하나 이상 골라야 `검색` 이 활성화된다.
+   · 마지막으로 쓴 카메라와 유사도·기간·색상은 저장해 다음 검색에 되살린다.
+   ============================================================ */
+const PREF_KEY = 'svms_search_prefs';
+
+function loadPrefs() {
+  let v = {};
+  try { v = JSON.parse(localStorage.getItem(PREF_KEY) || '{}'); } catch (_) { v = {}; }
+  const saved = Array.isArray(v.cams) ? v.cams.filter(c => CAMERAS.includes(c)) : [];
+  /* 마지막으로 쓴 카메라를 되살리고, 첫 진입이면 전체 선택으로 시작한다 */
+  S.cams = saved.length ? saved : CAMERAS.slice();
+  if (typeof v.sim === 'number') S.sim = v.sim;
+  if (typeof v.allResults === 'boolean') S.allResults = v.allResults;
+  if (typeof v.period === 'string') S.period = v.period;
+  if (Array.isArray(v.top)) S.top = v.top;
+  if (Array.isArray(v.bottom)) S.bottom = v.bottom;
+  if (Array.isArray(v.carTypes)) S.carTypes = v.carTypes;
+}
+function savePrefs() {
+  try {
+    localStorage.setItem(PREF_KEY, JSON.stringify({
+      cams: S.cams, sim: S.sim, allResults: S.allResults,
+      period: S.period, top: S.top, bottom: S.bottom, carTypes: S.carTypes || []
+    }));
+  } catch (_) { /* 저장 실패는 무시 */ }
+}
+
+/* 검색 버튼 상태 : 카메라 미선택이면 비활성 + 안내 */
+function syncSearchBtn() {
+  const btn = document.getElementById('btnSearchGo');
+  const hint = document.getElementById('sfHint');
+  if (!btn) return;
+  const noCam = !S.cams.length;
+  btn.disabled = noCam;
+  if (hint) hint.hidden = !noCam;
 }
 
 /* ===================== 검색 실행 ===================== */
 function matchFilters(o) {
   if (o.sim < S.sim) return false;
-  if (S.cams.length && !S.cams.includes(o.cam)) return false;
+  if (S.cams.length && S.cams.length < CAMERAS.length && !S.cams.includes(o.cam)) return false;
   if (FILTER_DEF[S.mode].includes('color')) {
     if (S.top.length && !S.top.includes(o.top)) return false;
     if (S.bottom.length && !S.bottom.includes(o.bottom)) return false;
@@ -4012,8 +4053,19 @@ S.textRecent = TEXT_RECENT.slice();
   const wrap = ta.parentElement;
   if (wrap && !wrap.querySelector('.ta-plus')) {
     const p = document.createElement('button');
-    p.className = 'ta-plus'; p.title = '첨부';
+    p.className = 'ta-plus'; p.title = '색상 선택';
     p.innerHTML = `<i class="i i-16 i-plus"></i>`;
+    /* `+` 는 색상 조건을 고르는 진입점 — 색상 필터를 펼쳐 그리로 이동시킨다 */
+    p.onclick = e => {
+      e.preventDefault();
+      const box = document.querySelector('.filters[data-filters="text"]');
+      const acc = box && [...box.querySelectorAll('.acc')].find(a => /색상/.test(a.textContent));
+      if (!acc) return;
+      acc.classList.add('open');
+      acc.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      acc.classList.add('flash');
+      setTimeout(() => acc.classList.remove('flash'), 900);
+    };
     wrap.appendChild(p);
   }
   if (wrap && !wrap.querySelector('.ta-search')) {
@@ -4142,13 +4194,14 @@ buildFilters('text');
    3) AI 렌더를 패널/오버레이 공용으로
    ============================================================ */
 
-/* ---- 1) 필터 : 검색 후에만 노출 ---- */
+/* ---- 1) 필터 : **상시 표시** ----
+   카메라·유사도·기간·색상을 항상 펼쳐 두고, 아래 `검색` 버튼으로 실행한다.
+   (기존에는 검색을 한 번 실행해야 필터가 나타났다) */
 buildFilters = function (mode) {
-  const box = document.querySelector(`.filters[data-filters="${mode}"]`);
-  if (!S.searched) { if (box) box.innerHTML = ''; return; }
   const prev = filterEnabled;
   filterEnabled = () => true;
   try { _buildFilters(mode); } finally { filterEnabled = prev; }
+  syncSearchBtn();
 };
 const _runSearchA = runSearch;
 runSearch = function (keep) { _runSearchA(keep); buildFilters(S.mode); renderTextRecent(); if (typeof applyLayout === 'function') applyLayout(); };
@@ -4591,4 +4644,20 @@ applyDemo();
 applyMenuDemo();
 window.addEventListener('hashchange', () => location.reload());
 
+/* ---- 검색 실행 버튼 (패널 하단 고정) ----
+   카메라는 필수라 미선택 시 비활성. 검색 유형별 입력값이 없으면 안내만 띄운다. */
+(function initSearchGo() {
+  const btn = document.getElementById('btnSearchGo');
+  if (!btn) return;
+  btn.onclick = () => {
+    if (!S.cams.length) return;
+    savePrefs();
+    if (S.mode === 'text' && S.q.trim()) pushTextRecent(S.q.trim());
+    runSearch(false);
+  };
+})();
 
+/* 마지막 설정값(카메라·유사도·기간·색상) 복원 후 화면 반영 */
+loadPrefs();
+buildFilters(S.mode);
+syncSearchBtn();
