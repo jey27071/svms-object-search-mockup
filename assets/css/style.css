@@ -2724,3 +2724,28 @@ body.rsz-drag .rsz::after{background:var(--primary)}
 .reid-card .rc-meta{padding:7px 8px 9px}
 .reid-card .rc-cam{font-size:11.5px;color:var(--tx-secondary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .reid-card .rc-t{font-size:10px;color:var(--tx-helper);font-family:var(--mono)}
+
+/* ── 검색 패널 접기 핸들 ────────────────────────────────────────────────
+   지도 서비스(네이버·카카오·구글) PC 뷰처럼 패널 바깥 가운데에 붙는 손잡이.
+   접히면 이 핸들만 GNB 옆에 남는다. */
+.side{position:relative}
+.side-handle{
+  position:absolute;right:-14px;top:50%;transform:translateY(-50%);
+  width:14px;height:56px;z-index:6;padding:0;cursor:pointer;
+  background:var(--bg-2);border:1px solid var(--ln-border);border-left:0;
+  border-radius:0 7px 7px 0;display:flex;align-items:center;justify-content:center
+}
+.side-handle::before{
+  content:'';width:6px;height:6px;border-left:1.4px solid var(--tx-tertiary);
+  border-bottom:1.4px solid var(--tx-tertiary);transform:rotate(45deg);margin-left:2px
+}
+.side-handle:hover{background:var(--bg-3)}
+.side-handle:hover::before{border-color:var(--tx-primary)}
+/* 펼치기(접힌 상태) : 화살표 방향 반대 */
+.side-handle.out{position:static;transform:none;border:1px solid var(--ln-border);border-radius:7px}
+.side-handle.out::before{transform:rotate(-135deg);margin-left:-2px}
+.collapsed-rail{display:flex;align-items:center;justify-content:center;padding:0 4px}
+/* 분리 상태에서는 핸들을 감춘다 (패널이 떠 있어 붙일 가장자리가 없다) */
+.side.detached .side-handle{display:none}
+/* 핸들이 패널 밖으로 나오므로 가장자리를 자르지 않는다 (본문은 .side-body 가 스크롤) */
+.side{overflow:visible}

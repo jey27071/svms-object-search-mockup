@@ -816,6 +816,22 @@ function renderChips() {
 }
 
 /* ===================== 원본 영상 ===================== */
+/* 미리보기 제목·시간 규칙 (2026-08-31 개편)
+   · 카메라 위치명·출현 일시는 알 수 없어 뺀다 → **영상 시작~종료 시간**만 표기
+   · 인물 검색이면 인물 이름, 지능형이면 알고리즘명을 제목으로 쓴다 */
+function pvTitle(p) {
+  if (S.mode === 'person') return cardTitle(p);
+  if (S.mode === 'algo')   return (S.algos && S.algos[0]) || '지능형 알고리즘';
+  return p.cam;
+}
+function clipSpan(t) {
+  const hhmmss = String(t).slice(11, 19) || '00:00:00';
+  const [h, m, sec] = hhmmss.split(':').map(Number);
+  const end = new Date(0, 0, 0, h, m, (sec || 0) + PV.dur);
+  const pad = n => String(n).padStart(2, '0');
+  return `${hhmmss} ~ ${pad(end.getHours())}:${pad(end.getMinutes())}:${pad(end.getSeconds())}`;
+}
+
 /* ---- 원본 영상 미리보기 재생 (사양 §6-2 : 10초 내외 자동 반복 재생) ----
    실제 영상 파일이 없는 목업이라, 스틸 위에 팬/줌 + 바운딩 박스 이동 +
    타임코드·진행바를 얹어 10초 루프로 재생되는 것처럼 보여준다. */
@@ -863,11 +879,9 @@ function renderPreview() {
           <button class="x" data-close-pv="${p.uid}">${ICON.x}</button>
         </div>
         <div class="pv-info">
-          <div class="pv-title"><span>${p.cam}</span><span class="bk${bm ? ' on' : ''}" data-bk="${p.id}">${ICON.bmark}</span></div>
+          <div class="pv-title"><span>${pvTitle(p)}</span><span class="bk${bm ? ' on' : ''}" data-bk="${p.id}">${ICON.bmark}</span></div>
           <dl class="pv-meta">
-            <div><dt>대상 정보</dt><dd>${p.type} ${p.group === 'c1' ? 'A' : p.group === 'c2' ? 'B' : ''}</dd></div>
-            <div><dt>이벤트</dt><dd>${p.group === 'etc' || !p.group ? '-' : '이동/계수'}</dd></div>
-            <div><dt>출현 일시</dt><dd>${fmtTS(p.t)}</dd></div>
+            <div><dt>영상 시간</dt><dd>${clipSpan(p.t)}</dd></div>
           </dl>
         </div>`);
       box.appendChild(n);
@@ -876,7 +890,14 @@ function renderPreview() {
         <div class="th"><img src="${p.img}" alt=""></div>
         <div style="flex:1;min-width:0"><div class="nm">${p.cam}</div><div class="tm">${fmtT(p.t)}</div></div>
         <button class="btn-icon" data-close-pv="${p.uid}">${ICON.x}</button>`);
-      n.onclick = e => { if (e.target.closest('[data-close-pv]')) return; selectCard(p.id); };
+      /* 접힌 목록에서 고르면 그 자리를 지킨 채 맨 위로 올려 확대 재생한다 */
+      n.onclick = e => {
+        if (e.target.closest('[data-close-pv]')) return;
+        const i2 = S.preview.findIndex(x => x.uid === p.uid);
+        if (i2 > 0) { const [it] = S.preview.splice(i2, 1); S.preview.unshift(it); }
+        PV.id = null; PV.t = 0; PV.playing = true;
+        renderPreview();
+      };
       box.appendChild(n);
     }
   });
@@ -891,6 +912,12 @@ function renderPreview() {
     renderPreview(); renderResults();
   });
   bindPv();
+  /* 사양 : 미리보기를 두 번 누르면 상세 화면으로 이동한다 */
+  const v = document.getElementById('pvVideo');
+  if (v && S.preview[0]) v.ondblclick = e => {
+    if (e.target.closest('button')) return;
+    openCardDetail(S.preview[0].id, null);
+  };
 }
 
 /* ===================== 경로 비교 ===================== */

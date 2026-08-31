@@ -57,7 +57,6 @@
         <span class="side-title">검색</span>
         <span class="side-head-btns">
           <button class="btn-icon" id="btnDetach" title="분리"><i class="i i-detach"></i></button>
-          <button class="btn-icon" id="btnCollapse" title="접기"><i class="i i-collapse"></i></button>
         </span>
       </div>
 
@@ -172,6 +171,9 @@
         </div>
       </div>
 
+      <!-- 접기 핸들 : 지도 서비스처럼 패널 바깥 가운데에 붙인다 -->
+      <button class="side-handle" id="btnCollapse" title="검색 패널 접기" aria-label="검색 패널 접기"></button>
+
       <!-- 검색 실행 : 패널 하단 고정. 카메라(위치)를 하나 이상 골라야 활성화된다 -->
       <div class="side-foot" id="sideFoot">
         <p class="sf-hint" id="sfHint">카메라(위치)를 선택해 주세요.</p>
@@ -236,10 +238,9 @@
     <div class="workspace" id="workspace">
 
     <!-- ---- 접힘 레일 ---- -->
+    <!-- 접힘 상태 : GNB 옆에 펼치기 핸들만 남는다 -->
     <div class="collapsed-rail" id="collapsedRail" hidden>
-      <button class="btn-icon" id="btnExpand" title="펼치기">
-        <svg viewBox="0 0 16 16" class="ic"><rect x="2" y="3" width="12" height="10" rx="1" stroke="currentColor" stroke-width="1.2" fill="none"/><path d="M6.5 3v10" stroke="currentColor" stroke-width="1.2"/></svg>
-      </button>
+      <button class="side-handle out" id="btnExpand" title="검색 패널 펼치기" aria-label="검색 패널 펼치기"></button>
     </div>
 
     <!-- ---- 중앙: 검색 결과 ---- -->
