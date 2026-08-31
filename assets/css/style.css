@@ -2638,12 +2638,13 @@ body.rsz-drag .rsz::after{background:var(--primary)}
 /* ── 상세 탭바 GUI 정합 (Detail_000_09 실측) ─────────────────────────────
    Tab Bar 1280×33 @ x64 fill #1c1d23 · 탭 200×28
    고정탭 #131418 / 비활성 #1c1d23 / 활성 #24252c · History 는 28×28 아이콘만 */
-.tabbar{background:var(--bg-2)}
+/* 앞선 규칙(.content-col > .tabbar 1842 / .tabbar #btnHistory 1870)이
+   더 구체적이라 같은 선택자로는 덮이지 않는다. 동일 구체성으로 맞춘다. */
+.content-col > .tabbar{background:var(--bg-2);height:33px;flex:0 0 33px;align-items:flex-end}
 .tabs .tab{background:var(--bg-2)}
 .tabs .tab.fixed{background:var(--bg-1)}
-.tabs .tab.on{background:var(--bg-3)}
-.tb-history{width:28px;height:28px;flex:0 0 28px;display:flex;align-items:center;justify-content:center;padding:0}
-.tb-history .hist-ic{width:20px;height:20px}
+.tabs .tab.on{background:var(--bg-3);color:var(--tx-primary)}
+.tabbar #btnHistory{width:28px;flex:0 0 28px;height:28px;justify-content:center;padding:0}
 
 /* ── 사건 수정 : 우측 패널이 넓어 폼·행이 과하게 늘어나던 문제 ───────────
    입력창이 1400px 넘게 늘어나고 증거 영상 행은 정보와 버튼 사이가
