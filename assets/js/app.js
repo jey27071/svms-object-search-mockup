@@ -139,8 +139,8 @@ function syncPanels() {
    · 차종        : 차량번호 검색만 */
 const FILTER_DEF = {
   text:   ['sim', 'cam', 'color', 'period'],
-  image:  ['sim', 'cam', 'period'],
-  person: ['cam', 'period'],
+  /* 인물 검색은 이미지 검출·등록 인물 두 방식을 함께 쓰므로 유사도가 붙는다 */
+  person: ['sim', 'cam', 'period'],
   algo:   ['cam', 'period'],
   car:    ['cam', 'cartype', 'period'],
   aim:    []
@@ -148,8 +148,7 @@ const FILTER_DEF = {
 
 function filterEnabled() {
   if (S.mode === 'text')   return S.q.trim().length > 0;
-  if (S.mode === 'image')  return S.extSel.length > 0;
-  if (S.mode === 'person') return S.selPersons.length > 0;
+  if (S.mode === 'person') return S.pfWay === 'img' ? S.extSel.length > 0 : S.selPersons.length > 0;
   if (S.mode === 'algo')   return S.algos.length > 0;
   /* 차량번호 : 앞뒤 상관없이 **두 자리 이상**이면 검색 가능 */
   if (S.mode === 'car')    return (S.carQ || '').replace(/\s/g, '').length >= 2;
@@ -352,6 +351,22 @@ function syncSearchBtn() {
   if (hint) hint.hidden = !noCam;
 }
 
+/* ---- 인물 검색 : 이미지로 검출 / 등록 인물 선택 두 방식 ---- */
+S.pfWay = 'reg';
+function setPfWay(w) {
+  S.pfWay = w;
+  document.querySelectorAll('#pfWay [data-way]').forEach(b => b.classList.toggle('on', b.dataset.way === w));
+  document.querySelectorAll('.pf-pane').forEach(n => { n.hidden = n.dataset.way !== w; });
+  buildFilters('person');
+  if (S.searched) runSearch(true); else syncSearchBtn();
+}
+(function initPfWay() {
+  document.querySelectorAll('#pfWay [data-way]').forEach(b => b.onclick = () => setPfWay(b.dataset.way));
+})();
+
+/* 검출된 인물에 이름이 없을 때의 표시 규칙 : `인물 01`, `인물 02` … (2자리 0채움) */
+const autoPersonName = i => '인물 ' + String(i + 1).padStart(2, '0');
+
 /* ===================== 검색 실행 ===================== */
 function matchFilters(o) {
   if (o.sim < S.sim) return false;
@@ -383,6 +398,21 @@ function sortResults() {
 }
 
 /* ===================== 결과 렌더 ===================== */
+/* 결과 카드 제목 — 검색 방식에 따라 우선순위가 다르다
+   인물 검색 : 인물 이름 우선 / 지능형 : 알고리즘명 / 그 외 : 위치명 */
+function cardTitle(o) {
+  if (S.mode === 'person') {
+    if (o.person) return o.person;
+    const sel = (S.selPersons || [])[0];
+    const p = (S.persons || []).find(x => x.id === sel);
+    if (p) return p.name;
+    const i = (S.results || []).indexOf(o);
+    return autoPersonName(i < 0 ? 0 : i);
+  }
+  if (S.mode === 'algo') return (S.algos && S.algos[0]) || o.cam;
+  return o.cam;
+}
+
 function cardHTML(o, opt = {}) {
   const bm = S.bookmarks.has(o.id);
   return `<div class="card${S.selected === o.id ? ' on' : ''}" data-id="${o.id}">
@@ -393,7 +423,7 @@ function cardHTML(o, opt = {}) {
       ${bm ? `<span class="bm">${ICON.star}</span>` : ''}
     </div>
     <div class="meta">
-      <div><div class="loc">${o.cam}</div><div class="tm">${fmtT(o.t)}</div></div>
+      <div><div class="loc">${cardTitle(o)}</div><div class="tm">${fmtT(o.t)}</div></div>
       <button class="more" data-more="${o.id}">${ICON.more}</button>
     </div>
   </div>`;
@@ -804,16 +834,16 @@ $('#imgSearch').onclick = () => {
   $('#dropzone').hidden = true; $('#uploadedWrap').hidden = false; $('#uploadedImg').src = S.uploaded;
   const acc = $('#extractedAcc'); acc.classList.add('open'); $('.acc-head', acc).disabled = false;
   renderSideExtract();
-  buildFilters('image'); runSearch(false);
+  buildFilters('person'); runSearch(false);
 };
 $('#uploadedClear').onclick = () => {
   S.uploaded = null; S.extracted = []; S.extSel = [];
   $('#dropzone').hidden = false; $('#uploadedWrap').hidden = true;
   const acc = $('#extractedAcc'); acc.classList.remove('open'); $('.acc-head', acc).disabled = true;
-  $('#extGrid').innerHTML = ''; buildFilters('image'); runSearch(false);
+  $('#extGrid').innerHTML = ''; buildFilters('person'); runSearch(false);
 };
 $('#extractedAcc .acc-head').onclick = function () { if (!this.disabled) this.parentElement.classList.toggle('open'); };
-$('#extAll').onchange = e => { S.extSel = e.target.checked ? S.extracted.map(x => x.id) : []; renderSideExtract(); buildFilters('image'); runSearch(true); };
+$('#extAll').onchange = e => { S.extSel = e.target.checked ? S.extracted.map(x => x.id) : []; renderSideExtract(); buildFilters('person'); runSearch(true); };
 
 function renderSideExtract() {
   $('#extGrid').innerHTML = S.extracted.map(x =>
@@ -821,7 +851,7 @@ function renderSideExtract() {
   $$('#extGrid .ext-item').forEach(n => n.onclick = () => {
     const id = n.dataset.sx;
     S.extSel = S.extSel.includes(id) ? S.extSel.filter(x => x !== id) : [...S.extSel, id];
-    renderSideExtract(); buildFilters('image'); runSearch(true);
+    renderSideExtract(); buildFilters('person'); runSearch(true);
   });
 }
 
@@ -993,7 +1023,7 @@ function renderPM() {
           <label class="check cb" onclick="event.stopPropagation()"><input type="checkbox" data-sel="${p.id}" ${pmSel.includes(p.id) ? 'checked' : ''}><i></i></label>
           <span class="imgn">이미지 ${p.imgs.length}</span>
           <div class="th"><img src="${p.imgs[0]}"></div>
-          <div class="bd"><div class="nm">${p.name}</div><div class="gu">${p.guid}</div><div class="ds">${p.desc}</div><div class="rg">${p.reg}</div></div>
+          <div class="bd"><div class="nm">${p.name}</div><div class="ds">${p.desc}</div><div class="rg">${p.reg}</div></div>
         </div>`).join('')}</div>`
       : `<div class="empty-inline">등록된 인물이 없습니다.<br>대상 검색에 사용할 인물을 등록해 주세요.</div>`}`;
     $('#pmFoot').innerHTML = `<button class="btn-ghost" data-close>취소</button><button class="btn-primary" id="pmOk">완료</button>`;
@@ -1026,7 +1056,6 @@ function renderPM() {
       </div>
       <div>
         <div class="form-row"><label>이름 <i>*</i></label><input id="pfName" placeholder="이름" value="${f.name}"></div>
-        <div class="form-row"><label>GUID</label><input disabled value="${pmView === 'edit' ? pmTarget.guid : (f.imgs.length ? 'PSN-20260811-00' + (S.persons.length + 1) : '')}" placeholder="이미지 등록 시 자동 생성됩니다."></div>
         <div class="form-row"><label>설명</label><textarea id="pfDesc" placeholder="인물 설명">${f.desc}</textarea></div>
       </div>
     </div>`;
@@ -1056,7 +1085,6 @@ function renderPM() {
         <div class="up-list">${p.imgs.map((im, i) => `<div class="up-card"><img src="${im}">${i === 0 ? '<span class="rep-chip">대표</span>' : ''}</div>`).join('')}</div></div>
       <div>
         <div class="form-row"><label>이름</label><input disabled value="${p.name}"></div>
-        <div class="form-row"><label>GUID</label><input disabled value="${p.guid}"></div>
         <div class="form-row"><label>설명</label><textarea disabled>${p.desc}</textarea></div>
         <div class="form-row"><label>등록 일시</label><input disabled value="${p.reg}"></div>
       </div></div>`;
@@ -2763,10 +2791,10 @@ function applyDemo() {
   }
   if (d === 'personmgr') { switchMode('person'); renderPersonGrid(); openPersonMgr(); }
   if (d === 'history')   { HIST.open.add('0-0'); $('#btnHistory').click(); }
-  if (d === 'imagemodal'){ setMode('image'); buildFilters('image'); loadImage('assets/img/obj01.png'); }
+  if (d === 'imagemodal'){ setMode('person'); setPfWay('img'); loadImage('assets/img/obj01.png'); }
   if (d === 'person') { setMode('person'); S.selPersons = ['p1', 'p3']; renderPersonGrid(); buildFilters('person'); runSearch(false); }
   if (d === 'algo')   { setMode('algo'); S.algos = ['침입', '배회']; renderAlgoGrid(); buildFilters('algo'); runSearch(false); }
-  if (d === 'image')  { setMode('image'); buildFilters('image'); }
+  if (d === 'image')  { setMode('person'); setPfWay('img'); }
   if (d === 'ai' || d === 'aidone') {
     setAI(true);
     if (d === 'aidone') {
@@ -4557,7 +4585,7 @@ renderPM = function () {
           <div class="th"><img src="${p.imgs[0]}" alt=""></div>
           <div class="bd">
             <div class="nm">${p.name}</div>
-            <div class="gu">${p.guid}</div>
+            
             <div class="ds">${p.desc || '-'}</div>
             <div class="rg">${p.reg}</div>
           </div>

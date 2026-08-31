@@ -2680,3 +2680,8 @@ body.rsz-drag .rsz::after{background:var(--primary)}
 /* ── 차량번호 입력 : 값에 비해 박스가 커서 한 줄 높이로 줄인다 ─────────── */
 .mode-panel[data-panel="car"] .textarea-wrap{min-height:0}
 .ta-1line{height:44px;min-height:44px;resize:none;line-height:1.5}
+
+/* ── 인물 검색 : 이미지 검출 / 등록 인물 방식 선택 ─────────────────────── */
+.seg.pf-way{margin:2px 0 4px}
+.seg.pf-way button{flex:1;height:28px;border-radius:5px}
+.pf-pane[hidden]{display:none}

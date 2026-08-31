@@ -67,8 +67,7 @@
           <button data-mode="aim" class="on" data-tip="AI 검색">AI 검색</button>
           <button data-mode="text" data-tip="텍스트 검색">텍스트</button>
           <button data-mode="car" data-tip="차량번호 검색">차량번호</button>
-          <button data-mode="image" data-tip="이미지 검색">이미지</button>
-          <button data-mode="person" data-tip="등록 인물 검색">등록인물</button>
+          <button data-mode="person" data-tip="인물 검출하여 검색">인물</button>
           <button data-mode="algo" data-tip="지능형 알고리즘 검색">지능형 알고리즘</button>
         </nav>
 
@@ -102,37 +101,20 @@
             <div class="filters" data-filters="car"></div>
           </section>
 
-          <!-- 2) 이미지 검색 -->
-          <section class="mode-panel" data-panel="image">
-            <div class="panel-top"><span class="panel-label">이미지 검색</span></div>
-            <div class="upload-box" id="uploadBox">
-              <div class="dropzone" id="dropzone">
-                <svg viewBox="0 0 24 24" class="up-ic"><path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/><path d="M4 15v3a2 2 0 002 2h12a2 2 0 002-2v-3" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg>
-                <p class="dz-main">이미지를 드래그하거나 클릭하여 업로드</p>
-                <p class="dz-sub">JPG, PNG 지원 · 최대 10MB</p>
-                <button class="btn-primary sm" id="btnPickImage">이미지 선택</button>
-                <input type="file" id="fileImage" accept="image/png,image/jpeg" hidden>
-              </div>
-              <div class="uploaded" id="uploadedWrap" hidden>
-                <div class="uploaded-img"><img id="uploadedImg" alt=""><button class="clear-x" id="uploadedClear">&#10005;</button></div>
-              </div>
-            </div>
-            <div class="acc" id="extractedAcc">
-              <button class="acc-head" disabled>추출된 대상<i class="i i-16 i-chevron i-down caret"></i></button>
-              <div class="acc-body">
-                <label class="check sm all"><input type="checkbox" id="extAll"><i></i>전체 선택</label>
-                <div class="ext-grid" id="extGrid"></div>
-              </div>
-            </div>
-            <div class="filters" data-filters="image"></div>
-          </section>
-
           <!-- 3) 등록 인물 검색 -->
           <section class="mode-panel" data-panel="person">
             <div class="panel-top">
-              <span class="panel-label">등록 인물 검색</span>
-              <input class="input sm" id="personQuery" placeholder="이름 검색">
+              <span class="panel-label">인물 검출하여 검색</span>
             </div>
+            <!-- 이미지로 검출할지, 등록된 인물을 고를지 선택 -->
+            <div class="seg pf-way" id="pfWay">
+              <button data-way="img">이미지로 검색</button>
+              <button class="on" data-way="reg">등록 인물 선택</button>
+            </div>
+            <div class="pf-pane" data-way="reg">
+              <div class="panel-top" style="margin-top:10px">
+                <input class="input sm" id="personQuery" placeholder="이름 검색">
+              </div>
             <div class="person-box">
               <div class="person-head">
                 <span class="panel-label" id="personCount">등록된 인물 (10)</span>
@@ -151,6 +133,30 @@
               <div class="empty-inline" id="personEmpty" hidden>
                 등록된 인물이 없습니다.<br>대상 검색에 사용할 인물을 등록해 주세요.
                 <button class="btn-primary sm" id="btnNewPersonInline">새 인물 등록</button>
+              </div>
+            </div>
+            </div>
+
+            <!-- 이미지로 검색 : 기존 이미지 검색 UI 를 그대로 가져온다 -->
+            <div class="pf-pane" data-way="img" hidden>
+              <div class="upload-box" id="uploadBox">
+                <div class="dropzone" id="dropzone">
+                  <svg viewBox="0 0 24 24" class="up-ic"><path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/><path d="M4 15v3a2 2 0 002 2h12a2 2 0 002-2v-3" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg>
+                  <p class="dz-main">이미지를 드래그하거나 클릭하여 업로드</p>
+                  <p class="dz-sub">JPG, PNG 지원 · 최대 10MB</p>
+                  <button class="btn-primary sm" id="btnPickImage">이미지 선택</button>
+                  <input type="file" id="fileImage" accept="image/png,image/jpeg" hidden>
+                </div>
+                <div class="uploaded" id="uploadedWrap" hidden>
+                  <div class="uploaded-img"><img id="uploadedImg" alt=""><button class="clear-x" id="uploadedClear">&#10005;</button></div>
+                </div>
+              </div>
+              <div class="acc" id="extractedAcc">
+                <button class="acc-head" disabled>검출된 인물<i class="i i-16 i-chevron i-down caret"></i></button>
+                <div class="acc-body">
+                  <label class="check sm all"><input type="checkbox" id="extAll"><i></i>전체 선택</label>
+                  <div class="ext-grid" id="extGrid"></div>
+                </div>
               </div>
             </div>
             <div class="filters" data-filters="person"></div>
