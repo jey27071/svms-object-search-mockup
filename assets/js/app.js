@@ -568,7 +568,9 @@ function openCtx(e, id) {
   e.stopPropagation();
   const m = $('#ctxMenu'); m.hidden = false;
   /* 사양서 : 검색 결과 카드의 더보기는 `북마크 / 오탐지 신고` 2종이다 */
-  m.innerHTML = `<div data-act="bookmark">북마크</div><div data-act="report">오탐지 신고</div>`;
+  /* 오탐지 신고는 **지능형 알고리즘 검색 결과에만** 둔다 (다른 검색에서는 제외) */
+  m.innerHTML = `<div data-act="bookmark">북마크</div>` +
+    (S.mode === 'algo' ? `<div data-act="report">오탐지 신고</div>` : '');
   const r = e.target.getBoundingClientRect();
   m.style.left = Math.min(r.left, innerWidth - 150) + 'px';
   m.style.top = (r.bottom + 4) + 'px';
