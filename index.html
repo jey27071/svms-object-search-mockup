@@ -567,6 +567,27 @@
   <div class="md-foot" id="pmFoot"></div>
 </div>
 
+<!-- RE-ID : 검출 목록에서 동일 대상 선별 (최대 크기) -->
+<div class="modal md-full" id="mdReid" hidden>
+  <div class="md-head">
+    <div><h3>동일 대상 선별</h3><p>같은 대상으로 볼 검출 결과를 선택해 주세요. 선택한 항목으로 이동 경로를 구성합니다.</p></div>
+    <button class="btn-icon md-x" data-close><svg viewBox="0 0 16 16" class="ic"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.3"/></svg></button>
+  </div>
+  <div class="md-tools" id="reidTools"></div>
+  <div class="md-body" id="reidBody"></div>
+  <div class="md-foot" id="reidFoot"></div>
+</div>
+
+<!-- RE-ID 이후 : 이동 경로용 영상 클립 선택 -->
+<div class="modal md-lg" id="mdClips" hidden>
+  <div class="md-head">
+    <div><h3>영상 클립 선택</h3><p>이동 경로에 사용할 영상 클립을 선택해 주세요.</p></div>
+    <button class="btn-icon md-x" data-close><svg viewBox="0 0 16 16" class="ic"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.3"/></svg></button>
+  </div>
+  <div class="md-body" id="clipsBody"></div>
+  <div class="md-foot" id="clipsFoot"></div>
+</div>
+
 <!-- 유사 대상 편집 / 대상 추가 팝업 -->
 <div class="modal md-lg" id="mdEdit" hidden>
   <div class="md-head">

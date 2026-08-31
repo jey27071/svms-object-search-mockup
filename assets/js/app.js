@@ -592,6 +592,112 @@ function renderResults() {
   $$('[data-edit]', body).forEach(n => n.onclick = e => { e.stopPropagation(); openEdit(n.dataset.edit); });
 }
 
+/* ============================================================
+   RE-ID — 결과에서 대상을 고르면 '동일 대상 선별' 팝업을 최대 크기로 띄운다.
+   · 검출 목록은 구분 없이 한 번에 보여주고 정렬·썸네일 크기 조절이 된다
+   · 기본은 **전체 해제**. 하나도 고르지 않으면 `다음` 이 비활성
+   · 선별을 마치면 이동 경로용 영상 클립 선택으로 이어진다
+     (클립이 10개 이하면 이 단계는 건너뛴다)
+   ============================================================ */
+const REID = { seed: null, sel: new Set(), sort: '유사도순', w: 160, clipMax: 12, clipShown: 12, clipSel: new Set() };
+
+function reidPool() {
+  const list = OBJECTS.slice();
+  const c = {
+    '유사도순': (a, b) => b.sim - a.sim,
+    '최신순':   (a, b) => b.t.localeCompare(a.t),
+    '위치순':   (a, b) => a.cam.localeCompare(b.cam)
+  };
+  return list.sort(c[REID.sort] || c['유사도순']);
+}
+
+function openReid(seedId) {
+  REID.seed = seedId;
+  REID.sel = new Set();          /* 사양 : Default 전체 해제 */
+  renderReid();
+  openModal('#mdReid');
+}
+
+function renderReid() {
+  const pool = reidPool();
+  const all = REID.sel.size === pool.length;
+  $('#reidTools').innerHTML = `
+    <label class="check sm"><input type="checkbox" id="reidAll" ${all ? 'checked' : ''}><i></i>전체 선택</label>
+    <span class="rt-count">선택 <em>${REID.sel.size}</em> / ${pool.length}</span>
+    <div class="rt-right">
+      <div class="seg" id="reidSort">${['유사도순', '최신순', '위치순']
+        .map(v => `<button class="${REID.sort === v ? 'on' : ''}" data-rs="${v}">${v}</button>`).join('')}</div>
+      <label class="thumb-size"><input type="range" id="reidSize" min="110" max="240" step="10" value="${REID.w}"></label>
+    </div>`;
+  $('#reidBody').innerHTML = `<div class="reid-grid" style="--rw:${REID.w}px">${pool.map(o => `
+    <label class="reid-card${REID.sel.has(o.id) ? ' on' : ''}">
+      <input type="checkbox" data-rid="${o.id}" ${REID.sel.has(o.id) ? 'checked' : ''}>
+      <div class="rc-th"><img src="${o.img}" alt=""><span class="sim ${simCls(o.sim)}">${o.sim}%</span></div>
+      <div class="rc-meta"><div class="rc-cam">${o.cam}</div><div class="rc-t">${fmtT(o.t)}</div></div>
+    </label>`).join('')}</div>`;
+  $('#reidFoot').innerHTML = `<button class="btn-ghost" data-close>취소</button>
+    <button class="btn-primary" id="reidGo" ${REID.sel.size ? '' : 'disabled'}>다음</button>`;
+
+  $('#reidAll').onchange = e => {
+    REID.sel = e.target.checked ? new Set(pool.map(o => o.id)) : new Set();
+    renderReid();
+  };
+  $$('#reidBody [data-rid]').forEach(c => c.onchange = () => {
+    const id = c.dataset.rid;
+    REID.sel.has(id) ? REID.sel.delete(id) : REID.sel.add(id);
+    renderReid();
+  });
+  $$('#reidSort [data-rs]').forEach(b => b.onclick = () => { REID.sort = b.dataset.rs; renderReid(); });
+  $('#reidSize').oninput = e => { REID.w = +e.target.value; renderReid(); };
+  $$('#mdReid [data-close]').forEach(b => b.onclick = () => closeModal('#mdReid'));
+  $('#reidGo').onclick = () => {
+    closeModal('#mdReid');
+    const clips = [...REID.sel];
+    /* 클립이 10개 이하면 선택 단계를 건너뛴다 */
+    if (clips.length <= 10) { finishReid(clips); return; }
+    REID.clipShown = REID.clipMax;
+    REID.clipSel = new Set(clips.slice(0, REID.clipMax));
+    renderClips(clips);
+    openModal('#mdClips');
+  };
+}
+
+function renderClips(all) {
+  const shown = all.slice(0, REID.clipShown);
+  $('#clipsBody').innerHTML = `
+    <p class="hintline">한 번에 ${REID.clipMax}개까지 불러옵니다. 더 필요하면 아래 '더보기'를 눌러 주세요.</p>
+    <div class="reid-grid" style="--rw:150px">${shown.map(id => {
+      const o = findObj(id); if (!o) return '';
+      return `<label class="reid-card${REID.clipSel.has(id) ? ' on' : ''}">
+        <input type="checkbox" data-cid="${id}" ${REID.clipSel.has(id) ? 'checked' : ''}>
+        <div class="rc-th"><img src="${o.img}" alt=""></div>
+        <div class="rc-meta"><div class="rc-cam">${o.cam}</div><div class="rc-t">${fmtT(o.t)}</div></div>
+      </label>`; }).join('')}</div>
+    ${REID.clipShown < all.length
+      ? `<button class="btn-ghost" id="clipMore" style="width:100%;margin-top:10px">더보기 (${all.length - REID.clipShown}개 남음)</button>` : ''}`;
+  $('#clipsFoot').innerHTML = `<button class="btn-ghost" data-close>취소</button>
+    <button class="btn-primary" id="clipsGo" ${REID.clipSel.size ? '' : 'disabled'}>완료</button>`;
+  $$('#clipsBody [data-cid]').forEach(c => c.onchange = () => {
+    const id = c.dataset.cid;
+    REID.clipSel.has(id) ? REID.clipSel.delete(id) : REID.clipSel.add(id);
+    renderClips(all);
+  });
+  const more = $('#clipMore');
+  if (more) more.onclick = () => { REID.clipShown += REID.clipMax; renderClips(all); };
+  $$('#mdClips [data-close]').forEach(b => b.onclick = () => closeModal('#mdClips'));
+  $('#clipsGo').onclick = () => { closeModal('#mdClips'); finishReid([...REID.clipSel]); };
+}
+
+/* 선별 완료 → 대상 상세(이동 경로)로 이동 */
+function finishReid(ids) {
+  const o = findObj(REID.seed) || findObj(ids[0]);
+  if (!o) return;
+  toast(`${ids.length}건으로 이동 경로를 구성했습니다.`);
+  DT.clip = 0; DT.removed = new Set(); DT.edit = false; DT.area = null; DT.tracks = true;
+  DT.tools = ['obj', 'single'];
+  newTab(cardTitle(o), o, { kind: 'group' });
+}
+
 /* 결과 카드 → 상세 화면. 유사 대상별 보기의 대표 카드면 대상 그룹 상세로 연다. */
 function openCardDetail(id, cardEl) {
   const o = findObj(id); if (!o) return;
@@ -610,14 +716,13 @@ function bindCards(root) {
       if (e.target.closest('[data-more]')) { openCtx(e, id); return; }
       if (e.target.closest('.cmp')) return;
       clearTimeout(clickT);
-      /* AI 대화로 나온 결과는 미리보기 단계 없이 **바로 상세**로 랜딩한다 */
-      if (S.aiMode || S.mode === 'aim') { openCardDetail(id, c); return; }
       clickT = setTimeout(() => selectCard(id), 190);
     };
+    /* 사양 : 결과에서 대상을 고르면 RE-ID 편집 팝업을 띄운다 */
     c.ondblclick = e => {
       if (e.target.closest('.cmp') || e.target.closest('[data-more]')) return;
       clearTimeout(clickT);
-      openCardDetail(id, c);
+      openReid(id);
     };
   });
   $$('[data-cmp]', root).forEach(cb => cb.onchange = e => {

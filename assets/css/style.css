@@ -2695,3 +2695,32 @@ body.rsz-drag .rsz::after{background:var(--primary)}
 /* 원본 비율 보기 : 썸네일을 자르지 않는다 */
 #resultsBody.view-raw .card .thumb{height:auto;aspect-ratio:16/10}
 #resultsBody.view-raw .card .thumb img{object-fit:contain;background:var(--bg-0)}
+
+/* ── RE-ID(동일 대상 선별) 팝업 — 최대 크기 ────────────────────────────── */
+.modal.md-full{
+  width:calc(100vw - 96px);max-width:1760px;height:calc(100vh - 96px);
+  display:flex;flex-direction:column
+}
+.modal.md-full .md-body{flex:1;min-height:0;overflow-y:auto}
+.md-tools{
+  display:flex;align-items:center;gap:12px;padding:8px 16px;
+  border-bottom:1px solid var(--ln-subtle);background:var(--bg-1)
+}
+.md-tools .rt-count{font-size:11.5px;color:var(--tx-tertiary)}
+.md-tools .rt-count em{font-style:normal;color:var(--primary);font-weight:600}
+.md-tools .rt-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.md-tools .seg button{height:26px;padding:0 10px;font-size:11px;border-radius:5px}
+.reid-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(var(--rw,160px),1fr));gap:10px;padding:14px 16px}
+.reid-card{
+  position:relative;background:var(--bg-2);border:1px solid var(--ln-subtle);
+  border-radius:6px;overflow:hidden;cursor:pointer
+}
+.reid-card.on{border-color:var(--primary)}
+.reid-card input{position:absolute;left:8px;top:8px;z-index:2;accent-color:var(--primary)}
+.reid-card .rc-th{position:relative;aspect-ratio:3/4;background:var(--bg-0)}
+.reid-card .rc-th img{width:100%;height:100%;object-fit:cover;display:block}
+.reid-card .rc-th .sim{position:absolute;right:6px;top:6px;font-size:11px;font-weight:500;
+  padding:1px 4px;border-radius:3px;background:var(--overlay)}
+.reid-card .rc-meta{padding:7px 8px 9px}
+.reid-card .rc-cam{font-size:11.5px;color:var(--tx-secondary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.reid-card .rc-t{font-size:10px;color:var(--tx-helper);font-family:var(--mono)}
