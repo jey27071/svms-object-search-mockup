@@ -3048,13 +3048,10 @@ function applyMenuDemo() {
   if (d === 'pmnew0')   { switchMode('person'); renderPersonGrid(); openPersonMgr(); pmForm={name:'',desc:'',imgs:[],kinds:[]}; pmView='new'; renderPM(); }
   if (d === 'pmdetail') { switchMode('person'); renderPersonGrid(); openPersonMgr(); pmTarget=S.persons[0]; pmView='detail'; renderPM(); }
   if (d === 'layb') setLayout('b');
-  if (d === 'lybai') { setLayout('b'); switchMode('aim'); aimAsk('로비에서 나간 후 주차장으로 이동한 인물 검색'); }
-  if (d === 'lybaicmp') { setLayout('b'); switchMode('aim');
-    aimAsk('로비에서 나간 후 주차장으로 이동한 인물 검색');
-    setTimeout(() => { S.compare = ['a1', 'a2']; renderCompare(); renderResults(); }, 2000); }
-  if (d === 'lybaicmpgo') { setLayout('b'); switchMode('aim');
-    aimAsk('로비에서 나간 후 주차장으로 이동한 인물 검색');
-    setTimeout(() => openCompareTab(['a1', 'a2']), 2000); }
+  /* 경로 비교 시연 — AI 대화 대신 텍스트 검색 결과에서 두 명을 고른 상태로 */
+  if (d === 'cmpsel') { setLayout('b'); switchMode('text'); S.q = '검정색 모자를 쓴 배송기사';
+    $('#qText').value = S.q; $('#qTextClear').hidden = false; runSearch(false);
+    setTimeout(() => { S.compare = ['o01', 'o11']; renderCompare(); renderResults(); }, 400); }
   if (d === 'lybresult') { setLayout('b'); switchMode('text'); S.q='검정색 모자를 쓴 배송기사'; $('#qText').value=S.q; $('#qTextClear').hidden=false; runSearch(false); }
   if (d === 'alarmpop') { setTimeout(openAlarmPop, 60); }
   /* AI 검색 없는 버전 (4307:27222) — A/B안 · 진입/검색후 4상태 */
@@ -3062,10 +3059,6 @@ function applyMenuDemo() {
   if (d === 'noaib')     { setAiVer('off'); setLayout('b'); }
   if (d === 'noairesult'){ setAiVer('off'); setLayout('b'); switchMode('text'); S.q='검정색 모자를 쓴 배송기사'; $('#qText').value=S.q; $('#qTextClear').hidden=false; runSearch(false); }
   if (d === 'noaibresult'){ setAiVer('off'); setLayout('b'); switchMode('text'); S.q='검정색 모자를 쓴 배송기사'; $('#qText').value=S.q; $('#qTextClear').hidden=false; runSearch(false); }
-  if (d === 'aiver')     { setAiVer('on'); setLayout('b'); }
-  if (d === 'aitypea') { setAiType('A'); toggleAiFloat(true); AIM.log=[{me:AI_SUGGESTIONS[2]}]; AIM.wait=true; renderAim(); }
-  if (d === 'aitypeb') { setAiType('B'); toggleAiFloat(true); AIM.log=[{me:AI_SUGGESTIONS[2]}]; AIM.wait=true; renderAim(); }
-  if (d === 'aitypec') { setAiType('C'); toggleAiFloat(true); AIM.log=[{me:AI_SUGGESTIONS[2]}]; AIM.wait=true; renderAim(); }
   if (d === 'aifloat') { toggleAiFloat(true); AIM.log=[{me:AI_SUGGESTIONS[2]}]; AIM.wait=true; renderAim(); }
   if (d === 'aim') {
     $$('#modeRail button').forEach(x => x.classList.toggle('on', x.dataset.mode === 'aim'));
@@ -4290,20 +4283,14 @@ const MODE_LABEL = { aim: 'AI 검색', text: '텍스트 검색', image: '이미�
    ※ 사건 상세의 `AI 생성 보고서` 는 검색 기능이 아니라 그대로 둔다
      (섹션명이 "AI **검색** 없는 버전" 이고, off 시안에도 사건 화면은 포함돼 있지 않음)
    ============================================================ */
-S.aiVer = localStorage.getItem('svms_ai') || 'on';
+S.aiVer = 'off';   /* AI 기능 제외 (2026-08-31 지시) — 재개 시 'on' 으로 되돌리면 된다 */
 
-(function initAiSwitch() {
-  const r = document.querySelector('.win-tabs'); if (!r) return;
-  const sw = document.createElement('div');
-  sw.className = 'layout-sw ai-sw'; sw.id = 'aiSw';
-  sw.innerHTML = `<button data-ai="on">AI 있음</button><button data-ai="off">AI 없음</button>`;
-  r.appendChild(sw);
-  $$('#aiSw [data-ai]').forEach(b => b.onclick = () => setAiVer(b.dataset.ai));
-})();
+/* AI 기능을 제외하고 진행하기로 해 'AI 있음 / AI 없음' 전환 스위치도 걷어냈다.
+   AI 관련 코드는 남겨 두었으므로 S.aiVer 를 'on' 으로 되돌리면 그대로 살아난다. */
 
 function setAiVer(k) {
-  S.aiVer = k;
-  localStorage.setItem('svms_ai', k);
+  S.aiVer = 'off';   /* AI 제외 — 어떤 값이 와도 off */
+  k = 'off';
   $$('#aiSw [data-ai]').forEach(b => b.classList.toggle('on', b.dataset.ai === k));
   document.body.classList.toggle('ai-off', k === 'off');
 
