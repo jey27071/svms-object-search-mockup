@@ -2676,3 +2676,7 @@ body.rsz-drag .rsz::after{background:var(--primary)}
 .ct-warn{margin:0 0 6px;font-size:10.5px;line-height:1.45;color:var(--st-mid)}
 /* `+` 로 색상 필터를 열었을 때 잠깐 강조 */
 .acc.flash{outline:1px solid var(--primary);outline-offset:2px;border-radius:4px;transition:outline-color .3s}
+
+/* ── 차량번호 입력 : 값에 비해 박스가 커서 한 줄 높이로 줄인다 ─────────── */
+.mode-panel[data-panel="car"] .textarea-wrap{min-height:0}
+.ta-1line{height:44px;min-height:44px;resize:none;line-height:1.5}

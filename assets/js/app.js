@@ -151,7 +151,8 @@ function filterEnabled() {
   if (S.mode === 'image')  return S.extSel.length > 0;
   if (S.mode === 'person') return S.selPersons.length > 0;
   if (S.mode === 'algo')   return S.algos.length > 0;
-  if (S.mode === 'car')    return (S.carQ || '').trim().length > 0;
+  /* 차량번호 : 앞뒤 상관없이 **두 자리 이상**이면 검색 가능 */
+  if (S.mode === 'car')    return (S.carQ || '').replace(/\s/g, '').length >= 2;
   return false;
 }
 
@@ -3713,7 +3714,8 @@ S.carRecent = CAR_RECENT.slice();
 
 function renderCarRecent() {
   const box = $('#carRecent'); if (!box) return;
-  if (!S.carRecent.length) { box.innerHTML = ''; return; }
+  /* 텍스트 검색과 같은 규칙 — 입력창을 선택했을 때만 아래로 펼친다 */
+  if (!S.carRecent.length || !S.carRecentOpen || S.searched) { box.innerHTML = ''; return; }
   box.innerHTML = `<div class="panel-label" style="margin:10px 0 6px">최근 검색</div>
     <div class="car-recent">${S.carRecent.map((v, i) => `
       <div class="car-rc" data-carrc="${i}"><span>${v}</span>
@@ -3729,8 +3731,11 @@ function renderCarRecent() {
   });
 }
 
+S.carRecentOpen = false;
 (function initCar() {
   const t = $('#qCar'); if (!t) return;
+  t.addEventListener('focus', () => { S.carRecentOpen = true; renderCarRecent(); });
+  t.addEventListener('blur', () => setTimeout(() => { S.carRecentOpen = false; renderCarRecent(); }, 180));
   t.oninput = e => {
     S.carQ = e.target.value;
     $('#qCarClear').hidden = !S.carQ;
@@ -4036,6 +4041,25 @@ function renderLnb() {
 /* 기존 renderMenuBar 호출부를 그대로 살리기 위해 별칭 */
 renderMenuBar = renderLnb;
 
+/* ---- 자연어 문장에서 색상 조건 추출 ----
+   사양에 정의가 없어 다음으로 정했다 :
+   문장에 색상어가 있으면 상의 색상 필터에 자동 반영하고,
+   여러 개가 나오면 모두 선택해 **OR** 로 본다. 사용자가 필터에서 바로 고칠 수 있다. */
+function pickColorsFromText(q) {
+  const t = (q || '');
+  const hit = COLORS.filter(c => t.includes(c.label)).map(c => c.k);
+  return [...new Set(hit)];
+}
+function applyTextColors(q) {
+  const hit = pickColorsFromText(q);
+  if (!hit.length) return false;
+  S.top = hit; savePrefs();
+  toast(hit.length > 1
+    ? `색상 ${hit.length}가지를 조건에 반영했습니다. (여러 색은 모두 포함으로 검색)`
+    : `'${(COLORS.find(c => c.k === hit[0]) || {}).label}' 을 색상 조건에 반영했습니다.`);
+  return true;
+}
+
 /* ---- 텍스트 모드 : 플레이스홀더 · 검색 버튼 · 최근 검색 ---- */
 const TEXT_RECENT = [
   '어제 검은색 옷을 입은 택배 기사 찾아줘',
@@ -4046,8 +4070,11 @@ const TEXT_RECENT = [
 ];
 S.textRecent = TEXT_RECENT.slice();
 
+S.recentOpen = false;
 (function initTextA() {
   const ta = $('#qText'); if (!ta) return;
+  ta.addEventListener('focus', () => { S.recentOpen = true; renderRecentBlk(); });
+  ta.addEventListener('blur', () => setTimeout(() => { S.recentOpen = false; renderRecentBlk(); }, 180));
   ta.placeholder = '대상의 특징을 문장으로 입력해 보세요.\n(예: 흰색 옷을 입고 가방을 든 사람)';
   /* 입력창 안 : 좌하단 `+`(첨부) · 우하단 검색 (시안 4307:27799 Button 행) */
   const wrap = ta.parentElement;
@@ -4096,7 +4123,9 @@ function renderTextRecent() { renderRecentBlk(); }
 /* 상시 `최근 검색` 블록 — li 32 / pitch 38 / 텍스트 x12 / ✕ 12×12 (시안 실측) */
 function renderRecentBlk() {
   const blk = $('#recentBlk'); if (!blk) return;
-  blk.hidden = !!S.searched || !S.textRecent.length;
+  /* 사양 : 최근 검색은 **입력창을 선택했을 때** 그 아래로 펼쳐진다.
+     상시 노출하면 필터가 밀려나고, 검색 후에도 남아 방해가 된다. */
+  blk.hidden = !!S.searched || !S.textRecent.length || !S.recentOpen;
   if (blk.hidden) { blk.innerHTML = ''; return; }
   blk.innerHTML = `<div class="rb-lb">최근 검색</div>
     <div class="rb-list">${S.textRecent.map((v, i) =>
@@ -4652,7 +4681,10 @@ window.addEventListener('hashchange', () => location.reload());
   btn.onclick = () => {
     if (!S.cams.length) return;
     savePrefs();
-    if (S.mode === 'text' && S.q.trim()) pushTextRecent(S.q.trim());
+    if (S.mode === 'text' && S.q.trim()) {
+      pushTextRecent(S.q.trim());
+      if (applyTextColors(S.q)) buildFilters('text');
+    }
     runSearch(false);
   };
 })();
