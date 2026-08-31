@@ -94,6 +94,7 @@ function renderTabs() {
         else {
           /* 사양 §2 : 탭을 닫으면 **이전 탭**으로 포커스가 자동 전환된다(검색 탭 고정 아님) */
           const i = S.tabs.findIndex(x => x.id === t.id);
+          pushClosedTab(t);
           S.tabs = S.tabs.filter(x => x.id !== t.id);
           if (S.activeTab === t.id) S.activeTab = (S.tabs[i - 1] || S.tabs[0] || { id: 'search' }).id;
         }
@@ -103,9 +104,33 @@ function renderTabs() {
     box.appendChild(n);
   });
 }
+/* 검색 탭은 **최대 10개**. 넘치면 가장 오래된 탭부터 닫는다(선입선출).
+   닫힌 탭도 히스토리에는 남으므로 최근 1주일 안에서 다시 열 수 있다. */
+const TAB_MAX = 10;
 function newTab(title, obj, extra) {
   const id = 't' + Date.now() + Math.floor(Math.random() * 100);
-  S.tabs.push({ id, title, obj, ...(extra || {}) }); S.activeTab = id; renderTabs(); syncPanels();
+  S.tabs.push({ id, title, obj, ...(extra || {}) });
+  const over = S.tabs.filter(t => !t.fixed).length - TAB_MAX;
+  if (over > 0) {
+    for (let i = 0; i < over; i++) {
+      const oldest = S.tabs.find(t => !t.fixed);
+      if (!oldest) break;
+      pushClosedTab(oldest);
+      S.tabs = S.tabs.filter(t => t.id !== oldest.id);
+    }
+    toast(`검색 탭은 최대 ${TAB_MAX}개까지 유지됩니다. 오래된 탭을 닫았습니다.`);
+  }
+  S.activeTab = id; renderTabs(); syncPanels();
+}
+
+/* 닫힌 탭 기록 — 히스토리에 최근 1주일치로 보관 */
+S.closedTabs = [];
+function pushClosedTab(t) {
+  if (!t || t.fixed) return;
+  const now = Date.now();
+  S.closedTabs = [{ title: t.title, at: now }, ...S.closedTabs]
+    .filter(x => now - x.at <= 7 * 24 * 60 * 60 * 1000)
+    .slice(0, 50);
 }
 
 /* 탭에 따른 화면 전환 */
@@ -331,12 +356,15 @@ function loadPrefs() {
   if (Array.isArray(v.top)) S.top = v.top;
   if (Array.isArray(v.bottom)) S.bottom = v.bottom;
   if (Array.isArray(v.carTypes)) S.carTypes = v.carTypes;
+  if (v.view === 'raw' || v.view === 'thumb') S.view = v.view;
+  if (typeof v.thumbW === 'number') S.thumbW = v.thumbW;
 }
 function savePrefs() {
   try {
     localStorage.setItem(PREF_KEY, JSON.stringify({
       cams: S.cams, sim: S.sim, allResults: S.allResults,
-      period: S.period, top: S.top, bottom: S.bottom, carTypes: S.carTypes || []
+      period: S.period, top: S.top, bottom: S.bottom, carTypes: S.carTypes || [],
+      view: S.view, thumbW: S.thumbW
     }));
   } catch (_) { /* 저장 실패는 무시 */ }
 }
@@ -367,6 +395,28 @@ function setPfWay(w) {
 /* 검출된 인물에 이름이 없을 때의 표시 규칙 : `인물 01`, `인물 02` … (2자리 0채움) */
 const autoPersonName = i => '인물 ' + String(i + 1).padStart(2, '0');
 
+/* ---- 결과 목록 보기 모드 · 썸네일 크기 ----
+   thumb = 정사각 크롭(기본) / raw = 원본 비율 유지
+   크기는 슬라이더로 조절하고 마지막 값을 기억한다. */
+S.view = 'thumb';
+S.thumbW = 200;
+function applyView() {
+  const b = document.getElementById('resultsBody');
+  if (b) {
+    b.classList.toggle('view-raw', S.view === 'raw');
+    b.style.setProperty('--thumb-w', S.thumbW + 'px');
+  }
+  document.querySelectorAll('#viewSeg [data-view]')
+    .forEach(n => n.classList.toggle('on', n.dataset.view === S.view));
+}
+(function initViewCtl() {
+  document.querySelectorAll('#viewSeg [data-view]').forEach(b => b.onclick = () => {
+    S.view = b.dataset.view; savePrefs(); applyView();
+  });
+  const r = document.getElementById('thumbSize');
+  if (r) r.oninput = e => { S.thumbW = +e.target.value; savePrefs(); applyView(); };
+})();
+
 /* ===================== 검색 실행 ===================== */
 function matchFilters(o) {
   if (o.sim < S.sim) return false;
@@ -392,9 +442,30 @@ function runSearch(keep) {
   render();
 }
 
+/* 정렬 옵션 — 인물 검색일 때만 `인물순` 이 붙는다 */
+function sortOptions() {
+  const base = ['유사도순', '최신순', '위치순'];
+  return S.mode === 'person' ? [...base, '인물순'] : base;
+}
+function renderSortMenu() {
+  const m = document.getElementById('sortMenu'); if (!m) return;
+  const opts = sortOptions();
+  if (!opts.includes(S.sort)) S.sort = opts[0];
+  m.innerHTML = opts.map(v => `<div data-v="${v}">${v}</div>`).join('');
+  const btn = document.querySelector('#sortSelect .select-btn');
+  if (btn) btn.innerHTML = `${S.sort}<i class="i i-16 i-chevron i-down caret"></i>`;
+  const sel = document.getElementById('sortSelect');
+  if (sel) sel.dataset.value = S.sort;
+}
+
 function sortResults() {
-  const c = { '유사도순': (a, b) => b.sim - a.sim, '최신순': (a, b) => b.t.localeCompare(a.t), '위치순': (a, b) => a.cam.localeCompare(b.cam) };
-  S.results.sort(c[S.sort]);
+  const c = {
+    '유사도순': (a, b) => b.sim - a.sim,
+    '최신순':   (a, b) => b.t.localeCompare(a.t),
+    '위치순':   (a, b) => a.cam.localeCompare(b.cam),
+    '인물순':   (a, b) => cardTitle(a).localeCompare(cardTitle(b))
+  };
+  S.results.sort(c[S.sort] || c['유사도순']);
 }
 
 /* ===================== 결과 렌더 ===================== */
@@ -445,6 +516,7 @@ function renderResults() {
   const aiOn = (S.aiMode || S.mode === 'aim');
   const aiList = (S.aiResults && S.aiResults.length) ? S.aiResults : AI_RESULT;
   $('#resCount').textContent = `검색 결과 (${(aiOn && S.aiStage === 'done' ? aiList.length : S.results.length)}건)`;
+  renderSortMenu();
 
   /* AI 모드 */
   if (aiOn) {
@@ -458,10 +530,13 @@ function renderResults() {
   if (!S.searched) { body.innerHTML = `<div class="empty">${EMPTY_TEXT[S.mode]}</div>`; return; }
   if (!S.results.length) { body.innerHTML = `<div class="empty">${EMPTY_TEXT.none}</div>`; return; }
 
-  if (!S.grouped) {
+  if (true) {   /* 항상 평면 목록 (유사 대상별 보기 삭제) */
     /* 일반 결과 목록에서도 경로 비교를 걸 수 있어야 한다 (최대 4개) */
-    body.innerHTML = `<div class="grid">${S.results.map(o => cardHTML(o, { compare: true })).join('')}</div>`;
-    bindCards(body); return;
+    /* 사양 : 경로 비교는 **상세 화면에서 경로가 나온 뒤** 두 상황을 비교하는 기능이다.
+       인물 검색 결과(인물 레벨)에서는 바로 비교할 수 없다. */
+    const canCmp = S.mode !== 'person';
+    body.innerHTML = `<div class="grid">${S.results.map(o => cardHTML(o, { compare: canCmp })).join('')}</div>`;
+    bindCards(body); applyView(); return;
   }
 
   /* ---- 유사 대상별 보기 (B안: 대표 카드 압축) ---- */
@@ -773,9 +848,9 @@ bindSelect('#sortSelect', v => { S.sort = v; sortResults(); renderResults(); });
 bindSelect('#personSort', v => { S.personSort = v; renderPersonGrid(); });
 
 /* ---- 유사 대상별 보기 ---- */
-$('#groupToggle').onchange = e => {
-  S.grouped = e.target.checked;
-  if (S.grouped && !S.openGroups.size) S.openGroups.add('etc');
+/* '유사 대상별 보기' 는 사양에서 삭제됐다 (핸들러만 무력화, 렌더는 평면 목록 고정) */
+const _groupToggleRemoved = e => {
+  S.grouped = false;
   renderResults();
 };
 
@@ -1124,7 +1199,13 @@ function runHistoryQuery(q, isAi) {
 }
 
 function renderHistory() {
-  $('#historyBody').innerHTML = HISTORY.map((d, di) => `
+  const closed = (S.closedTabs || []);
+  $('#historyBody').innerHTML =
+    (closed.length ? `<div class="hs-day"><div class="hs-date">닫힌 검색 탭 (최근 1주일)</div>
+      ${closed.map(c => `<div class="hs-item"><div class="hs-main">
+        <span style="width:10px"></span><span class="hs-q">${c.title}</span>
+        <span class="hs-n">닫힘</span></div></div>`).join('')}</div>` : '') +
+    HISTORY.map((d, di) => `
     <div class="hs-day"><div class="hs-date">${d.date}</div>
       ${d.items.map((it, i) => {
         const key = `${di}-${i}`;
@@ -1281,9 +1362,7 @@ makeDetachable('#aiPanel', '#btnAiDetach', '#aiHead');
 function render() {
   const on = S.searched && !S.aiMode;
   $('#sortSelect').classList.toggle('disabled', !on);
-  $('#groupToggle').disabled = !on;
-  $('#groupToggleWrap').classList.toggle('disabled', !on);
-  if (!on) { S.grouped = false; $('#groupToggle').checked = false; }
+  S.grouped = false;   /* 유사 대상별 보기 삭제 */
   renderChips(); renderResults(); renderPreview(); renderCompare();
 }
 
@@ -2735,7 +2814,7 @@ function applyDemo() {
     setMode('text');
     S.q = '검정색 모자를 쓴 배송기사'; qText.value = S.q; $('#qTextClear').hidden = false;
     buildFilters('text'); runSearch(false);
-    if (d !== 'result') { S.grouped = true; $('#groupToggle').checked = true; S.openGroups.add('etc'); }
+    /* 그룹 보기 삭제 — 평면 목록으로만 시연 */
     if (d === 'groupopen') S.openGroups.add('c1');
     if (d === 'compare') { S.openGroups.add('c1'); S.compare = ['o01', 'o11']; }
     selectCard('o01');

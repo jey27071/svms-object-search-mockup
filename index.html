@@ -250,9 +250,17 @@
         <div class="rh-right">
           <div class="select sm disabled" id="sortSelect" data-value="유사도순">
             <button class="select-btn">유사도순<i class="i i-16 i-chevron i-down caret"></i></button>
-            <div class="select-menu"><div data-v="유사도순">유사도순</div><div data-v="최신순">최신순</div><div data-v="위치순">위치순</div></div>
+            <div class="select-menu" id="sortMenu"></div>
           </div>
-          <label class="check disabled" id="groupToggleWrap"><input type="checkbox" id="groupToggle" disabled><i></i>유사 대상별 보기</label>
+          <!-- 보기 모드 : 썸네일(정사각 크롭) / 원본 비율 -->
+          <div class="seg view-seg" id="viewSeg">
+            <button class="on" data-view="thumb" title="썸네일 보기">썸네일</button>
+            <button data-view="raw" title="원본 비율 보기">원본 비율</button>
+          </div>
+          <!-- 썸네일 크기 조절 -->
+          <label class="thumb-size" title="썸네일 크기">
+            <input type="range" id="thumbSize" min="140" max="320" step="10" value="200">
+          </label>
         </div>
       </div>
       <div class="results-body" id="resultsBody"></div>

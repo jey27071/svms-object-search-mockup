@@ -2685,3 +2685,13 @@ body.rsz-drag .rsz::after{background:var(--primary)}
 .seg.pf-way{margin:2px 0 4px}
 .seg.pf-way button{flex:1;height:28px;border-radius:5px}
 .pf-pane[hidden]{display:none}
+
+/* ── 결과 목록 : 보기 모드 · 썸네일 크기 ────────────────────────────────── */
+.results-head .view-seg button{height:26px;padding:0 10px;font-size:11px;border-radius:5px}
+.results-head .thumb-size{display:flex;align-items:center;width:96px}
+.results-head .thumb-size input{width:100%;accent-color:var(--primary)}
+/* 슬라이더 값으로 카드 폭을 잡는다 */
+#resultsBody .grid{grid-template-columns:repeat(auto-fill,minmax(var(--thumb-w,200px),1fr))}
+/* 원본 비율 보기 : 썸네일을 자르지 않는다 */
+#resultsBody.view-raw .card .thumb{height:auto;aspect-ratio:16/10}
+#resultsBody.view-raw .card .thumb img{object-fit:contain;background:var(--bg-0)}
