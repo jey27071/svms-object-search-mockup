@@ -1772,6 +1772,126 @@ function renderPip(clip) {
   });
 }
 
+/* ============================================================
+   상세 화면 상단 패널 (2026-09-01 2차)
+   · 1~3단으로 나눠 쓰고, 각 칸은 **영상** 또는 **맵뷰**로 지정한다
+   · 칸 사이 구분선을 끌어 좌우 폭을 조정한다
+   · 우측 '대상 상세' 패널(맵뷰어·주변 대상)은 없앴다 —
+     맵뷰는 패널 하나를 차지하고, 주변 대상은 삭제
+   ============================================================ */
+const PANE = { n: 1, kind: ['video', 'map', 'video'], w: [null, null] };
+
+function paneBody(kind, i) {
+  if (kind === 'map') {
+    return `<div class="pn-map">
+      <img src="assets/img/floor.png" alt="맵뷰">
+      <span class="pn-tag">맵뷰</span>
+    </div>`;
+  }
+  return `<div class="pn-vid">
+    <img src="${(TL.tracks[0] && TL.tracks[0].clips[Math.min(i, 3)] || {}).img || 'assets/img/video.png'}" alt="">
+    <span class="pn-tag">영상 ${i + 1}</span>
+  </div>`;
+}
+
+function renderPanes() {
+  const host = document.getElementById('dtPanes'); if (!host) return;
+  host.dataset.panes = PANE.n;
+
+  /* 2·3번째 칸 내용 */
+  [2, 3].forEach(k => {
+    const el = document.getElementById('dtPane' + k);
+    const rz = host.querySelector(`[data-prsz="${k - 1}"]`);
+    const on = PANE.n >= k;
+    if (el) {
+      el.hidden = !on;
+      if (on) el.innerHTML = paneBody(PANE.kind[k - 1], k - 1) + paneSwitchHTML(k - 1);
+    }
+    if (rz) rz.hidden = !on;
+  });
+
+  /* 첫 칸에도 종류 전환을 붙인다 */
+  const v = document.getElementById('dtVideo');
+  if (v) {
+    let sw = v.querySelector('.pn-switch');
+    if (!sw) { v.insertAdjacentHTML('beforeend', paneSwitchHTML(0)); sw = v.querySelector('.pn-switch'); }
+    v.classList.toggle('as-map', PANE.kind[0] === 'map');
+    let mp = v.querySelector('.pn-map');
+    if (PANE.kind[0] === 'map' && !mp) v.insertAdjacentHTML('afterbegin', `<div class="pn-map"><img src="assets/img/floor.png" alt="맵뷰"><span class="pn-tag">맵뷰</span></div>`);
+    if (PANE.kind[0] !== 'map' && mp) mp.remove();
+  }
+
+  /* 폭 반영 */
+  const p1 = document.getElementById('dtVideo');
+  if (p1) p1.style.flex = PANE.w[0] ? `0 0 ${PANE.w[0]}px` : '1';
+  const p2 = document.getElementById('dtPane2');
+  if (p2) p2.style.flex = PANE.w[1] ? `0 0 ${PANE.w[1]}px` : '1';
+
+  bindPaneCtl();
+}
+
+function paneSwitchHTML(i) {
+  return `<div class="pn-switch">
+    <button class="${PANE.kind[i] === 'video' ? 'on' : ''}" data-pk="${i}:video">영상</button>
+    <button class="${PANE.kind[i] === 'map' ? 'on' : ''}" data-pk="${i}:map">맵뷰</button>
+  </div>`;
+}
+
+function bindPaneCtl() {
+  document.querySelectorAll('[data-pk]').forEach(b => b.onclick = e => {
+    e.stopPropagation();
+    const [i, k] = b.dataset.pk.split(':');
+    PANE.kind[+i] = k;
+    renderPanes();
+  });
+  document.querySelectorAll('#dtPaneN [data-pn]').forEach(b => b.onclick = () => {
+    PANE.n = +b.dataset.pn; PANE.w = [null, null];
+    renderPanes();
+    document.querySelectorAll('#dtPaneN [data-pn]').forEach(x => x.classList.toggle('on', +x.dataset.pn === PANE.n));
+  });
+  /* 구분선 드래그 → 좌우 폭 조정 */
+  document.querySelectorAll('#dtPanes .pane-rsz').forEach(h => {
+    h.onmousedown = e => {
+      e.preventDefault();
+      const idx = +h.dataset.prsz - 1;
+      const target = idx === 0 ? document.getElementById('dtVideo') : document.getElementById('dtPane2');
+      if (!target) return;
+      const sx = e.clientX, sw = target.getBoundingClientRect().width;
+      document.body.style.cursor = 'col-resize';
+      const mv = ev => {
+        const w = Math.max(220, Math.min(1400, sw + (ev.clientX - sx)));
+        PANE.w[idx] = w; target.style.flex = `0 0 ${w}px`;
+      };
+      const up = () => {
+        document.removeEventListener('mousemove', mv);
+        document.removeEventListener('mouseup', up);
+        document.body.style.cursor = '';
+      };
+      document.addEventListener('mousemove', mv);
+      document.addEventListener('mouseup', up);
+    };
+  });
+}
+
+/* 대상 정보 : 카드에서 한 줄로 축약 */
+function renderObjBar(o, label) {
+  const bar = document.getElementById('dtObjBar'); if (!bar) return;
+  bar.innerHTML = `
+    <img class="ob-th" src="${o.img}" alt="">
+    <b class="ob-nm">${label}</b>
+    <span class="badge">${o.sim}% 유사</span>
+    <span class="ob-kv">출현 <b>${o.t}</b></span>
+    <span class="ob-kv">이벤트 <b>${o.group === 'etc' ? '-' : '이동/계수'}</b></span>
+    <span class="ob-sw"><i style="background:${colorHex(o.top)}"></i><i style="background:${colorHex(o.bottom)}"></i></span>
+    <span class="ob-right" id="dtPaneN">
+      ${[1, 2, 3].map(n => `<button class="${PANE.n === n ? 'on' : ''}" data-pn="${n}">${n}단</button>`).join('')}
+      <button class="btn-primary sm" id="dtCase2">사건 등록</button>
+    </span>`;
+  bindPaneCtl();
+  const c = document.getElementById('dtCase2');
+  if (c) c.onclick = () => openCase();
+}
+
 function renderDetail(tab) {
   const o = tab.obj;
   const isGroup = tab.kind === 'group';
@@ -1818,6 +1938,8 @@ function renderDetail(tab) {
     onAdd: () => openClipAdd(tab)
   });
   syncTlEditBtn(tab);
+  renderPanes();
+  renderObjBar(o, label);
   renderPip(TL_TRACKS[0].clips[TL.sel.c] || TL_TRACKS[0].clips[0]);
 
   /* 그룹 상세 : 번호 세그먼트 행 */

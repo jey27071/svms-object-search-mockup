@@ -2942,3 +2942,55 @@ body.rsz-drag .rsz::after{background:var(--primary)}
 
 /* 우측 원본 영상 패널 : 타이틀을 없앤 만큼 목록을 위로 올린다 */
 .preview .preview-list{padding-top:10px}
+
+/* ══ 상세 화면 재구성 (2026-09-01 2차) ═══════════════════════════════════
+   우측 '대상 상세' 패널을 없애고 상단을 1~3단 패널로, 타임라인을 하단 전체 폭으로. */
+.detail{flex-direction:column}
+.detail > .dt-side{display:none}
+.dt-main{flex:1;display:flex;flex-direction:column;min-width:0;min-height:0}
+
+/* 상단 패널 영역 */
+.dt-panes{flex:1;display:flex;min-height:0;min-width:0;gap:0}
+.dt-panes > .dt-video,
+.dt-panes > .dt-pane{flex:1;min-width:220px;position:relative}
+.dt-pane{background:#000;overflow:hidden}
+.pane-rsz{
+  flex:0 0 6px;cursor:col-resize;background:var(--bg-0);
+  border-left:1px solid var(--ln-subtle);border-right:1px solid var(--ln-subtle)
+}
+.pane-rsz:hover{background:var(--primary)}
+.pn-vid,.pn-map{position:absolute;inset:0}
+.pn-vid img,.pn-map img{width:100%;height:100%;object-fit:cover;display:block}
+.pn-map{background:#e9eaec}
+.pn-map img{object-fit:contain}
+.pn-tag{
+  position:absolute;left:8px;top:8px;padding:2px 7px;border-radius:3px;
+  background:rgba(0,0,0,.6);color:#e8eef6;font-size:10.5px
+}
+/* 칸 종류 전환 (영상 / 맵뷰) */
+.pn-switch{position:absolute;right:8px;top:8px;z-index:5;display:flex;gap:2px}
+.pn-switch button{
+  height:22px;padding:0 8px;border-radius:4px;font-size:10.5px;
+  background:rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.22);color:#cdd6e0
+}
+.pn-switch button.on{background:var(--primary);border-color:var(--primary);color:#fff}
+.dt-video.as-map > img,
+.dt-video.as-map .ov,
+.dt-video.as-map .dt-box,
+.dt-video.as-map .dt-vhead{display:none}
+
+/* 대상 정보 : 한 줄 축약 */
+.dt-objbar{
+  flex:0 0 auto;display:flex;align-items:center;gap:10px;
+  padding:7px 12px;background:var(--bg-1);border-top:1px solid var(--ln-subtle);
+  font-size:11.5px;color:var(--tx-secondary)
+}
+.dt-objbar .ob-th{width:30px;height:34px;object-fit:cover;border-radius:3px}
+.dt-objbar .ob-nm{font-size:12.5px;color:var(--tx-primary)}
+.dt-objbar .ob-kv b{color:var(--tx-primary);font-weight:500;font-family:var(--mono);font-size:11px}
+.dt-objbar .ob-sw{display:flex;gap:3px}
+.dt-objbar .ob-sw i{width:12px;height:12px;border-radius:3px;border:1px solid var(--ln-border)}
+.dt-objbar .ob-right{margin-left:auto;display:flex;align-items:center;gap:4px}
+.dt-objbar .ob-right button{height:24px;padding:0 9px;border-radius:4px;font-size:11px;
+  background:var(--bg-3);border:1px solid var(--ln-border);color:var(--tx-secondary)}
+.dt-objbar .ob-right button.on{background:var(--primary);border-color:var(--primary);color:#fff}

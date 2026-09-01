@@ -283,6 +283,8 @@
     <!-- ---- 단일 대상 상세 ---- -->
     <section class="detail" id="detail" hidden>
       <div class="dt-main" id="dtMain">
+        <!-- 상단 : 1~3단 패널. 각 칸은 영상 또는 맵뷰로 쓰고 좌우로 폭을 조정한다 -->
+        <div class="dt-panes" id="dtPanes" data-panes="1">
         <div class="dt-video" id="dtVideo">
           <img id="dtVideoImg" src="assets/img/video.png" alt="">
           <div class="ov ov-heat" id="ovHeat" hidden></div>
@@ -345,8 +347,16 @@
             </div>
           </div>
         </div>
+          <div class="pane-rsz" data-prsz="1" hidden></div>
+          <div class="dt-pane" id="dtPane2" hidden></div>
+          <div class="pane-rsz" data-prsz="2" hidden></div>
+          <div class="dt-pane" id="dtPane3" hidden></div>
+        </div>
 
-        <!-- 타임라인 : 타이틀을 없애고 편집 버튼은 배율 옆으로 옮겨 상하 공간을 확보했다 -->
+        <!-- 대상 정보 : 한 줄로 축약 (기존 우측 패널의 카드형에서 대체) -->
+        <div class="dt-objbar" id="dtObjBar"></div>
+
+        <!-- 타임라인 : 하단 전체 폭 -->
         <div class="dt-hist tl-host" id="dtTl"></div>
         <div class="dt-hist-legacy" hidden>
           <span id="dtHistBtns"></span>
@@ -371,7 +381,7 @@
         </div>
       </div>
 
-      <aside class="dt-side">
+      <aside class="dt-side" hidden>
         <div class="dt-side-head">
           <span class="dt-side-title">대상 상세</span>
           <button class="btn-primary sm" id="dtCase">
