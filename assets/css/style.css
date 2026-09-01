@@ -3217,16 +3217,15 @@ body.dt-b .dt-side > .dt-sec + .dt-sec{border-top:1px solid var(--ln-subtle);pad
    4명 비교 시 높이가 과했다. 행 높이와 썸네일을 함께 낮춘다. */
 .tl-host{height:calc(34px + var(--tl-tracks) * var(--tl-row,112px) + 32px)}
 .tl-row{height:var(--tl-row,112px)}
-.tl-th{height:var(--tl-th,70px)}
+.tl-th{height:var(--tl-th,70px);top:var(--tl-thtop,8px)}
 .tl-lane{top:var(--tl-lane,20px)}
 .tl-name{font-size:9.5px}
 /* 3트랙 이상이면 캡션을 접고 번호만 남긴다 (썸네일 면적 확보) */
 .tl-host.tl-compact .tl-cam{display:none}
 .tl-host.tl-compact .tl-n{min-width:13px;height:13px;line-height:13px;font-size:9px}
 .tl-host.tl-compact .tl-more{height:13px;line-height:13px;font-size:9px;padding:0 3px}
-.tl-host.tl-compact .tl-th:hover,
-.tl-host.tl-compact .tl-th.pass,
-.tl-host.tl-compact .tl-th.on{transform:scale(1.25)}
+/* 확대 배율은 행 높이 계산과 같은 값을 쓴다 */
+.tl-th:hover,.tl-th.pass,.tl-th.on{transform:scale(var(--tl-scale,1.4))}
 /* 인물 탭 : 켜고 끄는 형태 */
 .tl-tabs button i{width:7px;height:7px;border-radius:2px;display:inline-block;margin-right:4px}
 .tl-tabs button{display:flex;align-items:center}

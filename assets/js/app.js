@@ -1744,12 +1744,19 @@ function renderTimeline(host, tracks, opt = {}) {
 
   /* 트랙 수에 따라 패널 높이가 달라진다 (스크롤이 생기지 않는 높이까지) */
   /* 트랙이 늘수록 행을 낮춘다 (4명이면 절반 수준) */
-  const ROW = { 1: 112, 2: 96, 3: 76, 4: 60 }[tracks.length] || 60;
-  const LANE = tracks.length >= 3 ? 13 : 20;      /* 트랙명 줄 높이 */
+  /* 트랙이 늘수록 행을 낮춘다. 확대(호버·커서 통과)된 썸네일까지 행 안에 들어가야
+     세로 스크롤이 생기지 않으므로, 배율을 역산해 썸네일 높이를 정한다. */
+  const ROW  = { 1: 112, 2: 96, 3: 80, 4: 66 }[tracks.length] || 66;
+  const LANE = tracks.length >= 3 ? 13 : 20;   /* 트랙명 줄 */
+  const TOP  = 8;                              /* 바 아래 썸네일 시작점 */
+  const SC   = tracks.length >= 3 ? 1.25 : 1.4;
+  const TH   = Math.floor((ROW - LANE - TOP) / SC);
   host.style.setProperty('--tl-tracks', tracks.length);
   host.style.setProperty('--tl-row', ROW + 'px');
   host.style.setProperty('--tl-lane', LANE + 'px');
-  host.style.setProperty('--tl-th', (ROW - LANE - 12) + 'px');
+  host.style.setProperty('--tl-thtop', TOP + 'px');
+  host.style.setProperty('--tl-th', TH + 'px');
+  host.style.setProperty('--tl-scale', SC);
   host.classList.toggle('tl-compact', tracks.length >= 3);
 
   const allBtn = host.querySelector('[data-tlall]');
