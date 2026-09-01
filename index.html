@@ -323,12 +323,6 @@
               <button class="btn-icon" title="배속 앞으로"><i class="i i-18 i-pc-forward"></i></button>
               <button class="btn-icon" title="10초 앞으로"><i class="i i-18 i-pc-fwd10"></i></button>
               <button class="btn-icon" id="dtNextClip" title="다음 영상"><i class="i i-18 i-pc-next"></i></button>
-              <!-- 사양서 2-6) 음량 : 호버 시 슬라이더 노출 · 선택 시 음소거 토글 -->
-              <span class="vol-wrap" id="dtVolWrap">
-                <button class="btn-icon" id="dtVol" title="음량"><i class="i i-18 i-pc-volume" id="dtVolIc"></i></button>
-                <input type="range" class="vol-slider" id="dtVolRange" min="0" max="100" value="70">
-              </span>
-            </div>
             <div class="grp r" id="dtTools">
               <!-- 사양서 Detail_000_2 · 2-5) 영상 분석 및 뷰어 도구 :
                    히트맵 / 경로 확인 / 주변 카메라 / 단일 영상 view(1X1, Default) / 다중 영상 view(2X2)
@@ -348,16 +342,10 @@
           </div>
         </div>
 
-        <div class="dt-hist">
-          <div class="dt-hist-head">
-            <span class="dt-hist-title">
-              <svg viewBox="0 0 16 16" class="ic"><path d="M2 12c3 0 3-8 6-8s3 8 6 8" stroke="currentColor" stroke-width="1.3" fill="none"/></svg>
-              탐지 이력
-            </span>
-            <span class="side-head-btns" id="dtHistBtns">
-              <button class="btn-ghost sm" id="dtEdit">편집</button>
-            </span>
-          </div>
+        <!-- 타임라인 : 타이틀을 없애고 편집 버튼은 배율 옆으로 옮겨 상하 공간을 확보했다 -->
+        <div class="dt-hist tl-host" id="dtTl"></div>
+        <div class="dt-hist-legacy" hidden>
+          <span id="dtHistBtns"></span>
           <div class="dt-ruler" id="dtRuler"></div>
           <div class="dt-seg-row" id="dtSegRow" hidden></div>
           <div class="dt-clips" id="dtClips"></div>
@@ -370,16 +358,9 @@
           <div class="cmp-grid n2" id="cmpGrid"></div>
           <div class="dt-ctrl" id="cmpCtrl"></div>
         </div>
-        <div class="dt-hist">
-          <div class="dt-hist-head">
-            <span class="dt-hist-title">
-              <svg viewBox="0 0 16 16" class="ic"><path d="M2 12c3 0 3-8 6-8s3 8 6 8" stroke="currentColor" stroke-width="1.3" fill="none"/></svg>
-              탐지 이력
-            </span>
-            <span class="side-head-btns" id="cmpHistBtns">
-              <button class="btn-ghost sm" id="cmpEdit">편집</button>
-            </span>
-          </div>
+        <div class="dt-hist tl-host" id="cmpTl"></div>
+        <div class="dt-hist-legacy" hidden>
+          <span id="cmpHistBtns"></span>
           <div class="dt-ruler" id="cmpRuler"></div>
           <div class="dt-lanes" id="cmpLanes"></div>
           <div class="dt-clips" id="cmpClips"></div>

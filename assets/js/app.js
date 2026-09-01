@@ -1530,6 +1530,124 @@ const ICON2 = {
   shield: '<svg viewBox="0 0 16 16" class="ic"><path d="M8 1.6l5 1.8v4.2c0 3.2-2.2 5.6-5 6.8-2.8-1.2-5-3.6-5-6.8V3.4z" stroke="currentColor" stroke-width="1.2" fill="none"/><path d="M5.6 8l1.7 1.7L10.6 6" stroke="currentColor" stroke-width="1.3" fill="none"/></svg>'
 };
 
+/* ============================================================
+   타임라인 (2026-09-01 개편)
+   요구사항 :
+   · 배치된 클립 **전체 구간**을 그린다 (하루 고정 눈금 아님)
+   · 배율(줌) 조절, 날짜가 바뀌는 지점에 날짜 표기
+   · 클립 바는 얇게 → 상하 공간 확보. 번호는 바가 아니라 **썸네일**에
+   · 썸네일 상시 표시(접기 없음), 폭은 바 폭을 따르고
+     타임커서가 지나가거나 호버하면 주변 위로 크게 표시
+   · 트랙 1~4개 (경로 비교 인원 수) → 패널 높이가 따라 변한다
+   · 한 바에 클립이 여럿이면 대표 하나만 두고 개수를 표시,
+     나머지는 영상 영역 PIP 로 재생하고 선택하면 메인과 스위칭
+   ============================================================ */
+const TL = { zoom: 1, cursor: 0.34, tracks: [], sel: { t: 0, c: 0 }, pip: 0 };
+
+const tlTime = v => new Date(String(v).replace(' ', 'T'));
+const tlPad = n => String(n).padStart(2, '0');
+const tlHM = d => `${tlPad(d.getHours())}:${tlPad(d.getMinutes())}`;
+const tlYMD = d => `${d.getFullYear()}-${tlPad(d.getMonth() + 1)}-${tlPad(d.getDate())}`;
+
+/* 보이는 트랙들의 클립 전체를 감싸는 구간 */
+function tlDomain(tracks) {
+  const all = tracks.flatMap(t => t.clips);
+  if (!all.length) return [Date.now(), Date.now() + 36e5];
+  const min = Math.min(...all.map(c => +tlTime(c.from)));
+  const max = Math.max(...all.map(c => +tlTime(c.to)));
+  const pad = (max - min) * 0.04;
+  return [min - pad, max + pad];
+}
+
+/* 배율에 따라 눈금 간격을 고른다 (분 단위) */
+function tlStep(spanMs, zoom) {
+  const mins = spanMs / 6e4 / zoom;
+  const cand = [5, 10, 15, 30, 60, 120, 180, 360];
+  return (cand.find(m => mins / m <= 14) || 720) * 6e4;
+}
+
+function renderTimeline(host, tracks, opt = {}) {
+  if (!host) return;
+  TL.tracks = tracks;
+  const [d0, d1] = tlDomain(tracks);
+  const span = d1 - d0;
+  const pct = t => (+tlTime(t) - d0) / span * 100;
+  const wid = c => Math.max(0.6, (+tlTime(c.to) - +tlTime(c.from)) / span * 100);
+
+  /* 눈금 · 날짜 */
+  const step = tlStep(span, TL.zoom);
+  let ticks = '', lastDay = '';
+  for (let t = Math.ceil(d0 / step) * step; t <= d1; t += step) {
+    const d = new Date(t), p = (t - d0) / span * 100;
+    const day = tlYMD(d);
+    const isNewDay = day !== lastDay;
+    ticks += `<span class="tk" style="left:${p}%"></span>`;
+    ticks += `<span class="tl-lb" style="left:${p}%">${tlHM(d)}</span>`;
+    /* 날짜가 바뀌는 지점에만 날짜를 적는다 */
+    if (isNewDay && lastDay) ticks += `<span class="tl-day" style="left:${p}%">${day}</span>`;
+    else if (isNewDay && !lastDay) ticks += `<span class="tl-day first" style="left:${p}%">${day}</span>`;
+    lastDay = day;
+  }
+
+  const rows = tracks.map((tr, ti) => `
+    <div class="tl-row" data-tr="${ti}">
+      <span class="tl-name"><i style="background:${typeof slotColor === 'function' ? slotColor(tr.slot) : 'var(--primary)'}"></i>${tr.label}</span>
+      <div class="tl-lane">
+        ${tr.clips.map((c, ci) => {
+          const l = pct(c.from), w = wid(c);
+          const extra = (c.extra || []).length;
+          const on = TL.sel.t === ti && TL.sel.c === ci;
+          return `<div class="tl-bar${on ? ' on' : ''}" style="left:${l}%;width:${w}%;--bc:${typeof slotColor === 'function' ? slotColor(tr.slot) : 'var(--primary)'}" data-tr="${ti}" data-c="${ci}"></div>
+            <div class="tl-th${on ? ' on' : ''}" style="left:${l}%;width:${w}%" data-tr="${ti}" data-c="${ci}" title="${c.cam}">
+              <img src="${c.img}" alt="">
+              <span class="tl-n">${c.n}</span>
+              ${extra ? `<span class="tl-more" title="같은 장소 카메라 ${extra + 1}대">+${extra}</span>` : ''}
+              <span class="tl-cam">${c.cam}</span>
+            </div>`;
+        }).join('')}
+      </div>
+    </div>`).join('');
+
+  host.innerHTML = `
+    <div class="tl-top">
+      <div class="tl-zoom">
+        <button data-tlz="out" title="축소" ${TL.zoom <= 1 ? 'disabled' : ''}>−</button>
+        <span class="tl-zv">${TL.zoom}x</span>
+        <button data-tlz="in" title="확대" ${TL.zoom >= 8 ? 'disabled' : ''}>+</button>
+      </div>
+      ${opt.rightHTML || ''}
+    </div>
+    <div class="tl-scroll">
+      <div class="tl-inner" style="width:${TL.zoom * 100}%">
+        <div class="tl-ruler">${ticks}</div>
+        <div class="tl-rows">${rows}</div>
+        <span class="tl-cursor" style="left:${TL.cursor * 100}%"></span>
+      </div>
+    </div>`;
+
+  /* 트랙 수에 따라 패널 높이가 달라진다 (스크롤이 생기지 않는 높이까지) */
+  host.style.setProperty('--tl-tracks', tracks.length);
+
+  host.querySelectorAll('[data-tlz]').forEach(b => b.onclick = () => {
+    TL.zoom = b.dataset.tlz === 'in' ? Math.min(8, TL.zoom * 2) : Math.max(1, TL.zoom / 2);
+    renderTimeline(host, tracks, opt);
+  });
+  host.querySelectorAll('.tl-bar,.tl-th').forEach(n => n.onclick = () => {
+    TL.sel = { t: +n.dataset.tr, c: +n.dataset.c };
+    TL.pip = 0;
+    const c = tracks[TL.sel.t].clips[TL.sel.c];
+    TL.cursor = (pct(c.from) + wid(c) / 2) / 100;
+    renderTimeline(host, tracks, opt);
+    if (opt.onSelect) opt.onSelect(tracks[TL.sel.t], c);
+  });
+  /* 타임커서가 지나가는 썸네일도 크게 (호버와 같은 취급) */
+  host.querySelectorAll('.tl-th').forEach(n => {
+    const l = parseFloat(n.style.left), w = parseFloat(n.style.width);
+    const cx = TL.cursor * 100;
+    if (cx >= l && cx <= l + w) n.classList.add('pass');
+  });
+}
+
 function rulerHTML(opt = {}) {
   let h = '';
   for (let i = 0; i <= 48; i++) {
@@ -1553,6 +1671,9 @@ function playCtrlHTML(opt = {}) {
   /* 아이콘은 GUI(Tnihi6lixRR47N4RSAwUbF) 상세화면 컨트롤 바에서 추출한 것을 쓴다.
      clips:false 면 이전/다음 영상 버튼을 뺀다 (북마크 상세는 단일 클립) */
   const clips = opt.clips !== false;
+  /* 배열 (2026-09-01) : 좌우 이동 버튼은 **양 끝**에 유지하고,
+     그 안쪽에 10초 · 배속 · 재생/일시정지를 대칭으로 둔다.
+     음량은 툴바에서 빼고 **설정** 으로 옮겼다. */
   return `${clips ? b('이전 영상', 'i-pc-prev') : ''}
     ${b('10초 뒤로', 'i-pc-back10')}
     ${b('배속 뒤로', 'i-pc-rewind')}
@@ -1560,8 +1681,7 @@ function playCtrlHTML(opt = {}) {
     ${b('일시정지', 'i-pc-pause')}
     ${b('배속 앞으로', 'i-pc-forward')}
     ${b('10초 앞으로', 'i-pc-fwd10')}
-    ${clips ? b('다음 영상', 'i-pc-next') : ''}
-    ${b('음량', 'i-pc-volume')}`;
+    ${clips ? b('다음 영상', 'i-pc-next') : ''}`;
 }
 function ctrlHTML(opt = {}) {
   const b = _cb;
@@ -1581,6 +1701,51 @@ function ctrlHTML(opt = {}) {
     ${b('전체보기', 'i-tool-expand', 'data-vwfull')}
   </div>`;
   return left + center + right;
+}
+
+/* 편집 버튼을 타임라인 상단 우측으로 옮겨 단다 */
+function syncTlEditBtn(tab) {
+  const host = document.getElementById('dtHistBtns2'); if (!host) return;
+  host.innerHTML = DT.edit
+    ? `<button class="btn-ghost sm" id="dtEditCancel">취소</button><button class="btn-primary sm" id="dtEditSave">저장</button>`
+    : `<button class="btn-ghost sm" id="dtEdit2">편집</button>`;
+  const e = document.getElementById('dtEdit2');
+  if (e) e.onclick = () => { DT.edit = true; renderDetail(tab); };
+  const c = document.getElementById('dtEditCancel');
+  if (c) c.onclick = () => { DT.edit = false; renderDetail(tab); };
+  const v = document.getElementById('dtEditSave');
+  if (v) v.onclick = () => { DT.edit = false; renderDetail(tab); toast('탐지 이력을 저장했습니다.'); };
+}
+
+/* ---- PIP ----
+   한 장소에 카메라가 여러 대면 대표만 메인으로 재생하고
+   나머지는 영상 우하단에 작게 띄운다. 누르면 메인과 스위칭된다. */
+function renderPip(clip) {
+  const stage = document.getElementById('dtVideo'); if (!stage) return;
+  let box = document.getElementById('dtPip');
+  const list = (clip && clip.extra) || [];
+  if (!list.length) { if (box) box.remove(); return; }
+  if (!box) { box = document.createElement('div'); box.id = 'dtPip'; box.className = 'dt-pip'; stage.appendChild(box); }
+  box.innerHTML = list.map((x, i) => `
+    <button class="pip-i" data-pip="${i}" title="${x.cam} — 메인 화면과 전환">
+      <img src="${x.img}" alt=""><span>${x.cam}</span>
+    </button>`).join('');
+  box.querySelectorAll('[data-pip]').forEach(b => b.onclick = e => {
+    e.stopPropagation();
+    const i = +b.dataset.pip;
+    const main = { cam: clip.cam, img: clip.img };
+    const pick = list[i];
+    /* 메인 ↔ PIP 스위칭 : 타임라인 썸네일도 메인으로 바뀐 영상을 따른다 */
+    clip.cam = pick.cam; clip.img = pick.img;
+    list[i] = main;
+    const im = document.getElementById('dtVideoImg'); if (im) im.src = clip.img;
+    const camLb = document.getElementById('dtCam'); if (camLb) camLb.textContent = clip.cam;
+    renderTimeline(document.getElementById('dtTl'), TL.tracks, {
+      rightHTML: `<span class="tl-right" id="dtHistBtns2"></span>`,
+      onSelect: (tr, c) => { const m = document.getElementById('dtVideoImg'); if (m) m.src = c.img; renderPip(c); }
+    });
+    renderPip(clip);
+  });
 }
 
 function renderDetail(tab) {
@@ -1620,6 +1785,14 @@ function renderDetail(tab) {
 
   renderRuler();
   renderTracks(); renderCctvPins(); renderArea(); renderMulti(); applyTools();
+
+  /* 새 타임라인 — 상세는 1트랙. 편집 버튼은 배율 옆(우측)으로 옮겼다 */
+  renderTimeline($('#dtTl'), [TL_TRACKS[0]], {
+    rightHTML: `<span class="tl-right" id="dtHistBtns2"></span>`,
+    onSelect: (tr, c) => { const im = $('#dtVideoImg'); if (im) im.src = c.img; renderPip(c); }
+  });
+  syncTlEditBtn(tab);
+  renderPip(TL_TRACKS[0].clips[TL.sel.c] || TL_TRACKS[0].clips[0]);
 
   /* 그룹 상세 : 번호 세그먼트 행 */
   const segRow = $('#dtSegRow');
@@ -2261,6 +2434,11 @@ function renderCmpView(tab) {
 
   /* ---- 멀티 레인 탐지 이력 ---- */
   $('#cmpRuler').innerHTML = rulerHTML({ head: 5 });
+  /* 경로 비교 : 비교 인원 수만큼 트랙을 그린다 (최대 4). 트랙 수에 따라 패널 높이가 변한다 */
+  renderTimeline($('#cmpTl'), TL_TRACKS.slice(0, Math.min(4, Math.max(1, objs.length))), {
+    rightHTML: `<span class="tl-right"><button class="btn-ghost sm" id="cmpEdit2">편집</button></span>`,
+    onSelect: (tr, c) => toast(`${tr.label} · ${c.cam} 구간으로 이동했습니다.`)
+  });
   $('#cmpLanes').innerHTML = objs.map(o => {
     const lane = HIST_LANES[o.slot] || [];
     return `<div class="dt-lane${CMP.openLane === o.slot ? ' open' : ''}" data-lane="${o.slot}">
@@ -2436,9 +2614,15 @@ function renderSetMenu() {
       <button class="sm-row" data-setv="span">${SET_IC.span}<span class="t">구간 길이</span>
         <span class="v">${SET.span}</span>${SET_IC.next}</button>
       <div class="sm-row">${SET_IC.loop}<span class="t">반복 재생</span>
-        <button class="sm-sw${SET.loop ? ' on' : ''}" id="setLoop" title="반복 재생"><i></i></button></div>`;
+        <button class="sm-sw${SET.loop ? ' on' : ''}" id="setLoop" title="반복 재생"><i></i></button></div>
+      <!-- 음량은 재생 툴바에서 이곳으로 옮겼다 (2026-09-01) -->
+      <div class="sm-row sm-vol"><i class="i i-16 i-pc-volume"></i><span class="t">음량</span>
+        <input type="range" id="setVol" min="0" max="100" value="${SET.muted ? 0 : SET.vol}">
+        <span class="v">${SET.muted ? 0 : SET.vol}</span></div>`;
     $$('#dtSetMenu [data-setv]').forEach(b => b.onclick = () => { SET.view = b.dataset.setv; renderSetMenu(); });
     $('#setLoop').onclick = () => { SET.loop = !SET.loop; renderSetMenu(); };
+    const sv = $('#setVol');
+    if (sv) sv.oninput = e => { SET.vol = +e.target.value; SET.muted = SET.vol === 0; renderSetMenu(); };
   } else {
     const isSpeed = SET.view === 'speed';
     const list = isSpeed ? SET_SPEEDS : SET_SPANS;

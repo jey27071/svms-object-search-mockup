@@ -2749,3 +2749,118 @@ body.rsz-drag .rsz::after{background:var(--primary)}
 .side.detached .side-handle{display:none}
 /* 핸들이 패널 밖으로 나오므로 가장자리를 자르지 않는다 (본문은 .side-body 가 스크롤) */
 .side{overflow:visible}
+
+/* ══ 타임라인 (2026-09-01 개편) ═════════════════════════════════════════
+   트랙 수(1~4)에 따라 패널 높이가 변하고, 그만큼 위 영상 영역이 줄어든다.
+   바는 얇게, 번호는 썸네일에. 썸네일은 상시 표시하고 커서가 지나가거나
+   호버하면 주변 위로 크게 뜬다. */
+.dt-hist-legacy{display:none}
+.tl-host{
+  --tl-tracks:1;
+  flex:0 0 auto;
+  /* .dt-hist 의 padding/border 를 상속받지 않도록 초기화한다 (높이 계산이 어긋난다) */
+  padding:0;border:0;border-top:1px solid var(--ln-subtle);border-radius:0;
+  box-sizing:border-box;
+  height:calc(34px + var(--tl-tracks) * 112px + 32px);
+  background:var(--bg-1);border-top:1px solid var(--ln-subtle);
+  display:flex;flex-direction:column;min-height:0
+}
+.tl-top{
+  flex:0 0 32px;display:flex;align-items:center;gap:10px;
+  padding:0 12px;border-bottom:1px solid var(--ln-subtle)
+}
+.tl-zoom{display:flex;align-items:center;gap:2px}
+.tl-zoom button{
+  width:22px;height:22px;border-radius:4px;background:var(--bg-3);
+  border:1px solid var(--ln-border);color:var(--tx-secondary);font-size:13px;line-height:1
+}
+.tl-zoom button:hover:not(:disabled){color:var(--tx-primary);border-color:var(--primary)}
+.tl-zoom button:disabled{opacity:.35;cursor:default}
+.tl-zv{font-family:var(--mono);font-size:10.5px;color:var(--tx-tertiary);min-width:22px;text-align:center}
+.tl-top .side-head-btns,.tl-top .tl-right{margin-left:auto;display:flex;gap:6px}
+
+.tl-scroll{flex:1;min-height:0;overflow-x:auto;overflow-y:hidden}
+.tl-inner{position:relative;height:100%;min-width:100%}
+
+/* 눈금 · 날짜 */
+/* 날짜와 시간이 겹치지 않게 2단으로 나눈다 (위=날짜 / 아래=시각) */
+.tl-ruler{position:relative;height:32px;border-bottom:1px solid var(--ln-subtle)}
+.tl-ruler .tk{position:absolute;top:25px;width:1px;height:6px;background:var(--ln-border)}
+.tl-ruler .tl-lb{
+  position:absolute;top:13px;transform:translateX(-50%);
+  font-family:var(--mono);font-size:9.5px;color:var(--tx-helper);white-space:nowrap
+}
+/* 날짜가 바뀌는 지점 */
+.tl-ruler .tl-day{
+  position:absolute;top:0;transform:translateX(2px);
+  font-family:var(--mono);font-size:9.5px;font-weight:600;color:var(--primary);
+  border-left:1px solid var(--primary);padding-left:4px;white-space:nowrap;z-index:2
+}
+.tl-ruler .tl-day.first{color:var(--tx-tertiary);border-left-color:var(--ln-border)}
+
+.tl-rows{position:relative}
+.tl-row{position:relative;height:112px;border-bottom:1px solid var(--ln-subtle)}
+.tl-row:last-child{border-bottom:0}
+.tl-name{
+  position:absolute;left:8px;top:5px;z-index:3;display:flex;align-items:center;gap:5px;
+  font-size:10.5px;color:var(--tx-tertiary);pointer-events:none
+}
+.tl-name i{width:7px;height:7px;border-radius:2px;display:inline-block}
+.tl-lane{position:absolute;inset:20px 0 0 0}
+
+/* 얇은 클립 바 */
+.tl-bar{
+  position:absolute;top:0;height:5px;border-radius:3px;
+  background:var(--bc,var(--primary));opacity:.75;cursor:pointer
+}
+.tl-bar:hover,.tl-bar.on{opacity:1;box-shadow:0 0 0 1px var(--bg-0),0 0 0 2px var(--bc,var(--primary))}
+
+/* 상시 표시 썸네일 — 폭은 바를 따른다 */
+.tl-th{
+  position:absolute;top:10px;height:56px;min-width:26px;
+  border:1px solid var(--ln-border);border-radius:4px;overflow:hidden;
+  background:var(--bg-0);cursor:pointer;transition:transform .12s,box-shadow .12s;
+  transform-origin:top center
+}
+.tl-th img{width:100%;height:100%;object-fit:cover;display:block}
+.tl-th .tl-n{
+  position:absolute;left:3px;top:3px;min-width:14px;height:14px;padding:0 3px;
+  border-radius:3px;background:rgba(0,0,0,.72);color:#fff;
+  font-family:var(--mono);font-size:9.5px;line-height:14px;text-align:center
+}
+.tl-th .tl-more{
+  position:absolute;right:3px;top:3px;height:14px;padding:0 4px;border-radius:3px;
+  background:var(--primary);color:#fff;font-size:9.5px;line-height:14px;font-weight:600
+}
+.tl-th .tl-cam{
+  position:absolute;left:0;right:0;bottom:0;padding:2px 4px;
+  background:linear-gradient(transparent,rgba(0,0,0,.82));
+  color:#e8eef6;font-size:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis
+}
+/* 커서가 지나가거나 호버 → 주변 위로 크게 (트랙 높이 안에서만 커지도록 1.4배) */
+.tl-th:hover,.tl-th.pass,.tl-th.on{
+  transform:scale(1.4);z-index:9;
+  box-shadow:0 6px 18px rgba(0,0,0,.6);border-color:var(--primary)
+}
+.tl-cursor{position:absolute;top:0;bottom:0;width:1.5px;background:#fff;opacity:.85;z-index:8;pointer-events:none}
+.tl-cursor::before{
+  content:'';position:absolute;left:50%;top:16px;transform:translateX(-50%);
+  width:9px;height:9px;border-radius:50%;background:#fff
+}
+
+/* ── PIP : 같은 장소의 다른 카메라를 영상 우하단에 작게 재생 ───────────── */
+.dt-pip{position:absolute;right:10px;bottom:52px;z-index:6;display:flex;gap:6px}
+.dt-pip .pip-i{
+  position:relative;width:112px;height:64px;padding:0;border-radius:5px;overflow:hidden;
+  border:1px solid rgba(255,255,255,.35);background:#000;cursor:pointer
+}
+.dt-pip .pip-i:hover{border-color:var(--primary);box-shadow:0 0 0 2px rgba(48,112,216,.4)}
+.dt-pip .pip-i img{width:100%;height:100%;object-fit:cover;display:block}
+.dt-pip .pip-i span{
+  position:absolute;left:0;right:0;bottom:0;padding:2px 4px;
+  background:linear-gradient(transparent,rgba(0,0,0,.85));
+  color:#e8eef6;font-size:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis
+}
+/* 설정 팝업의 음량 행 */
+.set-menu .sm-vol input{flex:1;min-width:80px;margin:0 8px;accent-color:var(--primary)}
+.set-menu .sm-vol .v{font-family:var(--mono);font-size:10.5px;color:var(--tx-tertiary);min-width:22px;text-align:right}
