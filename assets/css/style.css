@@ -3051,3 +3051,23 @@ body.dt-b .ob-grid{gap:5px}
 /* 대상 정보 섹션은 내용 높이만, 나머지는 맵뷰어가 가져간다 */
 body.dt-b .dt-side > .dt-sec:nth-of-type(1){flex:0 0 auto;padding-bottom:8px}
 body.dt-b .dt-side > .dt-sec:nth-of-type(2){flex:1 1 auto;min-height:0}
+
+/* ── B안 : 섹션 타이틀 제거, 라인으로만 영역 구분 ────────────────────────
+   '대상 상세' · '대상 정보' · '맵뷰어' 라벨과 아이콘을 걷어내고
+   구분선만 남긴다. 우측 버튼(사건 등록 · 지도/층별)은 그대로 쓴다. */
+body.dt-b .dt-side-head .dt-side-title{display:none}
+body.dt-b .dt-side-head{
+  justify-content:flex-end;border-bottom:1px solid var(--ln-subtle);
+  padding-bottom:8px;margin-bottom:2px
+}
+/* 섹션 헤더에서 아이콘과 글자만 숨기고, 우측 컨트롤은 남긴다 */
+body.dt-b .dt-sec-head{
+  font-size:0;border-bottom:0;min-height:0;padding:6px 0 0;
+  display:flex;align-items:center;justify-content:flex-end
+}
+body.dt-b .dt-sec-head > .ic{display:none}
+body.dt-b .dt-sec-head > .seg,
+body.dt-b .dt-sec-head > .btn-add,
+body.dt-b .dt-sec-head > .dt-search{font-size:11.5px;margin-left:auto}
+/* 섹션 사이는 라인으로 구분 */
+body.dt-b .dt-side > .dt-sec + .dt-sec{border-top:1px solid var(--ln-subtle);padding-top:8px}
