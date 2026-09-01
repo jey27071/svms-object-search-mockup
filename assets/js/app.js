@@ -890,7 +890,7 @@ function clipSpan(t) {
 /* ---- 원본 영상 미리보기 재생 (사양 §6-2 : 10초 내외 자동 반복 재생) ----
    실제 영상 파일이 없는 목업이라, 스틸 위에 팬/줌 + 바운딩 박스 이동 +
    타임코드·진행바를 얹어 10초 루프로 재생되는 것처럼 보여준다. */
-const PV = { dur: 10, t: 0, playing: true, id: null, timer: null };
+const PV = { dur: 10, t: 0, playing: true, id: null, timer: null, open: null };
 
 function pvClock() {
   clearInterval(PV.timer);
@@ -920,9 +920,11 @@ function bindPv() {
 function renderPreview() {
   const box = $('#previewList'); box.innerHTML = '';
   if (!S.preview.length) { box.innerHTML = `<div class="pv-empty">대상 카드를 선택하면<br>원본 영상을 미리 볼 수 있습니다.</div>`; return; }
-  if (S.preview[0] && PV.id !== S.preview[0].uid) { PV.id = S.preview[0].uid; PV.t = 0; PV.playing = true; }
+  /* 펼쳐서 재생할 항목 : 사용자가 고른 것, 없으면 첫 번째 */
+  const openUid = (PV.open && S.preview.some(x => x.uid === PV.open)) ? PV.open : (S.preview[0] || {}).uid;
+  if (openUid && PV.id !== openUid) { PV.id = openUid; PV.t = 0; PV.playing = true; }
   S.preview.forEach((p, i) => {
-    if (i === 0) {
+    if (p.uid === openUid) {
       const bm = S.bookmarks.has(p.id);
       const n = el('div', 'pv', `
         <div class="pv-video${PV.playing ? '' : ' paused'}" id="pvVideo">
@@ -945,12 +947,10 @@ function renderPreview() {
         <div class="th"><img src="${p.img}" alt=""></div>
         <div style="flex:1;min-width:0"><div class="nm">${p.cam}</div><div class="tm">${fmtT(p.t)}</div></div>
         <button class="btn-icon" data-close-pv="${p.uid}">${ICON.x}</button>`);
-      /* 접힌 목록에서 고르면 그 자리를 지킨 채 맨 위로 올려 확대 재생한다 */
+      /* 접힌 항목을 고르면 **그 자리에서** 펼쳐져 재생된다 (순서는 그대로) */
       n.onclick = e => {
         if (e.target.closest('[data-close-pv]')) return;
-        const i2 = S.preview.findIndex(x => x.uid === p.uid);
-        if (i2 > 0) { const [it] = S.preview.splice(i2, 1); S.preview.unshift(it); }
-        PV.id = null; PV.t = 0; PV.playing = true;
+        PV.open = p.uid; PV.id = null; PV.t = 0; PV.playing = true;
         renderPreview();
       };
       box.appendChild(n);
@@ -2176,6 +2176,9 @@ function setDtView(v) {
   S.dtView = (v === 'b') ? 'b' : 'a';
   try { localStorage.setItem('svms_dtview', S.dtView); } catch (_) {}
   document.body.classList.toggle('dt-b', S.dtView === 'b');
+  /* B안은 상단 패널이 기본 2단 (A안은 1단) */
+  PANE.n = (S.dtView === 'b') ? 2 : 1;
+  PANE.w = [null, null];
   document.querySelectorAll('#dtViewSw [data-dtv]')
     .forEach(b => b.classList.toggle('on', b.dataset.dtv === S.dtView));
   const t = S.tabs.find(x => x.id === S.activeTab);

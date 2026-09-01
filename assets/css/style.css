@@ -3147,3 +3147,52 @@ body.dt-b .dt-side > .dt-sec + .dt-sec{border-top:1px solid var(--ln-subtle);pad
   background-size:auto 100%;   /* 높이에 맞추고 가로는 반복 */
   background-position:left center
 }
+
+/* ── 결과 썸네일 크기 조절 ──────────────────────────────────────────────
+   슬라이더가 열 폭만 바꾸고 .card{width:176px} · .thumb{height:176px} 가
+   고정이라, 카드 크기는 그대로고 간격만 벌어지는 것처럼 보였다.
+   카드 폭을 열에 맞추고 썸네일 높이는 비율로 따라가게 한다. */
+#resultsBody .grid{
+  grid-template-columns:repeat(auto-fill,minmax(var(--thumb-w,200px),1fr));
+  gap:14px 10px            /* 최소 크기에서도 간격이 사라지지 않도록 고정 */
+}
+#resultsBody .card{width:auto}
+#resultsBody .card .thumb{height:auto;aspect-ratio:1/1}
+#resultsBody.view-raw .card .thumb{aspect-ratio:16/10}
+
+/* ── 검색 패널 분리(디테치) ─────────────────────────────────────────────
+   .side.detached{position:fixed} 가 뒤쪽 .side 규칙들에 밀려 적용되지 않아
+   패널이 자리를 그대로 차지했고, 결과 패널도 넓어지지 않았다.
+   .shell 자식으로 한정해 구체성을 올린다. */
+/* 2465줄 `#sidePanel{position:relative}` 이 ID 선택자라 클래스보다 세다.
+   같은 ID 로 받아 확실히 덮는다. */
+#sidePanel.detached,
+.shell > .side.detached{
+  position:fixed;z-index:60;left:120px;top:140px;width:370px;height:640px;
+  border:1px solid var(--ln-border);border-radius:var(--r);
+  box-shadow:0 18px 48px rgba(0,0,0,.65)
+}
+/* 분리되면 흐름에서 빠지므로 남은 폭을 콘텐츠가 가져간다 */
+.shell > .side.detached + .shell-main{flex:1}
+
+/* ── 접힘 : 확장 핸들만 GNB 패널에 붙은 형태 ────────────────────────────
+   별도 카드가 아니라 GNB 오른쪽 가장자리에 손잡이만 남는다. */
+.collapsed-rail{
+  flex:0 0 14px;width:14px;padding:0;display:flex;align-items:center;
+  background:transparent;border:0
+}
+.collapsed-rail .side-handle.out{
+  width:14px;height:56px;padding:0;
+  background:var(--bg-2);border:1px solid var(--ln-border);border-left:0;
+  border-radius:0 7px 7px 0
+}
+/* 접힘 상태에서는 GNB 와 핸들 사이 거터를 없애 붙어 보이게 한다 */
+.shell:has(#collapsedRail:not([hidden])){gap:0}
+.shell:has(#collapsedRail:not([hidden])) > .shell-main{margin-left:8px}
+/* 접힘 핸들 : 네이버 지도처럼 GNB 오른쪽 가장자리에 붙은 탭 형태 */
+.collapsed-rail .side-handle.out{
+  width:22px;height:64px;background:var(--bg-1);
+  border:1px solid var(--ln-border);border-left:0;border-radius:0 8px 8px 0;
+  box-shadow:2px 0 6px rgba(0,0,0,.35)
+}
+.collapsed-rail{flex:0 0 22px;width:22px}
