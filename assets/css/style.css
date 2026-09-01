@@ -3012,10 +3012,10 @@ body.rsz-drag .rsz::after{background:var(--primary)}
 .detail > .dt-side{display:none}
 body.dt-b .detail{flex-direction:row}
 body.dt-b .detail > .dt-side{display:flex}
-body.dt-b .dt-panes{display:block}
-body.dt-b .dt-panes > .dt-pane,
-body.dt-b .dt-panes > .pane-rsz{display:none}
-body.dt-b .dt-video .pn-switch{display:none}
+/* B안도 상단 패널을 flex 로 유지한다.
+   display:block 으로 두면 높이 제약이 풀려 영상이 원본 크기로 터진다.
+   (몇 단을 쓸지는 PANE.n 이 정한다 — B안 기본 2단) */
+body.dt-b .dt-panes{display:flex}
 /* 대상 정보 바는 A·B 공통으로 타임라인 위에 둔다 (이름 + 출현 시각만) */
 
 /* B안 : 대상 정보 — 썸네일 · 인물명 · 출현 일시만, 한 행 4개 */
@@ -3232,3 +3232,12 @@ body.dt-b .dt-side > .dt-sec + .dt-sec{border-top:1px solid var(--ln-subtle);pad
 .tl-tabs button{display:flex;align-items:center}
 .tl-tabs button:not(.on){opacity:.55}
 .tl-tabs .tl-go{margin-left:6px;height:22px;padding:0 10px;border-radius:11px;font-size:10.5px}
+
+
+/* 상단 패널 안전장치 : 이미지가 컨테이너를 넘지 않게 */
+.dt-panes{overflow:hidden}
+.dt-panes > .dt-video,
+.dt-panes > .dt-pane{min-height:0;overflow:hidden}
+.dt-panes > .dt-video > img,
+.dt-panes .pn-vid > img,
+.dt-panes .pn-map > img{max-width:100%;max-height:100%}
