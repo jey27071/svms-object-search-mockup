@@ -3094,3 +3094,14 @@ body.dt-b .dt-side > .dt-sec + .dt-sec{border-top:1px solid var(--ln-subtle);pad
 /* 경로 비교 : 타임라인이 화면 밖으로 밀리지 않도록 세로 배분을 잡는다 */
 .cmp-main{flex:1;display:flex;flex-direction:column;min-height:0;min-width:0}
 .cmp-main > .cmp-stage{flex:1;min-height:0}
+
+/* ── RE-ID : 기준 대상 정보 (어떤 인물을 기준으로 선별하는지) ───────────── */
+.reid-seed{
+  display:flex;align-items:center;gap:12px;padding:10px 16px;
+  background:var(--bg-2);border-bottom:1px solid var(--ln-subtle)
+}
+.reid-seed .rs-th{width:44px;height:52px;object-fit:cover;border-radius:4px;border:1px solid var(--primary)}
+.reid-seed .rs-bd{min-width:0}
+.reid-seed .rs-top{display:flex;align-items:center;gap:7px}
+.reid-seed .rs-top b{font-size:13px;color:var(--tx-primary)}
+.reid-seed .rs-kv{margin-top:3px;font-size:11px;color:var(--tx-tertiary);font-family:var(--mono)}

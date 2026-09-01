@@ -528,7 +528,7 @@ function renderResults() {
     if (S.aiStage === 'idle')    { body.innerHTML = `<div class="empty">${EMPTY_TEXT.ai}</div>`; return; }
     if (S.aiStage === 'loading') { body.innerHTML = `<div class="empty wait">${EMPTY_TEXT.aiWait}</div>`; return; }
     /* AI 결과에서도 두 명 이상 골라 **동선(경로) 비교** 를 할 수 있어야 한다 */
-    body.innerHTML = `<div class="grid">${aiList.map(o => cardHTML(o, { compare: true })).join('')}</div>`;
+    body.innerHTML = `<div class="grid">${aiList.map(o => cardHTML(o)).join('')}</div>`;
     bindCards(body); return;
   }
 
@@ -539,8 +539,9 @@ function renderResults() {
     /* 일반 결과 목록에서도 경로 비교를 걸 수 있어야 한다 (최대 4개) */
     /* 사양 : 경로 비교는 **상세 화면에서 경로가 나온 뒤** 두 상황을 비교하는 기능이다.
        인물 검색 결과(인물 레벨)에서는 바로 비교할 수 없다. */
-    const canCmp = S.mode !== 'person';
-    body.innerHTML = `<div class="grid">${S.results.map(o => cardHTML(o, { compare: canCmp })).join('')}</div>`;
+    /* 경로 비교 체크박스는 결과 목록에 두지 않는다.
+       비교는 상세 화면에서 경로가 나온 뒤 두 상황을 견주는 기능이다. */
+    body.innerHTML = `<div class="grid">${S.results.map(o => cardHTML(o)).join('')}</div>`;
     bindCards(body); applyView(); return;
   }
 
@@ -552,7 +553,7 @@ function renderResults() {
     const g = GROUPS.find(x => x.key === k);
     html += `<div class="rep" data-g="${k}">
       <div class="rep-head" data-toggle="${k}">${ICON.caret}<span>${g.label}</span><span class="n">${list.length}건 유사</span></div>
-      ${cardHTML(list[0], { compare: true })}
+      ${cardHTML(list[0])}
     </div>`;
   });
   html += '</div>';
@@ -570,7 +571,7 @@ function renderResults() {
         <span class="g-count">${g.name}</span>
         <div class="right"><button class="btn-edit" data-edit="${k}">편집</button></div>
       </div>
-      <div class="group-body"><div class="grid">${list.map(o => cardHTML(o, { compare: true })).join('')}</div></div>
+      <div class="group-body"><div class="grid">${list.map(o => cardHTML(o)).join('')}</div></div>
     </div>`;
   });
 
@@ -583,7 +584,7 @@ function renderResults() {
         <span class="caret" data-toggle="etc">${ICON.caret}</span>
         <span class="g-name">기타 유사 대상</span><span class="g-count">(${etc.length}건)</span>
       </div>
-      <div class="group-body"><div class="grid">${etc.map(o => cardHTML(o, { compare: true })).join('')}</div></div>
+      <div class="group-body"><div class="grid">${etc.map(o => cardHTML(o)).join('')}</div></div>
     </div>`;
   }
   body.innerHTML = html;
@@ -626,6 +627,15 @@ function openReid(seedId) {
 function renderReid() {
   const pool = reidPool();
   const all = REID.sel.size === pool.length;
+  /* 기준 인물 — 어떤 대상을 기준으로 선별하는지 팝업 안에서 계속 보이게 한다 */
+  const seed = findObj(REID.seed) || pool[0];
+  $('#reidSeed').innerHTML = seed ? `
+    <img class="rs-th" src="${seed.img}" alt="">
+    <div class="rs-bd">
+      <div class="rs-top"><b>${cardTitle(seed)}</b><span class="badge">기준 대상</span>
+        <span class="sim ${simCls(seed.sim)}">${seed.sim}%</span></div>
+      <div class="rs-kv">${seed.cam} · ${seed.t}</div>
+    </div>` : '';
   $('#reidTools').innerHTML = `
     <label class="check sm"><input type="checkbox" id="reidAll" ${all ? 'checked' : ''}><i></i>전체 선택</label>
     <span class="rt-count">선택 <em>${REID.sel.size}</em> / ${pool.length}</span>
@@ -3542,21 +3552,11 @@ const GICON = {
   map:      '<i class="i i-lnb-map"></i>',
   alarm:    '<i class="i i-bell"></i>'
 };
-const GNB_ITEMS = [
-  { k: '',         ic: 'search',   t: '검색' },
-  { k: 'bookmark', ic: 'bookmark', t: '북마크' },
-  { k: 'case',     ic: 'cases',    t: '사건 관리' },
-  { k: 'map',      ic: 'map',      t: '맵 관리' },
-  { k: 'alarm',    ic: 'alarm',    t: '알림' }
-];
+/* 옛 메뉴바(#mbRight)용 정의는 더 이상 쓰지 않는다. LNB_ITEMS 가 유일한 기준이다. */
 S.menu = null;
 
-function renderMenuBar() {
-  $('#mbRight').innerHTML = GNB_ITEMS.map(g =>
-    `<button class="gnb-btn${(S.menu || '') === g.k ? ' on' : ''}" data-menu="${g.k}" title="${g.t}">${GICON[g.ic]}</button>`
-  ).join('');
-  $$('#mbRight [data-menu]').forEach(b => b.onclick = () => setMenu(b.dataset.menu || null));
-}
+/* 옛 메뉴바는 DOM 에서 사라졌다. 아래에서 renderLnb 로 다시 정의된다. */
+function renderMenuBar() {}
 function setMenu(k) {
   S.menu = k || null;
   renderMenuBar();
@@ -5384,8 +5384,6 @@ renderPM = function () {
          </div>`}
     <div class="pmf-row"><label>이름${ro ? '' : ' <i>*</i>'}</label>
       <input class="fm-in" id="pfName" placeholder="입력" value="${f.name}" ${ro ? 'disabled' : ''}></div>
-    <div class="pmf-row"><label>GUID</label>
-      <input class="fm-in" value="${guid}" placeholder="이미지 등록 시 자동 생성됩니다." disabled></div>
     <div class="pmf-row"><label>설명</label>
       <textarea class="fm-in" id="pfDesc" placeholder="인물 설명" ${ro ? 'disabled' : ''}>${f.desc || ''}</textarea></div>`;
 
