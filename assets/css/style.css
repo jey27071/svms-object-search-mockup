@@ -3109,3 +3109,41 @@ body.dt-b .dt-side > .dt-sec + .dt-sec{border-top:1px solid var(--ln-subtle);pad
 /* 클립 선택 팝업 : RE-ID 팝업과 같은 폼 (기준 대상 · 툴바 · 스크롤 본문) */
 .modal#mdClips{width:min(1200px,calc(100vw - 120px));height:calc(100vh - 140px);display:flex;flex-direction:column}
 .modal#mdClips .md-body{flex:1;min-height:0;overflow-y:auto}
+
+/* ── 패널 도구 (영상 / 맵뷰) ────────────────────────────────────────────── */
+.pn-tools{position:absolute;right:8px;bottom:8px;z-index:6;display:flex;gap:2px;
+  background:rgba(0,0,0,.62);border-radius:5px;padding:3px}
+.pn-tools button{width:26px;height:26px;border-radius:4px;border:0;background:transparent;
+  color:#cdd6e0;display:flex;align-items:center;justify-content:center}
+.pn-tools button:hover{background:rgba(255,255,255,.12);color:#fff}
+.pn-tools button.on{background:var(--primary);color:#fff}
+/* 맵 패널 : 이동 경로 · CCTV · 범례 */
+.pn-path,.pn-wps,.pn-cones{position:absolute;inset:0;pointer-events:none}
+.pn-path svg{width:100%;height:100%}
+.pn-wps .map-wp{
+  position:absolute;transform:translate(-50%,-50%);width:17px;height:17px;border-radius:50%;
+  color:#fff;font-size:9.5px;line-height:17px;text-align:center;border:1.5px solid #fff
+}
+.pn-legend{
+  position:absolute;left:8px;bottom:8px;display:flex;gap:9px;flex-wrap:wrap;
+  background:rgba(0,0,0,.55);border-radius:4px;padding:3px 7px
+}
+.pn-legend span{display:flex;align-items:center;gap:4px;font-size:9.5px;color:#e8eef6}
+.pn-legend i{width:7px;height:7px;border-radius:2px}
+/* 타임라인 인물 비교 */
+.tl-cmp{display:flex;align-items:center;gap:5px;margin-left:10px}
+.tl-cmpx{display:flex;align-items:center;gap:3px;cursor:pointer}
+.tl-cmpx input{accent-color:var(--primary)}
+.tl-cmpx i{width:8px;height:8px;border-radius:2px;display:inline-block}
+.tl-cmp .btn-primary{height:22px;padding:0 10px;font-size:10.5px;border-radius:11px}
+
+/* ── 타임라인 썸네일 : 늘어나면 같은 이미지가 옆으로 반복된다 ────────────
+   기존에는 <img> 한 장이 늘어나며 확대돼 형태가 뭉개졌다.
+   필름 스트립처럼 고정 폭 타일을 반복해 채운다. */
+.tl-th .tl-film{
+  position:absolute;inset:0;display:block;
+  background-image:var(--bg);
+  background-repeat:repeat-x;
+  background-size:auto 100%;   /* 높이에 맞추고 가로는 반복 */
+  background-position:left center
+}

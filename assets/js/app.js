@@ -1600,7 +1600,9 @@ const ICON2 = {
 const TL = {
   zoom: 1, cursor: 0.34, tracks: [], sel: { t: 0, c: 0 }, pip: 0,
   /* 여러 트랙을 같이 볼지(all) 하나만 볼지(one), 하나만 볼 때 어떤 인물인지 */
-  mode: 'all', pick: 0
+  mode: 'all', pick: 0,
+  /* 타임라인에서 고른 비교 대상 (최대 4) */
+  cmp: []
 };
 
 const tlTime = v => new Date(String(v).replace(' ', 'T'));
@@ -1691,8 +1693,8 @@ function renderTimeline(host, tracks, opt = {}) {
           const extra = (c.extra || []).length;
           const on = TL.sel.t === ti && TL.sel.c === ci;
           return `<div class="tl-bar${on ? ' on' : ''}" style="left:${l}%;width:${w}%;--bc:${typeof slotColor === 'function' ? slotColor(tr.slot) : 'var(--primary)'}" data-tr="${ti}" data-c="${ci}"></div>
-            <div class="tl-th${on ? ' on' : ''}${opt.edit ? ' edit' : ''}" style="left:${l}%;width:${w}%" data-tr="${ti}" data-c="${ci}" title="${c.cam}">
-              <img src="${c.img}" alt="">
+            <div class="tl-th${on ? ' on' : ''}${opt.edit ? ' edit' : ''}" style="left:${l}%;width:${w}%;--bg:url('${c.img}')" data-tr="${ti}" data-c="${ci}" title="${c.cam}">
+              <span class="tl-film"></span>
               <span class="tl-n">${c.n}</span>
               ${extra ? `<span class="tl-more" title="같은 장소 카메라 ${extra + 1}대">+${extra}</span>` : ''}
               ${opt.edit ? `<button class="tl-del" data-tld="${ti}:${ci}" title="이 구간 삭제">${ICON.trash}</button>
@@ -1714,6 +1716,13 @@ function renderTimeline(host, tracks, opt = {}) {
       ${allTracks.length > 1 ? `<div class="tl-tabs">
         <button class="${TL.mode === 'all' ? 'on' : ''}" data-tlmode="all">전체</button>
         ${allTracks.map((t, i) => `<button class="${TL.mode === 'one' && TL.pick === i ? 'on' : ''}" data-tlpick="${i}">${t.label}</button>`).join('')}
+      </div>
+      <!-- 타임라인에서 인물을 골라 바로 비교한다 -->
+      <div class="tl-cmp">
+        ${allTracks.map((t, i) => `<label class="tl-cmpx" title="${t.label} 비교에 포함">
+          <input type="checkbox" data-tlcmp="${i}" ${TL.cmp.includes(i) ? 'checked' : ''}>
+          <i style="background:${slotColor(t.slot)}"></i></label>`).join('')}
+        <button class="btn-primary sm" data-tlcmpgo ${TL.cmp.length >= 2 ? '' : 'disabled'}>인물 비교 (${TL.cmp.length}/4)</button>
       </div>` : ''}
       ${opt.edit ? `<button class="btn-ghost sm" data-tlreselect style="margin-left:8px">클립 다시 선택</button>
         <button class="btn-ghost sm" data-tladd>＋ 구간 추가</button>
@@ -1731,6 +1740,28 @@ function renderTimeline(host, tracks, opt = {}) {
   /* 트랙 수에 따라 패널 높이가 달라진다 (스크롤이 생기지 않는 높이까지) */
   host.style.setProperty('--tl-tracks', tracks.length);
 
+  host.querySelectorAll('[data-tlcmp]').forEach(c => c.onchange = () => {
+    const i = +c.dataset.tlcmp;
+    if (TL.cmp.includes(i)) TL.cmp = TL.cmp.filter(x => x !== i);
+    else {
+      if (TL.cmp.length >= 4) { c.checked = false; toast('인물 비교는 최대 4명까지 가능합니다.'); return; }
+      TL.cmp = [...TL.cmp, i];
+    }
+    renderTimeline(host, allTracks, opt);
+  });
+  const cmpGo = host.querySelector('[data-tlcmpgo]');
+  if (cmpGo) cmpGo.onclick = () => {
+    const picked = TL.cmp.map(i => allTracks[i]).filter(Boolean);
+    if (picked.length < 2) return;
+    /* 비교 대상의 대표 클립으로 경로 비교 탭을 연다 */
+    const ids = picked.map(t => {
+      const c = t.clips[0] || {};
+      const o = OBJECTS.find(x => x.cam === c.cam) || OBJECTS[0];
+      return o.id;
+    });
+    TL.cmp = [];
+    openCompareTab(ids);
+  };
   host.querySelectorAll('[data-tlmode]').forEach(b => b.onclick = () => {
     TL.mode = b.dataset.tlmode; renderTimeline(host, allTracks, opt);
   });
@@ -1950,18 +1981,60 @@ function renderPip(clip) {
    · 우측 '대상 상세' 패널(맵뷰어·주변 대상)은 없앴다 —
      맵뷰는 패널 하나를 차지하고, 주변 대상은 삭제
    ============================================================ */
-const PANE = { n: 1, kind: ['video', 'map', 'video'], w: [null, null] };
+const PANE = { n: 1, kind: ['video', 'map', 'video'], w: [null, null], mapTools: ['path'] };
+
+/* 맵 패널의 이동 경로 — 타임라인 트랙을 그대로 지도 위에 얹는다 */
+function paneMapPathHTML() {
+  const tracks = (TL.tracks && TL.tracks.length) ? TL.tracks : [];
+  if (!tracks.length) return '';
+  const pt = (ci, n) => ({ x: 14 + ci * 19 + (n % 2) * 6, y: 26 + ci * 13 + (n % 3) * 5 });
+  const svg = tracks.map((tr, ti) => {
+    const pts = tr.clips.map((c, ci) => pt(ci, ti));
+    return `<path d="M${pts.map(t => `${t.x},${t.y}`).join(' L')}" stroke="${slotColor(tr.slot)}"
+      stroke-width="1.6" fill="none" stroke-dasharray="3 2.4" vector-effect="non-scaling-stroke"/>`;
+  }).join('');
+  const wps = tracks.map((tr, ti) => tr.clips.map((c, ci) => {
+    const t = pt(ci, ti);
+    return `<span class="map-wp" title="${c.cam}" style="left:${t.x}%;top:${t.y}%;background:${slotColor(tr.slot)}">${c.n}</span>`;
+  }).join('')).join('');
+  return `<div class="pn-path"><svg viewBox="0 0 100 100" preserveAspectRatio="none">${svg}</svg></div>
+    <div class="pn-wps">${wps}</div>
+    <div class="pn-legend">${tracks.map(tr =>
+      `<span><i style="background:${slotColor(tr.slot)}"></i>${tr.label}</span>`).join('')}</div>`;
+}
+
+/* 패널 도구 — 영상이면 분석·뷰어 도구, 맵뷰면 지도 도구 */
+function paneToolsHTML(kind, i) {
+  if (kind === 'map') {
+    return `<div class="pn-tools">
+      <button class="${PANE.mapTools.includes('cctv') ? 'on' : ''}" data-pmt="${i}:cctv" title="주변 카메라"><i class="i i-16 i-tool-cctv"></i></button>
+      <button class="${PANE.mapTools.includes('path') ? 'on' : ''}" data-pmt="${i}:path" title="이동 경로"><i class="i i-16 i-tool-path"></i></button>
+      <button data-pmt="${i}:full" title="전체보기"><i class="i i-16 i-mv-expand"></i></button>
+    </div>`;
+  }
+  return `<div class="pn-tools">
+    <button data-pvt="${i}:heat" title="히트맵"><i class="i i-16 i-tool-heatmap"></i></button>
+    <button data-pvt="${i}:path" title="경로 확인"><i class="i i-16 i-tool-path"></i></button>
+    <button data-pvt="${i}:cctv" title="주변 카메라"><i class="i i-16 i-tool-cctv"></i></button>
+    <button data-pvt="${i}:full" title="전체보기"><i class="i i-16 i-tool-expand"></i></button>
+  </div>`;
+}
 
 function paneBody(kind, i) {
   if (kind === 'map') {
     return `<div class="pn-map">
       <img src="assets/img/floor.png" alt="맵뷰">
+      ${PANE.mapTools.includes('path') ? paneMapPathHTML() : ''}
+      ${PANE.mapTools.includes('cctv') ? `<div class="pn-cones">${MAP_CCTV.map(c =>
+        `<span class="map-cone" style="left:${c.x}%;top:${c.y}%;rotate:${c.deg}deg"><i></i><b></b></span>`).join('')}</div>` : ''}
       <span class="pn-tag">맵뷰</span>
+      ${paneToolsHTML('map', i)}
     </div>`;
   }
   return `<div class="pn-vid">
     <img src="${(TL.tracks[0] && TL.tracks[0].clips[Math.min(i, 3)] || {}).img || 'assets/img/video.png'}" alt="">
     <span class="pn-tag">영상 ${i + 1}</span>
+    ${paneToolsHTML('video', i)}
   </div>`;
 }
 
@@ -2009,6 +2082,23 @@ function paneSwitchHTML(i) {
 }
 
 function bindPaneCtl() {
+  /* 맵 도구 : 주변 카메라 · 이동 경로 토글, 전체보기 */
+  document.querySelectorAll('[data-pmt]').forEach(b => b.onclick = e => {
+    e.stopPropagation();
+    const k = b.dataset.pmt.split(':')[1];
+    if (k === 'full') { openMapView(); return; }
+    const i = PANE.mapTools.indexOf(k);
+    i < 0 ? PANE.mapTools.push(k) : PANE.mapTools.splice(i, 1);
+    renderPanes();
+  });
+  /* 영상 도구 */
+  document.querySelectorAll('[data-pvt]').forEach(b => b.onclick = e => {
+    e.stopPropagation();
+    const k = b.dataset.pvt.split(':')[1];
+    if (k === 'full') { openVideoView(); return; }
+    b.classList.toggle('on');
+    toast(`${b.title} ${b.classList.contains('on') ? '켜짐' : '꺼짐'}`);
+  });
   document.querySelectorAll('[data-pk]').forEach(b => b.onclick = e => {
     e.stopPropagation();
     const [i, k] = b.dataset.pk.split(':');
