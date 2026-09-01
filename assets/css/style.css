@@ -3196,3 +3196,11 @@ body.dt-b .dt-side > .dt-sec + .dt-sec{border-top:1px solid var(--ln-subtle);pad
   box-shadow:2px 0 6px rgba(0,0,0,.35)
 }
 .collapsed-rail{flex:0 0 22px;width:22px}
+
+/* 패널 도구 구분선 · 다중 영상(2x2) */
+.pn-tools .pn-sep{width:1px;height:16px;background:rgba(255,255,255,.22);margin:0 3px;align-self:center}
+.pn-quad .pq{position:absolute;inset:0;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:2px;background:#000}
+.pn-quad .pq span{position:relative;overflow:hidden}
+.pn-quad .pq img{width:100%;height:100%;object-fit:cover;display:block}
+.pn-quad .pq b{position:absolute;left:4px;top:4px;padding:1px 5px;border-radius:3px;
+  background:rgba(0,0,0,.62);color:#e8eef6;font-size:9px;font-weight:400}

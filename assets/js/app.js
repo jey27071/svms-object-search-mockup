@@ -1981,7 +1981,7 @@ function renderPip(clip) {
    · 우측 '대상 상세' 패널(맵뷰어·주변 대상)은 없앴다 —
      맵뷰는 패널 하나를 차지하고, 주변 대상은 삭제
    ============================================================ */
-const PANE = { n: 1, kind: ['video', 'map', 'video'], w: [null, null], mapTools: ['path'] };
+const PANE = { n: 1, kind: ['video', 'map', 'video'], w: [null, null], mapTools: ['path'], vmode: ['single', 'single', 'single'] };
 
 /* 맵 패널의 이동 경로 — 타임라인 트랙을 그대로 지도 위에 얹는다 */
 function paneMapPathHTML() {
@@ -2012,10 +2012,15 @@ function paneToolsHTML(kind, i) {
       <button data-pmt="${i}:full" title="전체보기"><i class="i i-16 i-mv-expand"></i></button>
     </div>`;
   }
+  const vm = PANE.vmode[i] || 'single';
   return `<div class="pn-tools">
     <button data-pvt="${i}:heat" title="히트맵"><i class="i i-16 i-tool-heatmap"></i></button>
     <button data-pvt="${i}:path" title="경로 확인"><i class="i i-16 i-tool-path"></i></button>
     <button data-pvt="${i}:cctv" title="주변 카메라"><i class="i i-16 i-tool-cctv"></i></button>
+    <span class="pn-sep"></span>
+    <!-- 영상 보기 모드 : 단일 / 다중(2x2) — 패널마다 따로 고른다 -->
+    <button class="${vm === 'single' ? 'on' : ''}" data-pvm="${i}:single" title="단일 영상 view"><i class="i i-16 i-tool-single"></i></button>
+    <button class="${vm === 'multi' ? 'on' : ''}" data-pvm="${i}:multi" title="다중 영상 view"><i class="i i-16 i-tool-multi"></i></button>
     <button data-pvt="${i}:full" title="전체보기"><i class="i i-16 i-tool-expand"></i></button>
   </div>`;
 }
@@ -2031,8 +2036,18 @@ function paneBody(kind, i) {
       ${paneToolsHTML('map', i)}
     </div>`;
   }
+  const clips = (TL.tracks[0] && TL.tracks[0].clips) || [];
+  if ((PANE.vmode[i] || 'single') === 'multi') {
+    return `<div class="pn-vid pn-quad">
+      <div class="pq">${[0, 1, 2, 3].map(k =>
+        `<span><img src="${(clips[k] || clips[0] || {}).img || 'assets/img/video.png'}" alt="">
+         <b>${(clips[k] || clips[0] || {}).cam || '-'}</b></span>`).join('')}</div>
+      <span class="pn-tag">영상 ${i + 1} · 다중</span>
+      ${paneToolsHTML('video', i)}
+    </div>`;
+  }
   return `<div class="pn-vid">
-    <img src="${(TL.tracks[0] && TL.tracks[0].clips[Math.min(i, 3)] || {}).img || 'assets/img/video.png'}" alt="">
+    <img src="${(clips[Math.min(i, 3)] || {}).img || 'assets/img/video.png'}" alt="">
     <span class="pn-tag">영상 ${i + 1}</span>
     ${paneToolsHTML('video', i)}
   </div>`;
@@ -2063,6 +2078,10 @@ function renderPanes() {
     /* 첫 칸도 맵뷰로 바꾸면 지도와 도구를 그대로 붙인다 (기존엔 도구가 없었다) */
     let mp = v.querySelector('.pn-map');
     if (mp) mp.remove();
+    /* 첫 칸이 영상일 때도 패널 도구(보기 모드 포함)를 붙인다 */
+    let vt = v.querySelector(':scope > .pn-tools');
+    if (vt) vt.remove();
+    if (PANE.kind[0] !== 'map') v.insertAdjacentHTML('beforeend', paneToolsHTML('video', 0));
     if (PANE.kind[0] === 'map') {
       v.insertAdjacentHTML('afterbegin', `<div class="pn-map">
         <img src="assets/img/floor.png" alt="맵뷰">
@@ -2077,7 +2096,17 @@ function renderPanes() {
 
   /* 폭 반영 */
   const p1 = document.getElementById('dtVideo');
-  if (p1) p1.style.flex = PANE.w[0] ? `0 0 ${PANE.w[0]}px` : '1';
+  if (p1) {
+    p1.style.flex = PANE.w[0] ? `0 0 ${PANE.w[0]}px` : '1';
+    /* 첫 칸의 보기 모드는 기존 멀티뷰 격자와 연결한다 */
+    if (PANE.kind[0] !== 'map') {
+      const multi = (PANE.vmode[0] || 'single') === 'multi';
+      DT.tools = DT.tools.filter(t => t !== 'single' && t !== 'multi');
+      DT.tools.push(multi ? 'multi' : 'single');
+      if (typeof applyTools === 'function') applyTools();
+      if (multi && typeof renderMulti === 'function') renderMulti();
+    }
+  }
   const p2 = document.getElementById('dtPane2');
   if (p2) p2.style.flex = PANE.w[1] ? `0 0 ${PANE.w[1]}px` : '1';
 
@@ -2099,6 +2128,13 @@ function bindPaneCtl() {
     if (k === 'full') { openMapView(); return; }
     const i = PANE.mapTools.indexOf(k);
     i < 0 ? PANE.mapTools.push(k) : PANE.mapTools.splice(i, 1);
+    renderPanes();
+  });
+  /* 영상 보기 모드 : 단일 / 다중 */
+  document.querySelectorAll('[data-pvm]').forEach(b => b.onclick = e => {
+    e.stopPropagation();
+    const [i, m] = b.dataset.pvm.split(':');
+    PANE.vmode[+i] = m;
     renderPanes();
   });
   /* 영상 도구 */
@@ -2248,7 +2284,10 @@ function renderDetail(tab) {
   renderTracks(); renderCctvPins(); renderArea(); renderMulti(); applyTools();
 
   /* 새 타임라인 — 상세는 1트랙. 편집 버튼은 배율 옆(우측)으로 옮겼다 */
-  renderTimeline($('#dtTl'), [TL_TRACKS[0]], {
+  /* 상세에서도 인물 탭·비교가 되도록 전체 트랙을 싣는다.
+     기본은 '하나씩 보기'라 화면은 종전처럼 현재 인물 한 줄로 시작한다. */
+  if (!DT._tlInit) { TL.mode = 'one'; TL.pick = 0; DT._tlInit = true; }
+  renderTimeline($('#dtTl'), TL_TRACKS, {
     edit: DT.edit,
     rightHTML: `<span class="tl-right" id="dtHistBtns2"></span>`,
     onSelect: (tr, c) => { const im = $('#dtVideoImg'); if (im) im.src = c.img; renderPip(c); },
