@@ -671,32 +671,71 @@ function renderReid() {
     /* 클립이 10개 이하면 선택 단계를 건너뛴다 */
     if (clips.length <= 10) { finishReid(clips); return; }
     REID.clipShown = REID.clipMax;
-    REID.clipSel = new Set(clips.slice(0, REID.clipMax));
+    REID.clipSel = new Set();       /* 사양 : Default 전체 해제 */
     renderClips(clips);
     openModal('#mdClips');
   };
 }
 
 function renderClips(all) {
-  const shown = all.slice(0, REID.clipShown);
+  /* 정렬 — RE-ID 목록과 같은 기준 */
+  const cmp = {
+    '유사도순': (a, b) => (findObj(b) || {}).sim - (findObj(a) || {}).sim,
+    '최신순':   (a, b) => String((findObj(b) || {}).t).localeCompare(String((findObj(a) || {}).t)),
+    '위치순':   (a, b) => String((findObj(a) || {}).cam).localeCompare(String((findObj(b) || {}).cam))
+  };
+  REID.clipSort = REID.clipSort || '유사도순';
+  REID.clipW = REID.clipW || 150;
+  const sorted = all.slice().sort(cmp[REID.clipSort] || cmp['유사도순']);
+  const shown = sorted.slice(0, REID.clipShown);
+  const allOn = shown.length && shown.every(id => REID.clipSel.has(id));
+
+  /* 기준 대상 — 어떤 인물의 동선을 구성하는지 계속 보이게 한다 */
+  const seed = findObj(REID.seed) || findObj(all[0]);
+  $('#clipsSeed').innerHTML = seed ? `
+    <img class="rs-th" src="${seed.img}" alt="">
+    <div class="rs-bd">
+      <div class="rs-top"><b>${cardTitle(seed)}</b><span class="badge">기준 대상</span></div>
+      <div class="rs-kv">${seed.cam} · ${seed.t}</div>
+    </div>` : '';
+
+  $('#clipsTools').innerHTML = `
+    <label class="check sm"><input type="checkbox" id="clipAll" ${allOn ? 'checked' : ''}><i></i>전체 선택</label>
+    <span class="rt-count">선택 <em>${REID.clipSel.size}</em> / ${all.length}</span>
+    <div class="rt-right">
+      <div class="seg" id="clipSort">${['유사도순', '최신순', '위치순']
+        .map(v => `<button class="${REID.clipSort === v ? 'on' : ''}" data-cs="${v}">${v}</button>`).join('')}</div>
+      <label class="thumb-size"><input type="range" id="clipSize" min="110" max="240" step="10" value="${REID.clipW}"></label>
+    </div>`;
+
   $('#clipsBody').innerHTML = `
     <p class="hintline">한 번에 ${REID.clipMax}개까지 불러옵니다. 더 필요하면 아래 '더보기'를 눌러 주세요.</p>
-    <div class="reid-grid" style="--rw:150px">${shown.map(id => {
+    <div class="reid-grid" style="--rw:${REID.clipW}px">${shown.map(id => {
       const o = findObj(id); if (!o) return '';
-      return `<label class="reid-card${REID.clipSel.has(id) ? ' on' : ''}">
-        <input type="checkbox" data-cid="${id}" ${REID.clipSel.has(id) ? 'checked' : ''}>
-        <div class="rc-th"><img src="${o.img}" alt=""></div>
+      const on = REID.clipSel.has(id);
+      return `<label class="reid-card${on ? ' on' : ''}">
+        <input type="checkbox" data-cid="${id}" ${on ? 'checked' : ''}>
+        <div class="rc-th"><img src="${o.img}" alt=""><span class="sim ${simCls(o.sim)}">${o.sim}%</span></div>
         <div class="rc-meta"><div class="rc-cam">${o.cam}</div><div class="rc-t">${fmtT(o.t)}</div></div>
       </label>`; }).join('')}</div>
     ${REID.clipShown < all.length
-      ? `<button class="btn-ghost" id="clipMore" style="width:100%;margin-top:10px">더보기 (${all.length - REID.clipShown}개 남음)</button>` : ''}`;
+      ? `<button class="btn-ghost" id="clipMore" style="width:100%;margin:12px 0 4px">더보기 (${all.length - REID.clipShown}개 남음)</button>` : ''}`;
+
   $('#clipsFoot').innerHTML = `<button class="btn-ghost" data-close>취소</button>
     <button class="btn-primary" id="clipsGo" ${REID.clipSel.size ? '' : 'disabled'}>완료</button>`;
+
+  $('#clipAll').onchange = e => {
+    if (e.target.checked) shown.forEach(id => REID.clipSel.add(id));
+    else shown.forEach(id => REID.clipSel.delete(id));
+    renderClips(all);
+  };
   $$('#clipsBody [data-cid]').forEach(c => c.onchange = () => {
     const id = c.dataset.cid;
     REID.clipSel.has(id) ? REID.clipSel.delete(id) : REID.clipSel.add(id);
     renderClips(all);
   });
+  $$('#clipSort [data-cs]').forEach(b => b.onclick = () => { REID.clipSort = b.dataset.cs; renderClips(all); });
+  $('#clipSize').oninput = e => { REID.clipW = +e.target.value; renderClips(all); };
   const more = $('#clipMore');
   if (more) more.onclick = () => { REID.clipShown += REID.clipMax; renderClips(all); };
   $$('#mdClips [data-close]').forEach(b => b.onclick = () => closeModal('#mdClips'));

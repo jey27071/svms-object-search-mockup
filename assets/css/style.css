@@ -3105,3 +3105,7 @@ body.dt-b .dt-side > .dt-sec + .dt-sec{border-top:1px solid var(--ln-subtle);pad
 .reid-seed .rs-top{display:flex;align-items:center;gap:7px}
 .reid-seed .rs-top b{font-size:13px;color:var(--tx-primary)}
 .reid-seed .rs-kv{margin-top:3px;font-size:11px;color:var(--tx-tertiary);font-family:var(--mono)}
+
+/* 클립 선택 팝업 : RE-ID 팝업과 같은 폼 (기준 대상 · 툴바 · 스크롤 본문) */
+.modal#mdClips{width:min(1200px,calc(100vw - 120px));height:calc(100vh - 140px);display:flex;flex-direction:column}
+.modal#mdClips .md-body{flex:1;min-height:0;overflow-y:auto}
