@@ -2994,3 +2994,14 @@ body.rsz-drag .rsz::after{background:var(--primary)}
 .dt-objbar .ob-right button{height:24px;padding:0 9px;border-radius:4px;font-size:11px;
   background:var(--bg-3);border:1px solid var(--ln-border);color:var(--tx-secondary)}
 .dt-objbar .ob-right button.on{background:var(--primary);border-color:var(--primary);color:#fff}
+
+/* ── 타임라인 편집 : iMovie 식 범위 조정 핸들 ──────────────────────────── */
+.tl-grip{
+  position:absolute;top:0;bottom:0;width:9px;z-index:4;cursor:ew-resize;
+  background:var(--st-mid);opacity:.9;display:flex;align-items:center;justify-content:center
+}
+.tl-grip::before{content:'';width:2px;height:14px;border-radius:1px;background:rgba(0,0,0,.55)}
+.tl-grip.s{left:0;border-radius:4px 0 0 4px}
+.tl-grip.e{right:0;border-radius:0 4px 4px 0}
+.tl-grip:hover{opacity:1}
+.tl-host.tl-editing .tl-th{border-color:var(--st-mid);box-shadow:0 0 0 1px var(--st-mid) inset}

@@ -1572,6 +1572,34 @@ function tlStep(spanMs, zoom) {
   return (cand.find(m => mins / m <= 14) || 720) * 6e4;
 }
 
+/* 편집 중 '클립 다시 선택' — RE-ID 때 도출한 목록을 다시 불러와 재선택한다.
+   선택 결과가 그대로 타임라인 구간이 된다. */
+function openClipReselect(host, tracks, opt) {
+  const pool = OBJECTS.slice(0, 24);
+  const cur = new Set(tracks[0].clips.map(c => c.cam + c.from));
+  REID.clipSel = new Set(pool.filter(o => cur.has(o.cam + o.t)).map(o => o.id));
+  const ids = pool.map(o => o.id);
+  REID.clipShown = Math.max(REID.clipMax, 12);
+  renderClips(ids);
+  const foot = $('#clipsFoot');
+  openModal('#mdClips');
+  /* 완료 시 타임라인 구간을 다시 구성한다 */
+  const go = $('#clipsGo');
+  if (go) go.onclick = () => {
+    closeModal('#mdClips');
+    const picked = [...REID.clipSel].map(id => findObj(id)).filter(Boolean);
+    if (!picked.length) { toast('선택한 클립이 없습니다.'); return; }
+    tracks[0].clips = picked.map((o, i) => ({
+      n: i + 1, cam: o.cam, img: o.img,
+      from: o.t, to: o.t.slice(0, 11) + String(Math.min(23, +o.t.slice(11, 13) + 0)).padStart(2, '0') + o.t.slice(13, 16) + ':' +
+            String(Math.min(59, +o.t.slice(17, 19) + 40)).padStart(2, '0')
+    }));
+    TL.sel = { t: 0, c: 0 };
+    renderTimeline(host, tracks, opt);
+    toast(`${picked.length}건으로 구간을 다시 구성했습니다.`);
+  };
+}
+
 function renderTimeline(host, tracks, opt = {}) {
   if (!host) return;
   TL.tracks = tracks;
@@ -1608,7 +1636,9 @@ function renderTimeline(host, tracks, opt = {}) {
               <img src="${c.img}" alt="">
               <span class="tl-n">${c.n}</span>
               ${extra ? `<span class="tl-more" title="같은 장소 카메라 ${extra + 1}대">+${extra}</span>` : ''}
-              ${opt.edit ? `<button class="tl-del" data-tld="${ti}:${ci}" title="이 구간 삭제">${ICON.trash}</button>` : ''}
+              ${opt.edit ? `<button class="tl-del" data-tld="${ti}:${ci}" title="이 구간 삭제">${ICON.trash}</button>
+                <span class="tl-grip s" data-tlg="${ti}:${ci}:s" title="시작 지점 조정"></span>
+                <span class="tl-grip e" data-tlg="${ti}:${ci}:e" title="종료 지점 조정"></span>` : ''}
               <span class="tl-cam">${c.cam}</span>
             </div>`;
         }).join('')}
@@ -1622,8 +1652,9 @@ function renderTimeline(host, tracks, opt = {}) {
         <span class="tl-zv">${TL.zoom}x</span>
         <button data-tlz="in" title="확대" ${TL.zoom >= 8 ? 'disabled' : ''}>+</button>
       </div>
-      ${opt.edit ? `<button class="btn-ghost sm" data-tladd style="margin-left:8px">＋ 구간 추가</button>
-        <span class="tl-editing-lb">편집 중 — 썸네일의 휴지통으로 구간을 지웁니다</span>` : ''}
+      ${opt.edit ? `<button class="btn-ghost sm" data-tlreselect style="margin-left:8px">클립 다시 선택</button>
+        <button class="btn-ghost sm" data-tladd>＋ 구간 추가</button>
+        <span class="tl-editing-lb">썸네일 좌우 끝을 끌어 구간 길이를 조정합니다</span>` : ''}
       ${opt.rightHTML || ''}
     </div>
     <div class="tl-scroll">
@@ -1654,6 +1685,40 @@ function renderTimeline(host, tracks, opt = {}) {
   });
   const addBtn = host.querySelector('[data-tladd]');
   if (addBtn) addBtn.onclick = () => { if (opt.onAdd) opt.onAdd(); };
+  const reBtn = host.querySelector('[data-tlreselect]');
+  if (reBtn) reBtn.onclick = () => openClipReselect(host, tracks, opt);
+
+  /* iMovie 식 범위 조정 — 자르기는 없고 시작/종료 지점만 좌우로 민다 */
+  const lane = host.querySelector('.tl-scroll');
+  host.querySelectorAll('[data-tlg]').forEach(g => g.onmousedown = e => {
+    e.preventDefault(); e.stopPropagation();
+    const [ti, ci, side] = g.dataset.tlg.split(':');
+    const c = tracks[+ti].clips[+ci];
+    const inner = host.querySelector('.tl-inner');
+    const pxPerMs = inner.getBoundingClientRect().width / span;
+    const sx = e.clientX;
+    const from0 = +tlTime(c.from), to0 = +tlTime(c.to);
+    const iso = t => new Date(t - new Date().getTimezoneOffset() * 6e4).toISOString().slice(0, 19).replace('T', ' ');
+    document.body.style.cursor = 'ew-resize';
+    const mv = ev => {
+      const d = (ev.clientX - sx) / pxPerMs;
+      if (side === 's') {
+        const v = Math.min(from0 + d, to0 - 60e3);      /* 최소 1분 */
+        c.from = iso(Math.max(d0, v));
+      } else {
+        const v = Math.max(to0 + d, from0 + 60e3);
+        c.to = iso(Math.min(d1, v));
+      }
+      renderTimeline(host, tracks, opt);
+    };
+    const up = () => {
+      document.removeEventListener('mousemove', mv);
+      document.removeEventListener('mouseup', up);
+      document.body.style.cursor = '';
+    };
+    document.addEventListener('mousemove', mv);
+    document.addEventListener('mouseup', up);
+  });
 
   host.querySelectorAll('.tl-bar,.tl-th').forEach(n => n.onclick = () => {
     TL.sel = { t: +n.dataset.tr, c: +n.dataset.c };
