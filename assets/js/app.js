@@ -1607,8 +1607,8 @@ const ICON2 = {
 const TL = {
   zoom: 1, cursor: 0.34, tracks: [], sel: { t: 0, c: 0 }, pip: 0,
   /* 여러 트랙을 같이 볼지(all) 하나만 볼지(one), 하나만 볼 때 어떤 인물인지 */
-  mode: 'all', pick: 0,
-  /* 타임라인에서 고른 비교 대상 (최대 4) */
+  /* 인물 탭은 켜고 끄는 방식 — 여기 담긴 트랙만 그린다 (2명·3명만도 가능) */
+  show: null,
   cmp: []
 };
 
@@ -1667,9 +1667,12 @@ function renderTimeline(host, tracks, opt = {}) {
   TL.tracks = tracks;
   /* 보기 모드 : 하나씩 보기면 고른 인물 트랙만 그린다 */
   const allTracks = tracks;
-  if (TL.pick >= allTracks.length) TL.pick = 0;
-  const shown = (TL.mode === 'one' && allTracks.length > 1) ? [allTracks[TL.pick]] : allTracks;
-  tracks = shown;
+  if (!TL.show) TL.show = new Set(allTracks.map((_, i) => i));
+  /* 범위를 벗어난 인덱스 정리 */
+  TL.show = new Set([...TL.show].filter(i => i < allTracks.length));
+  if (!TL.show.size) TL.show = new Set([0]);
+  const idx = [...TL.show].sort((a, b) => a - b);
+  tracks = idx.map(i => allTracks[i]);
   const [d0, d1] = tlDomain(tracks);
   const span = d1 - d0;
   const pct = t => (+tlTime(t) - d0) / span * 100;
@@ -1700,8 +1703,8 @@ function renderTimeline(host, tracks, opt = {}) {
           const extra = (c.extra || []).length;
           const on = TL.sel.t === ti && TL.sel.c === ci;
           return `<div class="tl-bar${on ? ' on' : ''}" style="left:${l}%;width:${w}%;--bc:${typeof slotColor === 'function' ? slotColor(tr.slot) : 'var(--primary)'}" data-tr="${ti}" data-c="${ci}"></div>
-            <div class="tl-th${on ? ' on' : ''}${opt.edit ? ' edit' : ''}" style="left:${l}%;width:${w}%;--bg:url('${c.img}')" data-tr="${ti}" data-c="${ci}" title="${c.cam}">
-              <span class="tl-film"></span>
+            <div class="tl-th${on ? ' on' : ''}${opt.edit ? ' edit' : ''}" style="left:${l}%;width:${w}%" data-tr="${ti}" data-c="${ci}" title="${c.cam}">
+              <span class="tl-film" style="background-image:url('${c.img}')"></span>
               <span class="tl-n">${c.n}</span>
               ${extra ? `<span class="tl-more" title="같은 장소 카메라 ${extra + 1}대">+${extra}</span>` : ''}
               ${opt.edit ? `<button class="tl-del" data-tld="${ti}:${ci}" title="이 구간 삭제">${ICON.trash}</button>
@@ -1721,15 +1724,10 @@ function renderTimeline(host, tracks, opt = {}) {
         <button data-tlz="in" title="확대" ${TL.zoom >= 8 ? 'disabled' : ''}>+</button>
       </div>
       ${allTracks.length > 1 ? `<div class="tl-tabs">
-        <button class="${TL.mode === 'all' ? 'on' : ''}" data-tlmode="all">전체</button>
-        ${allTracks.map((t, i) => `<button class="${TL.mode === 'one' && TL.pick === i ? 'on' : ''}" data-tlpick="${i}">${t.label}</button>`).join('')}
-      </div>
-      <!-- 타임라인에서 인물을 골라 바로 비교한다 -->
-      <div class="tl-cmp">
-        ${allTracks.map((t, i) => `<label class="tl-cmpx" title="${t.label} 비교에 포함">
-          <input type="checkbox" data-tlcmp="${i}" ${TL.cmp.includes(i) ? 'checked' : ''}>
-          <i style="background:${slotColor(t.slot)}"></i></label>`).join('')}
-        <button class="btn-primary sm" data-tlcmpgo ${TL.cmp.length >= 2 ? '' : 'disabled'}>인물 비교 (${TL.cmp.length}/4)</button>
+        <button class="${TL.show.size === allTracks.length ? 'on' : ''}" data-tlall>전체</button>
+        ${allTracks.map((t, i) => `<button class="${TL.show.has(i) ? 'on' : ''}" data-tltoggle="${i}"
+          title="${t.label} 표시 켜기/끄기"><i style="background:${slotColor(t.slot)}"></i>${t.label}</button>`).join('')}
+        <button class="btn-primary sm tl-go" data-tlcmpgo ${TL.show.size >= 2 ? '' : 'disabled'}>인물 비교 (${TL.show.size})</button>
       </div>` : ''}
       ${opt.edit ? `<button class="btn-ghost sm" data-tlreselect style="margin-left:8px">클립 다시 선택</button>
         <button class="btn-ghost sm" data-tladd>＋ 구간 추가</button>
@@ -1745,20 +1743,36 @@ function renderTimeline(host, tracks, opt = {}) {
     </div>`;
 
   /* 트랙 수에 따라 패널 높이가 달라진다 (스크롤이 생기지 않는 높이까지) */
+  /* 트랙이 늘수록 행을 낮춘다 (4명이면 절반 수준) */
+  const ROW = { 1: 112, 2: 96, 3: 76, 4: 60 }[tracks.length] || 60;
+  const LANE = tracks.length >= 3 ? 13 : 20;      /* 트랙명 줄 높이 */
   host.style.setProperty('--tl-tracks', tracks.length);
+  host.style.setProperty('--tl-row', ROW + 'px');
+  host.style.setProperty('--tl-lane', LANE + 'px');
+  host.style.setProperty('--tl-th', (ROW - LANE - 12) + 'px');
+  host.classList.toggle('tl-compact', tracks.length >= 3);
 
-  host.querySelectorAll('[data-tlcmp]').forEach(c => c.onchange = () => {
-    const i = +c.dataset.tlcmp;
-    if (TL.cmp.includes(i)) TL.cmp = TL.cmp.filter(x => x !== i);
-    else {
-      if (TL.cmp.length >= 4) { c.checked = false; toast('인물 비교는 최대 4명까지 가능합니다.'); return; }
-      TL.cmp = [...TL.cmp, i];
+  const allBtn = host.querySelector('[data-tlall]');
+  if (allBtn) allBtn.onclick = () => {
+    TL.show = (TL.show.size === allTracks.length)
+      ? new Set([0])                                   /* 다시 누르면 한 명만 */
+      : new Set(allTracks.map((_, i) => i));
+    renderTimeline(host, allTracks, opt);
+  };
+  host.querySelectorAll('[data-tltoggle]').forEach(b => b.onclick = () => {
+    const i = +b.dataset.tltoggle;
+    if (TL.show.has(i)) {
+      if (TL.show.size === 1) { toast('최소 한 명은 표시해야 합니다.'); return; }
+      TL.show.delete(i);
+    } else {
+      if (TL.show.size >= 4) { toast('타임라인에는 최대 4명까지 표시할 수 있습니다.'); return; }
+      TL.show.add(i);
     }
     renderTimeline(host, allTracks, opt);
   });
   const cmpGo = host.querySelector('[data-tlcmpgo]');
   if (cmpGo) cmpGo.onclick = () => {
-    const picked = TL.cmp.map(i => allTracks[i]).filter(Boolean);
+    const picked = [...TL.show].sort((a, b) => a - b).map(i => allTracks[i]).filter(Boolean);
     if (picked.length < 2) return;
     /* 비교 대상의 대표 클립으로 경로 비교 탭을 연다 */
     const ids = picked.map(t => {
@@ -1766,7 +1780,6 @@ function renderTimeline(host, tracks, opt = {}) {
       const o = OBJECTS.find(x => x.cam === c.cam) || OBJECTS[0];
       return o.id;
     });
-    TL.cmp = [];
     openCompareTab(ids);
   };
   host.querySelectorAll('[data-tlmode]').forEach(b => b.onclick = () => {
