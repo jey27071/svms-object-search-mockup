@@ -4578,26 +4578,10 @@ S.recentOpen = false;
   const ta = $('#qText'); if (!ta) return;
   ta.addEventListener('focus', () => { S.recentOpen = true; renderRecentBlk(); });
   ta.addEventListener('blur', () => setTimeout(() => { S.recentOpen = false; renderRecentBlk(); }, 180));
-  ta.placeholder = '대상의 특징을 문장으로 입력해 보세요.\n(예: 흰색 옷을 입고 가방을 든 사람)';
+  ta.placeholder = '(예: 흰색 옷을 입고 가방을 든 사람)';
   /* 입력창 안 : 좌하단 `+`(첨부) · 우하단 검색 (시안 4307:27799 Button 행) */
   const wrap = ta.parentElement;
-  if (wrap && !wrap.querySelector('.ta-plus')) {
-    const p = document.createElement('button');
-    p.className = 'ta-plus'; p.title = '색상 선택';
-    p.innerHTML = `<i class="i i-16 i-plus"></i>`;
-    /* `+` 는 색상 조건을 고르는 진입점 — 색상 필터를 펼쳐 그리로 이동시킨다 */
-    p.onclick = e => {
-      e.preventDefault();
-      const box = document.querySelector('.filters[data-filters="text"]');
-      const acc = box && [...box.querySelectorAll('.acc')].find(a => /색상/.test(a.textContent));
-      if (!acc) return;
-      acc.classList.add('open');
-      acc.scrollIntoView({ block: 'center', behavior: 'smooth' });
-      acc.classList.add('flash');
-      setTimeout(() => acc.classList.remove('flash'), 900);
-    };
-    wrap.appendChild(p);
-  }
+  /* `+`(색상 진입) 버튼 제거 — 색상 필터가 상시 표시되어 개선안에도 없다 */
   if (wrap && !wrap.querySelector('.ta-search')) {
     const b = document.createElement('button');
     b.className = 'ta-search'; b.title = '검색';

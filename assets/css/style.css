@@ -2900,3 +2900,42 @@ body.rsz-drag .rsz::after{background:var(--primary)}
 /* 색상 스와치 : 원형 */
 .color-row .sw{width:19px;height:19px;border-radius:50%;border:1px solid rgba(255,255,255,.18)}
 .color-row .sw.on{box-shadow:0 0 0 2px var(--bg-1),0 0 0 3.5px var(--primary);border-color:transparent}
+
+/* ══ A안 구조 : GNB 와 검색 패널을 완전히 분리 ═══════════════════════════
+   기존에는 둘을 하나의 카드로 붙여 뒀다(.shell{gap:0} + 반쪽 라운드).
+   개선안대로 각각 독립 카드로 띄우고 사이에 거터를 준다. */
+.shell{gap:8px}
+.shell > .lnb{
+  border-radius:var(--r);
+  background:var(--bg-1);border:1px solid var(--ln-subtle)
+}
+.shell > .side{
+  border-radius:var(--r);
+  border:1px solid var(--ln-subtle);border-right:1px solid var(--ln-subtle);
+  background:var(--bg-2)
+}
+.shell > .shell-main{margin-left:0}
+/* 분리된 뒤에는 핸들이 패널 테두리 바깥으로 조금 더 나가야 자연스럽다 */
+.side-handle{right:-15px}
+
+/* ── 검색 입력창 : 개선안 형태(한 줄 높이 + 우측 원형 검색) ─────────────── */
+.mode-panel[data-panel="text"] .textarea-wrap,
+.mode-panel[data-panel="car"]  .textarea-wrap{
+  border:1px solid var(--ln-border);border-radius:8px;background:var(--bg-1);
+  display:flex;align-items:center;padding:0 40px 0 12px;min-height:40px;overflow:visible
+}
+.mode-panel[data-panel="text"] .textarea-wrap:focus-within,
+.mode-panel[data-panel="car"]  .textarea-wrap:focus-within{border-color:var(--primary)}
+.mode-panel[data-panel="text"] textarea,
+.mode-panel[data-panel="car"]  textarea{
+  border:0;background:transparent;height:38px;min-height:38px;padding:10px 0;
+  line-height:18px;resize:none;overflow:hidden;width:100%
+}
+/* 검색 버튼을 세로 가운데 원형으로 */
+.mode-panel[data-panel="text"] .ta-search,
+.mode-panel[data-panel="car"]  .ta-search{
+  top:50%;bottom:auto;transform:translateY(-50%);right:7px;width:26px;height:26px
+}
+/* 지우기 ✕ 는 검색 버튼 왼쪽 */
+.mode-panel[data-panel="text"] .clear-x,
+.mode-panel[data-panel="car"]  .clear-x{top:50%;bottom:auto;transform:translateY(-50%);right:38px}
