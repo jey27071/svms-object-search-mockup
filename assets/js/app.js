@@ -144,7 +144,14 @@ function syncPanels() {
   $('#cmpMain').hidden = !isCmp;
   $('#results').hidden = isDetail || isCmp;
   $('#preview').hidden = !isSearch;
-  $('#sidePanel').hidden = !isSearch || S.aiMode || S._collapsed;
+  /* 검색 패널은 '검색홈' 탭 전용. 다른 탭으로 가면 분리 상태도 접는다 */
+  const sp0 = $('#sidePanel');
+  if (!isSearch && sp0 && sp0.classList.contains('detached')) {
+    sp0.classList.remove('detached');
+    sp0.style.left = sp0.style.top = '';
+    const db = $('#btnDetach'); if (db) db.title = '분리';
+  }
+  sp0.hidden = !isSearch || S.aiMode || S._collapsed;
   $('#aiPanel').hidden = !isSearch || !S.aiMode || S._collapsed;
   $('#collapsedRail').hidden = !isSearch || !S._collapsed;
   $('#cmpTabs').hidden = !isCmp;
