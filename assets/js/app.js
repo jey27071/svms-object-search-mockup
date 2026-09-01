@@ -37,7 +37,7 @@ const S = {
   textOpt: '자연어', q: '',
   sim: 80, allResults: false, camQ: '', camOpen: new Set(['본관', '본관/지하 1층']),
   cams: [], top: [], bottom: [],
-  period: '오늘', dFrom: '2025-06-05', tFrom: '00:00', dTo: '2025-06-05', tTo: '00:00',
+  period: '당일', dFrom: '2025-06-05', tFrom: '00:00', dTo: '2025-06-05', tTo: '00:00',
   searched: false, sort: '유사도순', grouped: false,
   openGroups: new Set(),
   results: [], selected: null, preview: [], compare: [],
@@ -247,8 +247,9 @@ function buildFilters(mode) {
     /* 시안(4307:27540) : 슬라이더 위 라벨 없이, 아래에 현재값(파랑) + 100% 를 둔다 */
     if (f === 'sim') parts.push(accBlock('sim', '유사도', `
       <div class="slider-row">
+        <div class="sim-bubble" style="left:${S.sim}%"><b id="fSimVal">${S.sim}%</b></div>
         <input type="range" class="slider" id="fSim" min="0" max="100" value="${S.sim}">
-        <div class="slider-scale" id="fSimScale" style="--p:${S.sim}"><b id="fSimVal">${S.sim}%</b><span>100%</span></div>
+        <div class="sim-scale"><span>0%</span><span class="mid" id="fSimMid">${S.sim}% 이상</span><span>100%</span></div>
       </div>
       <label class="check sm"><input type="checkbox" id="fAll" ${S.allResults ? 'checked' : ''}><i></i>모든 결과 출력</label>`, on));
 
@@ -265,7 +266,7 @@ function buildFilters(mode) {
         `<button class="mn-chip${(S.carTypes || []).includes(t) ? ' on' : ''}" data-cartype="${t}">${t}</button>`).join('')}</div>`, on));
 
     if (f === 'period') parts.push(accBlock('period', '기간', `
-      ${['오늘', '최근 3일', '최근 7일', '날짜 지정'].map(p =>
+      ${['당일', '최근 3일', '최근 7일', '날짜 미정'].map(p =>
         `<label class="radio sm"><input type="radio" name="fp" data-p="${p}" ${S.period === p ? 'checked' : ''}><i></i>${p}</label>`).join('')}
       <div class="date-wrap" ${S.period === '날짜 지정' ? '' : 'hidden'}>
         <div class="date-row"><span class="lb">시작</span>
@@ -312,7 +313,10 @@ function bindFilters(box) {
 
   const sim = $('#fSim', box);
   if (sim) {
-    sim.oninput = () => { S.sim = +sim.value; $('#fSimVal', box).textContent = S.sim + '%'; savePrefs();
+    sim.oninput = () => { S.sim = +sim.value; $('#fSimVal', box).textContent = S.sim + '%';
+      const mid = $('#fSimMid', box); if (mid) mid.textContent = S.sim + '% 이상';
+      const bb = $('.sim-bubble', box); if (bb) bb.style.left = S.sim + '%';
+      savePrefs();
       const sc = $('#fSimScale', box); if (sc) sc.style.setProperty('--p', S.sim);
       if (S.allResults) { S.allResults = false; $('#fAll', box).checked = false; } runSearch(true); };
     $('#fAll', box).onchange = e => { S.allResults = e.target.checked; if (S.allResults) { S.sim = 0; sim.value = 0; $('#fSimVal', box).textContent = '0%';
@@ -331,7 +335,7 @@ function bindFilters(box) {
   });
   $$('[name=fp]', box).forEach(r => r.onchange = () => {
     S.period = r.dataset.p;
-    const w = $('.date-wrap', box); if (w) w.hidden = S.period !== '날짜 지정';
+    const w = $('.date-wrap', box); if (w) w.hidden = S.period !== '날짜 미정';
     savePrefs(); if (S.searched) runSearch(true);
   });
   ['dFrom', 'tFrom', 'dTo', 'tTo'].forEach(id => { const n = $('#' + id, box); if (n) n.onchange = () => { S[id] = n.value; runSearch(true); }; });
@@ -696,7 +700,7 @@ function finishReid(ids) {
   toast(`${ids.length}건으로 이동 경로를 구성했습니다.`);
   DT.clip = 0; DT.removed = new Set(); DT.edit = false; DT.area = null; DT.tracks = true;
   DT.tools = ['obj', 'single'];
-  newTab(cardTitle(o), o, { kind: 'group' });
+  newTab(`${o.cam} > ${cardTitle(o)}`, o, { kind: 'group' });
 }
 
 /* 결과 카드 → 상세 화면. 유사 대상별 보기의 대표 카드면 대상 그룹 상세로 연다. */
@@ -705,8 +709,9 @@ function openCardDetail(id, cardEl) {
   const g = GROUPS.find(x => x.key === o.group);
   const isRep = !!(cardEl && cardEl.closest('.rep'));
   DT.clip = 0; DT.removed = new Set(); DT.edit = false; DT.area = null; DT.tracks = false; DT.tools = ['obj', 'single'];
-  if (isRep) newTab(`${(g && g.label) || '대상'}`, o, { kind: 'group' });
-  else newTab(`${o.cam}`, o);
+  /* B타입 개선안 : 탭 타이틀은 `위치명 > 대상명` */
+  const target = (g && g.label) || cardTitle(o) || '대상';
+  newTab(`${o.cam} > ${target}`, o, isRep ? { kind: 'group' } : undefined);
 }
 
 function bindCards(root) {
@@ -808,7 +813,7 @@ function renderChips() {
   if (removable.length || S.allResults || S.sim !== 80 || S.period !== '오늘') {
     const r = el('button', 'chips-reset', '초기화');
     r.onclick = () => {
-      S.cams = []; S.top = []; S.bottom = []; S.period = '오늘';
+      S.cams = []; S.top = []; S.bottom = []; S.period = '당일';
       S.allResults = false; S.sim = 80; S.carTypes = [];
       buildFilters(S.mode); runSearch(true);
     };
@@ -3619,7 +3624,7 @@ function applyMenuDemo() {
 /* ============================================================
    사건 관리 (Case_001 / Case_002)  — 조회
    ============================================================ */
-const CS = { q: '', status: null, period: '오늘', sel: null, acc: { rep: true, tg: true, ev: true, pth: true } };
+const CS = { q: '', status: null, period: '당일', sel: null, acc: { rep: true, tg: true, ev: true, pth: true } };
 const CS_ORDER = { '진행중': 0, '처리전': 1, '처리 완료': 2 };
 const stClass = s => s === '진행중' ? 'st-ing' : s === '처리전' ? 'st-pre' : 'st-done';
 const CS_COLORS = ['#3070d8', '#e0409a', '#e88038', '#3fbe7e'];
@@ -4904,25 +4909,9 @@ function applyLayout() {
   /* --- 헤더 브레드크럼 ---
      시안(4307:27229 진입 / 4307:27327 검색후) 기준 : 진입 상태에서는 타이틀 `검색`,
      검색을 실행해 진입 블록이 접힌 뒤에만 브레드크럼으로 바뀐다. */
-  const head = $('#sideHead');
-  let crumb = $('#sideCrumb');
-  const crumbOn = (S.layout === 'b' && !S.bPick && (!!S.searched || S.mode === 'aim'));
-  if (crumbOn) {
-    if (!crumb) {
-      crumb = document.createElement('span');
-      crumb.className = 'side-crumb'; crumb.id = 'sideCrumb';
-      head.replaceChild(crumb, head.querySelector('.side-title'));
-    }
-    const m = S.mode || 'text';
-    crumb.innerHTML = `검색<span class="sep">›</span>
-      <span class="mchip">${MODE_LABEL[m] || '텍스트 검색'}
-        <button class="x" id="crumbX" title="검색 유형 변경">✕</button></span>`;
-    $('#crumbX').onclick = () => { S.bPick = true; applyLayout(); };
-  } else if (crumb) {
-    const t = document.createElement('span');
-    t.className = 'side-title'; t.textContent = '검색';
-    head.replaceChild(t, crumb);
-  }
+  /* B타입 개선안(4586:45748) : 패널 타이틀과 브레드크럼을 없앴다.
+     검색 유형 칩이 패널 최상단에 **상시 표시**되므로 진입 블록 접기·복귀 장치가 필요 없다. */
+  const oldCrumb = $('#sideCrumb'); if (oldCrumb) oldCrumb.remove();
 
   /* --- 본문 : A=칩만 / B=AI박스+일반검색칩 --- */
   if (S.layout === 'b') {
@@ -4970,9 +4959,9 @@ function applyLayout() {
   }
   /* B안 : 검색을 실행하면 진입 블록(AI 검색·일반 검색 칩)을 접고 조건+필터만 남긴다.
      헤더 브레드크럼의 ✕ 로 다시 검색 유형 선택 상태로 돌아간다. */
-  const hideIntro = (S.layout === 'b' && !S.bPick && (!!S.searched || S.mode === 'aim'));
-  chips.hidden = hideIntro;
-  if (bwrap) bwrap.hidden = hideIntro;
+  /* 칩은 항상 보인다 (개선안). 검색 후에도 접지 않는다 */
+  chips.hidden = false;
+  if (bwrap) bwrap.hidden = false;
   if (typeof renderRecentBlk === 'function') renderRecentBlk();
 }
 
@@ -5174,6 +5163,15 @@ window.addEventListener('hashchange', () => location.reload());
 /* ---- 검색 실행 버튼 (패널 하단 고정) ----
    카메라는 필수라 미선택 시 비활성. 검색 유형별 입력값이 없으면 안내만 띄운다. */
 (function initSearchGo() {
+  const rs = document.getElementById('btnSearchReset');
+  if (rs) rs.onclick = () => {
+    /* B타입 개선안 : 하단 `초기화` 는 검색 조건을 기본값으로 되돌린다 */
+    S.sim = 80; S.allResults = false; S.period = '당일';
+    S.top = []; S.bottom = []; S.carTypes = []; S.cams = CAMERAS.slice();
+    savePrefs(); buildFilters(S.mode);
+    if (S.searched) runSearch(true); else syncSearchBtn();
+    toast('검색 조건을 초기화했습니다.');
+  };
   const btn = document.getElementById('btnSearchGo');
   if (!btn) return;
   btn.onclick = () => {

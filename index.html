@@ -53,8 +53,8 @@
 
     <!-- ---- 좌: 검색 사이드 패널 ---- -->
     <aside class="side" id="sidePanel">
-      <div class="side-head" id="sideHead">
-        <span class="side-title">검색</span>
+      <!-- B타입 개선안 : 패널 타이틀을 없애고 분리 버튼만 우측에 둔다 (접기는 바깥 핸들) -->
+      <div class="side-head slim" id="sideHead">
         <span class="side-head-btns">
           <button class="btn-icon" id="btnDetach" title="분리"><i class="i i-detach"></i></button>
         </span>
@@ -177,7 +177,10 @@
       <!-- 검색 실행 : 패널 하단 고정. 카메라(위치)를 하나 이상 골라야 활성화된다 -->
       <div class="side-foot" id="sideFoot">
         <p class="sf-hint" id="sfHint">카메라(위치)를 선택해 주세요.</p>
-        <button class="btn-primary sf-go" id="btnSearchGo" disabled>검색</button>
+        <div class="sf-row">
+          <button class="btn-ghost sf-reset" id="btnSearchReset">초기화</button>
+          <button class="btn-primary sf-go" id="btnSearchGo" disabled>검색</button>
+        </div>
       </div>
     </aside>
 

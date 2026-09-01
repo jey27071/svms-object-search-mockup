@@ -2875,3 +2875,28 @@ body.rsz-drag .rsz::after{background:var(--primary)}
 .tl-th .tl-del:hover{background:var(--danger,#d64545);border-color:transparent}
 .tl-th .tl-del .ic{width:11px;height:11px}
 .tl-host.tl-editing .tl-th{border-color:var(--st-mid)}
+
+/* ══ B타입 개선안 (4586:45748) 반영 ═════════════════════════════════════ */
+/* 패널 헤더 : 타이틀 없이 분리 버튼만 */
+.side-head.slim{justify-content:flex-end;min-height:30px;padding:6px 10px 0}
+/* 하단 : 초기화 + 검색 */
+.side-foot .sf-row{display:flex;gap:8px}
+.side-foot .sf-reset{flex:0 0 88px;height:36px;border-radius:6px;font-size:13px}
+.side-foot .sf-go{flex:1}
+/* 유사도 : 값 말풍선 + 0% / N% 이상 / 100% */
+.slider-row{position:relative;padding-top:22px}
+.sim-bubble{
+  position:absolute;top:0;transform:translateX(-50%);
+  background:var(--primary);color:#fff;border-radius:4px;padding:1px 6px;
+  font-size:10.5px;font-weight:600;white-space:nowrap;pointer-events:none
+}
+.sim-bubble::after{
+  content:'';position:absolute;left:50%;bottom:-3px;transform:translateX(-50%);
+  border:3px solid transparent;border-top-color:var(--primary);border-bottom:0
+}
+.sim-scale{display:flex;justify-content:space-between;margin-top:5px;
+  font-size:10px;color:var(--tx-helper)}
+.sim-scale .mid{color:var(--primary);font-weight:600}
+/* 색상 스와치 : 원형 */
+.color-row .sw{width:19px;height:19px;border-radius:50%;border:1px solid rgba(255,255,255,.18)}
+.color-row .sw.on{box-shadow:0 0 0 2px var(--bg-1),0 0 0 3.5px var(--primary);border-color:transparent}
