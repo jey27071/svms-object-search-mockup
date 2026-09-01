@@ -2060,9 +2060,19 @@ function renderPanes() {
     let sw = v.querySelector('.pn-switch');
     if (!sw) { v.insertAdjacentHTML('beforeend', paneSwitchHTML(0)); sw = v.querySelector('.pn-switch'); }
     v.classList.toggle('as-map', PANE.kind[0] === 'map');
+    /* 첫 칸도 맵뷰로 바꾸면 지도와 도구를 그대로 붙인다 (기존엔 도구가 없었다) */
     let mp = v.querySelector('.pn-map');
-    if (PANE.kind[0] === 'map' && !mp) v.insertAdjacentHTML('afterbegin', `<div class="pn-map"><img src="assets/img/floor.png" alt="맵뷰"><span class="pn-tag">맵뷰</span></div>`);
-    if (PANE.kind[0] !== 'map' && mp) mp.remove();
+    if (mp) mp.remove();
+    if (PANE.kind[0] === 'map') {
+      v.insertAdjacentHTML('afterbegin', `<div class="pn-map">
+        <img src="assets/img/floor.png" alt="맵뷰">
+        ${PANE.mapTools.includes('path') ? paneMapPathHTML() : ''}
+        ${PANE.mapTools.includes('cctv') ? `<div class="pn-cones">${MAP_CCTV.map(c =>
+          `<span class="map-cone" style="left:${c.x}%;top:${c.y}%;rotate:${c.deg}deg"><i></i><b></b></span>`).join('')}</div>` : ''}
+        <span class="pn-tag">맵뷰</span>
+        ${paneToolsHTML('map', 0)}
+      </div>`);
+    }
   }
 
   /* 폭 반영 */
