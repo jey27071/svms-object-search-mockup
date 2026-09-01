@@ -3786,48 +3786,79 @@ function setMenu(k) {
    검색·재생과 관련한 사용자 기본값을 모아 둔다.
    ============================================================ */
 S.setMaxClips = 12;
-function renderSettingView() {
-  const row = (k, v) => `<div class="fm-row"><span class="k">${k}</span><span class="v">${v}</span></div>`;
-  $('#menuView').innerHTML = `
-    <div class="mn-panel mn-detail" style="flex:1">
-      <div class="mn-head"><h3>설정</h3></div>
-      <div class="mn-body cs-edit">
-        <div class="acc open">
-          <div class="acc-h">${ICON2.cam}<span class="tt">이동 경로</span></div>
-          <div class="acc-b">
-            ${row('영상 클립 최대 개수',
-              `<input class="fm-in" id="stMaxClips" type="number" min="4" max="60" step="1" value="${S.setMaxClips}" style="width:110px">
-               <p class="hintline">RE-ID 이후 이동 경로를 구성할 때 한 번에 불러올 클립 수입니다.
-               이 수를 넘으면 클립 선택 팝업이 뜨고 '더보기'로 추가 호출합니다.</p>`)}
-          </div>
-        </div>
-        <div class="acc open" style="margin-top:10px">
-          <div class="acc-h">${ICON2.person}<span class="tt">검색 기본값</span></div>
-          <div class="acc-b">
-            ${row('유사도 기본값', `<input class="fm-in" id="stSim" type="number" min="0" max="100" step="1" value="${S.sim}" style="width:110px">
-               <p class="hintline">0~100% 사이에서 고릅니다. 검색 패널의 슬라이더 초기값으로 쓰입니다.</p>`)}
-            ${row('기간 기본값', `<span style="color:var(--tx-secondary)">${S.period}</span>`)}
-          </div>
-        </div>
-      </div>
-    </div>`;
+/* ============================================================
+   설정 모달 (2026-09-01)
+   좌측에 설정 항목, 우측에 세부 항목. 내용 분량에 맞춘 크기로 띄운다.
+   ============================================================ */
+S.setMaxClips = S.setMaxClips || 12;
+const SET_NAV = [
+  { k: 'path',   t: '이동 경로' },
+  { k: 'search', t: '검색 기본값' },
+  { k: 'view',   t: '표시' },
+  { k: 'play',   t: '재생' }
+];
+let setNav = 'path';
+
+function openSettings() { setNav = 'path'; renderSettings(); openModal('#mdSetting'); }
+
+function renderSettings() {
+  const nav = SET_NAV.map(n =>
+    `<button class="${setNav === n.k ? 'on' : ''}" data-setnav="${n.k}">${n.t}</button>`).join('');
+  const row = (k, v, hint) =>
+    `<div class="st-row"><span class="st-k">${k}</span><span class="st-v">${v}
+      ${hint ? `<p class="hintline">${hint}</p>` : ''}</span></div>`;
+
+  let body = '';
+  if (setNav === 'path') {
+    body = row('영상 클립 최대 개수',
+      `<input class="fm-in" id="stMaxClips" type="number" min="4" max="60" step="1" value="${S.setMaxClips}">`,
+      'RE-ID 이후 이동 경로를 구성할 때 한 번에 불러올 클립 수입니다. 이 수를 넘으면 클립 선택 팝업이 뜨고 \'더보기\'로 추가 호출합니다.');
+  } else if (setNav === 'search') {
+    body = row('유사도 기본값', `<input class="fm-in" id="stSim" type="number" min="0" max="100" step="1" value="${S.sim}">`,
+        '0~100% 사이에서 고릅니다. 검색 패널 슬라이더의 초기값으로 쓰입니다.')
+      + row('기간 기본값',
+        `<div class="seg" id="stPeriod">${['당일', '최근 3일', '최근 7일'].map(v =>
+          `<button class="${S.period === v ? 'on' : ''}" data-stp="${v}">${v}</button>`).join('')}</div>`);
+  } else if (setNav === 'view') {
+    body = row('결과 보기 모드',
+        `<div class="seg" id="stView">${[['thumb', '썸네일'], ['raw', '원본 비율']].map(([k, t]) =>
+          `<button class="${S.view === k ? 'on' : ''}" data-stv="${k}">${t}</button>`).join('')}</div>`)
+      + row('썸네일 크기',
+        `<input type="range" id="stThumb" min="140" max="320" step="10" value="${S.thumbW}">
+         <em class="st-num">${S.thumbW}px</em>`);
+  } else {
+    body = row('재생 속도', `<div class="seg" id="stSpeed">${SET_SPEEDS.map(v =>
+        `<button class="${SET.speed === v ? 'on' : ''}" data-sts="${v}">${v}</button>`).join('')}</div>`)
+      + row('반복 재생',
+        `<button class="sm-sw${SET.loop ? ' on' : ''}" id="stLoop"><i></i></button>`)
+      + row('음량', `<input type="range" id="stVol" min="0" max="100" value="${SET.muted ? 0 : SET.vol}">
+         <em class="st-num">${SET.muted ? 0 : SET.vol}</em>`);
+  }
+
+  $('#setNav').innerHTML = nav;
+  $('#setBody').innerHTML = body;
+  $$('#setNav [data-setnav]').forEach(b => b.onclick = () => { setNav = b.dataset.setnav; renderSettings(); });
+
   const mc = $('#stMaxClips');
   if (mc) mc.onchange = e => {
     S.setMaxClips = Math.max(4, Math.min(60, +e.target.value || 12));
-    REID.clipMax = S.setMaxClips;
-    savePrefs(); toast(`영상 클립 최대 개수를 ${S.setMaxClips}개로 저장했습니다.`);
+    REID.clipMax = S.setMaxClips; savePrefs();
   };
   const sm = $('#stSim');
-  if (sm) sm.onchange = e => {
-    S.sim = Math.max(0, Math.min(100, +e.target.value || 80));
-    savePrefs(); buildFilters(S.mode); toast(`유사도 기본값을 ${S.sim}% 로 저장했습니다.`);
-  };
+  if (sm) sm.onchange = e => { S.sim = Math.max(0, Math.min(100, +e.target.value || 80)); savePrefs(); buildFilters(S.mode); };
+  $$('#stPeriod [data-stp]').forEach(b => b.onclick = () => { S.period = b.dataset.stp; savePrefs(); buildFilters(S.mode); renderSettings(); });
+  $$('#stView [data-stv]').forEach(b => b.onclick = () => { S.view = b.dataset.stv; savePrefs(); applyView(); renderSettings(); });
+  const th = $('#stThumb');
+  if (th) th.oninput = e => { S.thumbW = +e.target.value; savePrefs(); applyView(); renderSettings(); };
+  $$('#stSpeed [data-sts]').forEach(b => b.onclick = () => { SET.speed = b.dataset.sts; renderSettings(); });
+  const lp = $('#stLoop'); if (lp) lp.onclick = () => { SET.loop = !SET.loop; renderSettings(); };
+  const vl = $('#stVol'); if (vl) vl.oninput = e => { SET.vol = +e.target.value; SET.muted = SET.vol === 0; renderSettings(); };
+  $$('#mdSetting [data-close]').forEach(b => b.onclick = () => closeModal('#mdSetting'));
 }
 
 function renderMenu() {
   if (S.menu === 'bookmark') return renderBmView();
   if (S.menu === 'case') return renderCsView();
-  if (S.menu === 'setting') return renderSettingView();
   if (S.menu === 'alarm') return renderAlView();
   const T = { case: '사건 관리', map: '맵 관리', alarm: '알림' }[S.menu] || '';
   $('#menuView').innerHTML =
@@ -5028,16 +5059,19 @@ function renderCaseAdd() {
 const LNB_ITEMS = [
   { k: '',         ic: 'search',   t: '검색' },
   { k: 'bookmark', ic: 'bookmark', t: '북마크' },
-  { k: 'case',     ic: 'cases',    t: '사건관리' },
-  /* 맵관리 삭제, 사건관리 아래 설정 추가 (2026-09-01) */
-  { k: 'setting',  ic: 'setting',  t: '설정' }
+  { k: 'case',     ic: 'cases',    t: '사건관리' }
 ];
+/* 설정은 메뉴 전환이 아니라 **모달**이라 목록에서 빼고 패널 하단에 따로 둔다 */
 function renderLnb() {
   const el = $('#lnb'); if (!el) return;
   el.innerHTML = LNB_ITEMS.map(g =>
     `<button data-menu="${g.k}" title="${g.t}" class="${(S.menu || '') === g.k ? 'on' : ''}">
-       <span class="bx">${GICON[g.ic]}</span><span>${g.t}</span></button>`).join('');
+       <span class="bx">${GICON[g.ic]}</span><span>${g.t}</span></button>`).join('')
+    /* 설정 : 패널 맨 아래 · 누르면 모달 */
+    + `<button class="lnb-foot" id="lnbSetting" title="설정">
+         <span class="bx">${GICON.setting}</span><span>설정</span></button>`;
   $$('#lnb [data-menu]').forEach(b => b.onclick = () => setMenu(b.dataset.menu || null));
+  const st = $('#lnbSetting'); if (st) st.onclick = () => openSettings();
 }
 /* 기존 renderMenuBar 호출부를 그대로 살리기 위해 별칭 */
 renderMenuBar = renderLnb;

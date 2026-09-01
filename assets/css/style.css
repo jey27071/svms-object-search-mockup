@@ -3240,3 +3240,30 @@ body.dt-b .dt-side > .dt-sec + .dt-sec{border-top:1px solid var(--ln-subtle);pad
 .dt-panes > .dt-video > img,
 .dt-panes .pn-vid > img,
 .dt-panes .pn-map > img{max-width:100%;max-height:100%}
+
+/* ── 설정 : LNB 하단 버튼 + 모달(좌 항목 / 우 세부) ─────────────────────── */
+.lnb{display:flex;flex-direction:column}
+.lnb .lnb-foot{margin-top:auto}
+/* 콘텐츠 분량에 맞춘 크기 */
+.modal.md-setting{width:640px;max-width:calc(100vw - 80px)}
+.md-setting .st-wrap{display:flex;min-height:280px;max-height:min(560px,70vh)}
+.md-setting .st-nav{
+  flex:0 0 148px;border-right:1px solid var(--ln-subtle);
+  padding:10px 8px;display:flex;flex-direction:column;gap:2px
+}
+.md-setting .st-nav button{
+  height:32px;padding:0 10px;border-radius:5px;text-align:left;font-size:12px;
+  background:transparent;border:0;color:var(--tx-tertiary)
+}
+.md-setting .st-nav button:hover{background:var(--bg-3);color:var(--tx-primary)}
+.md-setting .st-nav button.on{background:var(--primary);color:#fff;font-weight:500}
+.md-setting .st-body{flex:1;min-width:0;padding:14px 16px;overflow-y:auto}
+.st-row{display:flex;gap:14px;padding:10px 0;border-bottom:1px solid var(--ln-subtle)}
+.st-row:last-child{border-bottom:0}
+.st-row .st-k{flex:0 0 120px;font-size:12px;color:var(--tx-secondary);padding-top:5px}
+.st-row .st-v{flex:1;min-width:0;display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.st-row .st-v .fm-in{width:110px}
+.st-row .st-v input[type=range]{flex:1;min-width:120px;accent-color:var(--primary)}
+.st-row .st-num{font-style:normal;font-family:var(--mono);font-size:11px;color:var(--tx-tertiary)}
+.st-row .hintline{flex:1 0 100%;margin:2px 0 0}
+.st-row .seg button{height:26px;padding:0 10px;font-size:11px;border-radius:5px}
