@@ -3016,7 +3016,7 @@ body.dt-b .dt-panes{display:block}
 body.dt-b .dt-panes > .dt-pane,
 body.dt-b .dt-panes > .pane-rsz{display:none}
 body.dt-b .dt-video .pn-switch{display:none}
-body.dt-b .dt-objbar{display:none}          /* A안 전용 한 줄 바 */
+/* 대상 정보 바는 A·B 공통으로 타임라인 위에 둔다 (이름 + 출현 시각만) */
 
 /* B안 : 대상 정보 — 썸네일 · 인물명 · 출현 일시만, 한 행 4개 */
 body.dt-b .ob-grid{

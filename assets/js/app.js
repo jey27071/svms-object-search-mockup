@@ -2183,13 +2183,10 @@ function bindPaneCtl() {
 /* 대상 정보 : 카드에서 한 줄로 축약 */
 function renderObjBar(o, label) {
   const bar = document.getElementById('dtObjBar'); if (!bar) return;
+  /* 타임라인 상단 대상 정보 : **이름과 출현 시각만** 표시한다 */
   bar.innerHTML = `
-    <img class="ob-th" src="${o.img}" alt="">
     <b class="ob-nm">${label}</b>
-    <span class="badge">${o.sim}% 유사</span>
-    <span class="ob-kv">출현 <b>${o.t}</b></span>
-    <span class="ob-kv">이벤트 <b>${o.group === 'etc' ? '-' : '이동/계수'}</b></span>
-    <span class="ob-sw"><i style="background:${colorHex(o.top)}"></i><i style="background:${colorHex(o.bottom)}"></i></span>
+    <span class="ob-kv"><b>${o.t}</b></span>
     <span class="ob-right" id="dtPaneN">
       ${[1, 2, 3].map(n => `<button class="${PANE.n === n ? 'on' : ''}" data-pn="${n}">${n}단</button>`).join('')}
       <button class="btn-primary sm" id="dtCase2">사건 등록</button>
