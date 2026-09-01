@@ -3039,3 +3039,15 @@ body.dt-b .dt-side{display:flex;flex-direction:column;min-height:0}
 body.dt-b .dt-side > .dt-sec:nth-of-type(1){flex:0 0 auto}
 body.dt-b .dt-side > .dt-sec:nth-of-type(2){flex:1;display:flex;flex-direction:column;min-height:0}
 body.dt-b .dt-side > .dt-sec:nth-of-type(2) .dt-map{flex:1;min-height:0;height:auto}
+
+/* ── B안 : 대상정보 카드를 낮게, 맵뷰를 최대로 ──────────────────────────
+   비교 가능 대상이 4개뿐이라 한 행으로 끝난다. 카드 상하를 줄여
+   남는 세로 공간을 전부 맵뷰어에 넘긴다. */
+body.dt-b .ob-cell img{aspect-ratio:auto;height:52px}
+body.dt-b .ob-nm2{padding:4px 5px 0;font-size:10.5px;line-height:1.2}
+body.dt-b .ob-tm{padding:0 5px;font-size:9px;line-height:1.3}
+body.dt-b .ob-cell{padding-bottom:4px}
+body.dt-b .ob-grid{gap:5px}
+/* 대상 정보 섹션은 내용 높이만, 나머지는 맵뷰어가 가져간다 */
+body.dt-b .dt-side > .dt-sec:nth-of-type(1){flex:0 0 auto;padding-bottom:8px}
+body.dt-b .dt-side > .dt-sec:nth-of-type(2){flex:1 1 auto;min-height:0}

@@ -1989,7 +1989,8 @@ function setDtView(v) {
 function renderObjGrid(o, label) {
   const host = document.getElementById('dtObjSingle'); if (!host) return;
   if (S.dtView !== 'b') { host.style.display = ''; return; }
-  const peers = [o, ...OBJECTS.filter(x => x.group === o.group && x.id !== o.id)].slice(0, 8);
+  /* 한 번에 비교할 수 있는 대상은 **최대 4개** — 한 행으로 끝낸다 */
+  const peers = [o, ...OBJECTS.filter(x => x.group === o.group && x.id !== o.id)].slice(0, 4);
   host.style.display = 'block';
   host.innerHTML = `<div class="ob-grid">${peers.map((x, i) => `
     <div class="ob-cell${i === 0 ? ' on' : ''}">
