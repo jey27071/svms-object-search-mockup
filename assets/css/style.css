@@ -2864,3 +2864,14 @@ body.rsz-drag .rsz::after{background:var(--primary)}
 /* 설정 팝업의 음량 행 */
 .set-menu .sm-vol input{flex:1;min-width:80px;margin:0 8px;accent-color:var(--primary)}
 .set-menu .sm-vol .v{font-family:var(--mono);font-size:10.5px;color:var(--tx-tertiary);min-width:22px;text-align:right}
+
+/* 타임라인 편집 모드 */
+.tl-editing-lb{font-size:10.5px;color:var(--st-mid);margin-left:8px}
+.tl-th .tl-del{
+  position:absolute;right:3px;bottom:3px;width:18px;height:18px;padding:0;z-index:3;
+  border-radius:4px;background:rgba(0,0,0,.7);border:1px solid rgba(255,255,255,.25);
+  color:#fff;display:flex;align-items:center;justify-content:center
+}
+.tl-th .tl-del:hover{background:var(--danger,#d64545);border-color:transparent}
+.tl-th .tl-del .ic{width:11px;height:11px}
+.tl-host.tl-editing .tl-th{border-color:var(--st-mid)}

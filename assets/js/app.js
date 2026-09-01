@@ -358,13 +358,14 @@ function loadPrefs() {
   if (Array.isArray(v.carTypes)) S.carTypes = v.carTypes;
   if (v.view === 'raw' || v.view === 'thumb') S.view = v.view;
   if (typeof v.thumbW === 'number') S.thumbW = v.thumbW;
+  if (typeof v.setMaxClips === 'number') { S.setMaxClips = v.setMaxClips; REID.clipMax = v.setMaxClips; }
 }
 function savePrefs() {
   try {
     localStorage.setItem(PREF_KEY, JSON.stringify({
       cams: S.cams, sim: S.sim, allResults: S.allResults,
       period: S.period, top: S.top, bottom: S.bottom, carTypes: S.carTypes || [],
-      view: S.view, thumbW: S.thumbW
+      view: S.view, thumbW: S.thumbW, setMaxClips: S.setMaxClips
     }));
   } catch (_) { /* 저장 실패는 무시 */ }
 }
@@ -1514,7 +1515,7 @@ const DT = {
   edit: false,       /* 탐지 이력(타임라인) 수정 모드 */
   clips: [], removed: new Set()
 };
-const CMP = { objs: [], tab: '전체', openLane: null, near: '전체' };
+const CMP = { objs: [], tab: '전체', openLane: null, near: '전체', edit: false };
 
 const SLOT = k => CMP_SLOTS.find(s => s.k === k) || CMP_SLOTS[0];
 const slotColor = k => SLOT(k).color;
@@ -1598,10 +1599,11 @@ function renderTimeline(host, tracks, opt = {}) {
           const extra = (c.extra || []).length;
           const on = TL.sel.t === ti && TL.sel.c === ci;
           return `<div class="tl-bar${on ? ' on' : ''}" style="left:${l}%;width:${w}%;--bc:${typeof slotColor === 'function' ? slotColor(tr.slot) : 'var(--primary)'}" data-tr="${ti}" data-c="${ci}"></div>
-            <div class="tl-th${on ? ' on' : ''}" style="left:${l}%;width:${w}%" data-tr="${ti}" data-c="${ci}" title="${c.cam}">
+            <div class="tl-th${on ? ' on' : ''}${opt.edit ? ' edit' : ''}" style="left:${l}%;width:${w}%" data-tr="${ti}" data-c="${ci}" title="${c.cam}">
               <img src="${c.img}" alt="">
               <span class="tl-n">${c.n}</span>
               ${extra ? `<span class="tl-more" title="같은 장소 카메라 ${extra + 1}대">+${extra}</span>` : ''}
+              ${opt.edit ? `<button class="tl-del" data-tld="${ti}:${ci}" title="이 구간 삭제">${ICON.trash}</button>` : ''}
               <span class="tl-cam">${c.cam}</span>
             </div>`;
         }).join('')}
@@ -1615,6 +1617,8 @@ function renderTimeline(host, tracks, opt = {}) {
         <span class="tl-zv">${TL.zoom}x</span>
         <button data-tlz="in" title="확대" ${TL.zoom >= 8 ? 'disabled' : ''}>+</button>
       </div>
+      ${opt.edit ? `<button class="btn-ghost sm" data-tladd style="margin-left:8px">＋ 구간 추가</button>
+        <span class="tl-editing-lb">편집 중 — 썸네일의 휴지통으로 구간을 지웁니다</span>` : ''}
       ${opt.rightHTML || ''}
     </div>
     <div class="tl-scroll">
@@ -1632,6 +1636,20 @@ function renderTimeline(host, tracks, opt = {}) {
     TL.zoom = b.dataset.tlz === 'in' ? Math.min(8, TL.zoom * 2) : Math.max(1, TL.zoom / 2);
     renderTimeline(host, tracks, opt);
   });
+  /* 편집 모드 : 구간 삭제 · 구간 추가 */
+  host.classList.toggle('tl-editing', !!opt.edit);
+  host.querySelectorAll('[data-tld]').forEach(b => b.onclick = e => {
+    e.stopPropagation();
+    const [ti, ci] = b.dataset.tld.split(':').map(Number);
+    alertSpec('vidDel', () => {
+      tracks[ti].clips.splice(ci, 1);
+      if (TL.sel.t === ti && TL.sel.c >= tracks[ti].clips.length) TL.sel.c = Math.max(0, tracks[ti].clips.length - 1);
+      renderTimeline(host, tracks, opt);
+    });
+  });
+  const addBtn = host.querySelector('[data-tladd]');
+  if (addBtn) addBtn.onclick = () => { if (opt.onAdd) opt.onAdd(); };
+
   host.querySelectorAll('.tl-bar,.tl-th').forEach(n => n.onclick = () => {
     TL.sel = { t: +n.dataset.tr, c: +n.dataset.c };
     TL.pip = 0;
@@ -1741,6 +1759,7 @@ function renderPip(clip) {
     const im = document.getElementById('dtVideoImg'); if (im) im.src = clip.img;
     const camLb = document.getElementById('dtCam'); if (camLb) camLb.textContent = clip.cam;
     renderTimeline(document.getElementById('dtTl'), TL.tracks, {
+      edit: DT.edit,
       rightHTML: `<span class="tl-right" id="dtHistBtns2"></span>`,
       onSelect: (tr, c) => { const m = document.getElementById('dtVideoImg'); if (m) m.src = c.img; renderPip(c); }
     });
@@ -1788,8 +1807,10 @@ function renderDetail(tab) {
 
   /* 새 타임라인 — 상세는 1트랙. 편집 버튼은 배율 옆(우측)으로 옮겼다 */
   renderTimeline($('#dtTl'), [TL_TRACKS[0]], {
+    edit: DT.edit,
     rightHTML: `<span class="tl-right" id="dtHistBtns2"></span>`,
-    onSelect: (tr, c) => { const im = $('#dtVideoImg'); if (im) im.src = c.img; renderPip(c); }
+    onSelect: (tr, c) => { const im = $('#dtVideoImg'); if (im) im.src = c.img; renderPip(c); },
+    onAdd: () => openClipAdd(tab)
   });
   syncTlEditBtn(tab);
   renderPip(TL_TRACKS[0].clips[TL.sel.c] || TL_TRACKS[0].clips[0]);
@@ -2436,9 +2457,16 @@ function renderCmpView(tab) {
   $('#cmpRuler').innerHTML = rulerHTML({ head: 5 });
   /* 경로 비교 : 비교 인원 수만큼 트랙을 그린다 (최대 4). 트랙 수에 따라 패널 높이가 변한다 */
   renderTimeline($('#cmpTl'), TL_TRACKS.slice(0, Math.min(4, Math.max(1, objs.length))), {
-    rightHTML: `<span class="tl-right"><button class="btn-ghost sm" id="cmpEdit2">편집</button></span>`,
+    edit: !!CMP.edit,
+    rightHTML: `<span class="tl-right">${CMP.edit
+      ? `<button class="btn-ghost sm" id="cmpEditCancel">취소</button><button class="btn-primary sm" id="cmpEditSave">저장</button>`
+      : `<button class="btn-ghost sm" id="cmpEdit2">편집</button>`}</span>`,
     onSelect: (tr, c) => toast(`${tr.label} · ${c.cam} 구간으로 이동했습니다.`)
   });
+  /* 그동안 마크업만 있고 클릭 핸들러가 없어 눌러도 반응이 없었다 */
+  const ce = $('#cmpEdit2');   if (ce) ce.onclick = () => { CMP.edit = true;  renderCmpView(tab); };
+  const cc = $('#cmpEditCancel'); if (cc) cc.onclick = () => { CMP.edit = false; renderCmpView(tab); };
+  const cs = $('#cmpEditSave');   if (cs) cs.onclick = () => { CMP.edit = false; renderCmpView(tab); toast('탐지 이력을 저장했습니다.'); };
   $('#cmpLanes').innerHTML = objs.map(o => {
     const lane = HIST_LANES[o.slot] || [];
     return `<div class="dt-lane${CMP.openLane === o.slot ? ' open' : ''}" data-lane="${o.slot}">
@@ -3212,6 +3240,7 @@ function applyDemo() {
    검색 · 북마크 · 사건 관리 · 맵 관리 · 알림
    ============================================================ */
 const GICON = {
+  setting:  '<i class="i i-lnb-setting"></i>',
   /* LNB·주요 아이콘은 Figma 에서 실제 추출한 것(assets/icons/*.svg → icons.css mask)을 쓴다.
      이전에는 손으로 그린 인라인 SVG 였다. */
   search:   '<i class="i i-lnb-search"></i>',
@@ -3249,10 +3278,53 @@ function setMenu(k) {
   if (S.menu) $('#preview').hidden = true;
   if (S.menu) renderMenu();
 }
+/* ============================================================
+   설정 (LNB) — 사건관리 아래. 맵관리 자리를 대체한다.
+   검색·재생과 관련한 사용자 기본값을 모아 둔다.
+   ============================================================ */
+S.setMaxClips = 12;
+function renderSettingView() {
+  const row = (k, v) => `<div class="fm-row"><span class="k">${k}</span><span class="v">${v}</span></div>`;
+  $('#menuView').innerHTML = `
+    <div class="mn-panel mn-detail" style="flex:1">
+      <div class="mn-head"><h3>설정</h3></div>
+      <div class="mn-body cs-edit">
+        <div class="acc open">
+          <div class="acc-h">${ICON2.cam}<span class="tt">이동 경로</span></div>
+          <div class="acc-b">
+            ${row('영상 클립 최대 개수',
+              `<input class="fm-in" id="stMaxClips" type="number" min="4" max="60" step="1" value="${S.setMaxClips}" style="width:110px">
+               <p class="hintline">RE-ID 이후 이동 경로를 구성할 때 한 번에 불러올 클립 수입니다.
+               이 수를 넘으면 클립 선택 팝업이 뜨고 '더보기'로 추가 호출합니다.</p>`)}
+          </div>
+        </div>
+        <div class="acc open" style="margin-top:10px">
+          <div class="acc-h">${ICON2.person}<span class="tt">검색 기본값</span></div>
+          <div class="acc-b">
+            ${row('유사도 기본값', `<input class="fm-in" id="stSim" type="number" min="0" max="100" step="1" value="${S.sim}" style="width:110px">
+               <p class="hintline">0~100% 사이에서 고릅니다. 검색 패널의 슬라이더 초기값으로 쓰입니다.</p>`)}
+            ${row('기간 기본값', `<span style="color:var(--tx-secondary)">${S.period}</span>`)}
+          </div>
+        </div>
+      </div>
+    </div>`;
+  const mc = $('#stMaxClips');
+  if (mc) mc.onchange = e => {
+    S.setMaxClips = Math.max(4, Math.min(60, +e.target.value || 12));
+    REID.clipMax = S.setMaxClips;
+    savePrefs(); toast(`영상 클립 최대 개수를 ${S.setMaxClips}개로 저장했습니다.`);
+  };
+  const sm = $('#stSim');
+  if (sm) sm.onchange = e => {
+    S.sim = Math.max(0, Math.min(100, +e.target.value || 80));
+    savePrefs(); buildFilters(S.mode); toast(`유사도 기본값을 ${S.sim}% 로 저장했습니다.`);
+  };
+}
+
 function renderMenu() {
   if (S.menu === 'bookmark') return renderBmView();
   if (S.menu === 'case') return renderCsView();
-  if (S.menu === 'map') return renderMpView();
+  if (S.menu === 'setting') return renderSettingView();
   if (S.menu === 'alarm') return renderAlView();
   const T = { case: '사건 관리', map: '맵 관리', alarm: '알림' }[S.menu] || '';
   $('#menuView').innerHTML =
@@ -4454,7 +4526,8 @@ const LNB_ITEMS = [
   { k: '',         ic: 'search',   t: '검색' },
   { k: 'bookmark', ic: 'bookmark', t: '북마크' },
   { k: 'case',     ic: 'cases',    t: '사건관리' },
-  { k: 'map',      ic: 'map',      t: '맵관리' }
+  /* 맵관리 삭제, 사건관리 아래 설정 추가 (2026-09-01) */
+  { k: 'setting',  ic: 'setting',  t: '설정' }
 ];
 function renderLnb() {
   const el = $('#lnb'); if (!el) return;
