@@ -1957,6 +1957,48 @@ function renderObjBar(o, label) {
   if (c) c.onclick = () => openCase();
 }
 
+/* ============================================================
+   상세 화면 시안 전환 (2026-09-01)
+   A타입 : 타임라인 하단 전체 폭 + 상단 1~3단 패널 + 대상정보 한 줄
+   B안   : 기존 우측 패널 구조 유지 + 주변 대상 삭제
+           대상 정보는 썸네일·인물명·출현 일시만, 한 행에 4개까지
+           맵뷰어가 남는 공간을 최대로 차지
+   ============================================================ */
+S.dtView = localStorage.getItem('svms_dtview') || 'a';
+
+function setDtView(v) {
+  S.dtView = (v === 'b') ? 'b' : 'a';
+  try { localStorage.setItem('svms_dtview', S.dtView); } catch (_) {}
+  document.body.classList.toggle('dt-b', S.dtView === 'b');
+  document.querySelectorAll('#dtViewSw [data-dtv]')
+    .forEach(b => b.classList.toggle('on', b.dataset.dtv === S.dtView));
+  const t = S.tabs.find(x => x.id === S.activeTab);
+  if (t && t.obj) renderDetail(t);
+}
+
+(function initDtViewSwitch() {
+  const r = document.querySelector('.win-tabs'); if (!r) return;
+  const sw = document.createElement('div');
+  sw.className = 'layout-sw'; sw.id = 'dtViewSw';
+  sw.innerHTML = `<button data-dtv="a">상세 A</button><button data-dtv="b">상세 B</button>`;
+  r.appendChild(sw);
+  sw.querySelectorAll('[data-dtv]').forEach(b => b.onclick = () => setDtView(b.dataset.dtv));
+})();
+
+/* B안 : 대상 정보를 최소 항목(썸네일·인물명·출현 일시)으로, 한 행 4개 그리드 */
+function renderObjGrid(o, label) {
+  const host = document.getElementById('dtObjSingle'); if (!host) return;
+  if (S.dtView !== 'b') { host.style.display = ''; return; }
+  const peers = [o, ...OBJECTS.filter(x => x.group === o.group && x.id !== o.id)].slice(0, 8);
+  host.style.display = 'block';
+  host.innerHTML = `<div class="ob-grid">${peers.map((x, i) => `
+    <div class="ob-cell${i === 0 ? ' on' : ''}">
+      <img src="${x.img}" alt="">
+      <div class="ob-nm2">${i === 0 ? label : cardTitle(x)}</div>
+      <div class="ob-tm">${x.t.slice(5, 16)}</div>
+    </div>`).join('')}</div>`;
+}
+
 function renderDetail(tab) {
   const o = tab.obj;
   const isGroup = tab.kind === 'group';
@@ -2005,6 +2047,7 @@ function renderDetail(tab) {
   syncTlEditBtn(tab);
   renderPanes();
   renderObjBar(o, label);
+  renderObjGrid(o, label);
   renderPip(TL_TRACKS[0].clips[TL.sel.c] || TL_TRACKS[0].clips[0]);
 
   /* 그룹 상세 : 번호 세그먼트 행 */
@@ -5360,3 +5403,5 @@ window.addEventListener('hashchange', () => location.reload());
 loadPrefs();
 buildFilters(S.mode);
 syncSearchBtn();
+
+setDtView(S.dtView);

@@ -381,7 +381,7 @@
         </div>
       </div>
 
-      <aside class="dt-side" hidden>
+      <aside class="dt-side" id="dtSide">
         <div class="dt-side-head">
           <span class="dt-side-title">대상 상세</span>
           <button class="btn-primary sm" id="dtCase">
@@ -442,7 +442,8 @@
           <div class="dt-legend" id="dtLegend"><i></i>출현 지점 <em>( 1개 )</em></div>
         </section>
 
-        <section class="dt-sec">
+        <!-- 주변 대상 삭제 (2026-09-01) — JS 참조 때문에 DOM 은 숨겨서 남긴다 -->
+        <section class="dt-sec" hidden id="dtNearSec">
           <div class="dt-sec-head">
             <svg viewBox="0 0 16 16" class="ic"><circle cx="5.5" cy="6" r="2.2" stroke="currentColor" stroke-width="1.2" fill="none"/><circle cx="11" cy="6" r="2.2" stroke="currentColor" stroke-width="1.2" fill="none"/><path d="M1.5 13.5c0-2.1 1.8-3.2 4-3.2M8.5 13.5c0-2.1 1.8-3.2 4-3.2" stroke="currentColor" stroke-width="1.2" fill="none"/></svg>
             주변 대상

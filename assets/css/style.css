@@ -3005,3 +3005,37 @@ body.rsz-drag .rsz::after{background:var(--primary)}
 .tl-grip.e{right:0;border-radius:0 4px 4px 0}
 .tl-grip:hover{opacity:1}
 .tl-host.tl-editing .tl-th{border-color:var(--st-mid);box-shadow:0 0 0 1px var(--st-mid) inset}
+
+/* ══ 상세 화면 시안 A / B ════════════════════════════════════════════════
+   기본(A) : 타임라인 하단 전체 폭 + 상단 1~3단 패널 + 대상정보 한 줄
+   B안     : 기존 우측 패널 구조. 대상정보 최소화(4열) + 맵뷰 최대 */
+.detail > .dt-side{display:none}
+body.dt-b .detail{flex-direction:row}
+body.dt-b .detail > .dt-side{display:flex}
+body.dt-b .dt-panes{display:block}
+body.dt-b .dt-panes > .dt-pane,
+body.dt-b .dt-panes > .pane-rsz{display:none}
+body.dt-b .dt-video .pn-switch{display:none}
+body.dt-b .dt-objbar{display:none}          /* A안 전용 한 줄 바 */
+
+/* B안 : 대상 정보 — 썸네일 · 인물명 · 출현 일시만, 한 행 4개 */
+body.dt-b .ob-grid{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:6px
+}
+body.dt-b .ob-cell{
+  background:var(--bg-2);border:1px solid var(--ln-subtle);border-radius:5px;
+  overflow:hidden;padding-bottom:5px
+}
+body.dt-b .ob-cell.on{border-color:var(--primary)}
+body.dt-b .ob-cell img{width:100%;aspect-ratio:3/4;object-fit:cover;display:block}
+body.dt-b .ob-nm2{
+  padding:5px 6px 0;font-size:11px;color:var(--tx-primary);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap
+}
+body.dt-b .ob-tm{padding:0 6px;font-size:9.5px;color:var(--tx-helper);font-family:var(--mono)}
+
+/* B안 : 맵뷰어가 남는 공간을 최대로 */
+body.dt-b .dt-side{display:flex;flex-direction:column;min-height:0}
+body.dt-b .dt-side > .dt-sec:nth-of-type(1){flex:0 0 auto}
+body.dt-b .dt-side > .dt-sec:nth-of-type(2){flex:1;display:flex;flex-direction:column;min-height:0}
+body.dt-b .dt-side > .dt-sec:nth-of-type(2) .dt-map{flex:1;min-height:0;height:auto}
