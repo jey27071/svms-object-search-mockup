@@ -2939,3 +2939,6 @@ body.rsz-drag .rsz::after{background:var(--primary)}
 /* 지우기 ✕ 는 검색 버튼 왼쪽 */
 .mode-panel[data-panel="text"] .clear-x,
 .mode-panel[data-panel="car"]  .clear-x{top:50%;bottom:auto;transform:translateY(-50%);right:38px}
+
+/* 우측 원본 영상 패널 : 타이틀을 없앤 만큼 목록을 위로 올린다 */
+.preview .preview-list{padding-top:10px}
