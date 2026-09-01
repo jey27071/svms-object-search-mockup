@@ -1548,7 +1548,11 @@ const ICON2 = {
    · 한 바에 클립이 여럿이면 대표 하나만 두고 개수를 표시,
      나머지는 영상 영역 PIP 로 재생하고 선택하면 메인과 스위칭
    ============================================================ */
-const TL = { zoom: 1, cursor: 0.34, tracks: [], sel: { t: 0, c: 0 }, pip: 0 };
+const TL = {
+  zoom: 1, cursor: 0.34, tracks: [], sel: { t: 0, c: 0 }, pip: 0,
+  /* 여러 트랙을 같이 볼지(all) 하나만 볼지(one), 하나만 볼 때 어떤 인물인지 */
+  mode: 'all', pick: 0
+};
 
 const tlTime = v => new Date(String(v).replace(' ', 'T'));
 const tlPad = n => String(n).padStart(2, '0');
@@ -1603,6 +1607,11 @@ function openClipReselect(host, tracks, opt) {
 function renderTimeline(host, tracks, opt = {}) {
   if (!host) return;
   TL.tracks = tracks;
+  /* 보기 모드 : 하나씩 보기면 고른 인물 트랙만 그린다 */
+  const allTracks = tracks;
+  if (TL.pick >= allTracks.length) TL.pick = 0;
+  const shown = (TL.mode === 'one' && allTracks.length > 1) ? [allTracks[TL.pick]] : allTracks;
+  tracks = shown;
   const [d0, d1] = tlDomain(tracks);
   const span = d1 - d0;
   const pct = t => (+tlTime(t) - d0) / span * 100;
@@ -1625,7 +1634,8 @@ function renderTimeline(host, tracks, opt = {}) {
 
   const rows = tracks.map((tr, ti) => `
     <div class="tl-row" data-tr="${ti}">
-      <span class="tl-name"><i style="background:${typeof slotColor === 'function' ? slotColor(tr.slot) : 'var(--primary)'}"></i>${tr.label}</span>
+      <span class="tl-name"><i style="background:${typeof slotColor === 'function' ? slotColor(tr.slot) : 'var(--primary)'}"></i>${tr.label}
+        <em>${(tr.clips[0] || {}).from ? String(tr.clips[0].from).slice(11, 16) : ''}</em></span>
       <div class="tl-lane">
         ${tr.clips.map((c, ci) => {
           const l = pct(c.from), w = wid(c);
@@ -1652,6 +1662,10 @@ function renderTimeline(host, tracks, opt = {}) {
         <span class="tl-zv">${TL.zoom}x</span>
         <button data-tlz="in" title="확대" ${TL.zoom >= 8 ? 'disabled' : ''}>+</button>
       </div>
+      ${allTracks.length > 1 ? `<div class="tl-tabs">
+        <button class="${TL.mode === 'all' ? 'on' : ''}" data-tlmode="all">전체</button>
+        ${allTracks.map((t, i) => `<button class="${TL.mode === 'one' && TL.pick === i ? 'on' : ''}" data-tlpick="${i}">${t.label}</button>`).join('')}
+      </div>` : ''}
       ${opt.edit ? `<button class="btn-ghost sm" data-tlreselect style="margin-left:8px">클립 다시 선택</button>
         <button class="btn-ghost sm" data-tladd>＋ 구간 추가</button>
         <span class="tl-editing-lb">썸네일 좌우 끝을 끌어 구간 길이를 조정합니다</span>` : ''}
@@ -1668,10 +1682,49 @@ function renderTimeline(host, tracks, opt = {}) {
   /* 트랙 수에 따라 패널 높이가 달라진다 (스크롤이 생기지 않는 높이까지) */
   host.style.setProperty('--tl-tracks', tracks.length);
 
+  host.querySelectorAll('[data-tlmode]').forEach(b => b.onclick = () => {
+    TL.mode = b.dataset.tlmode; renderTimeline(host, allTracks, opt);
+  });
+  host.querySelectorAll('[data-tlpick]').forEach(b => b.onclick = () => {
+    TL.mode = 'one'; TL.pick = +b.dataset.tlpick; renderTimeline(host, allTracks, opt);
+  });
   host.querySelectorAll('[data-tlz]').forEach(b => b.onclick = () => {
     TL.zoom = b.dataset.tlz === 'in' ? Math.min(8, TL.zoom * 2) : Math.max(1, TL.zoom / 2);
-    renderTimeline(host, tracks, opt);
+    renderTimeline(host, allTracks, opt);
   });
+  /* 타임커서 : 눈금을 직접 끌어 옮긴다 (클릭·드래그 모두) */
+  const inner0 = host.querySelector('.tl-inner');
+  const ruler = host.querySelector('.tl-ruler');
+  const seekTo = clientX => {
+    const r = inner0.getBoundingClientRect();
+    TL.cursor = Math.max(0, Math.min(1, (clientX - r.left) / r.width));
+    const cur = host.querySelector('.tl-cursor');
+    if (cur) cur.style.left = (TL.cursor * 100) + '%';
+    /* 커서가 지나는 썸네일을 즉시 키운다 */
+    host.querySelectorAll('.tl-th').forEach(n => {
+      const l = parseFloat(n.style.left), w = parseFloat(n.style.width);
+      const cx = TL.cursor * 100;
+      n.classList.toggle('pass', cx >= l && cx <= l + w);
+    });
+  };
+  const startSeek = e => {
+    e.preventDefault();
+    seekTo(e.clientX);
+    document.body.style.cursor = 'ew-resize';
+    const mv = ev => seekTo(ev.clientX);
+    const up = () => {
+      document.removeEventListener('mousemove', mv);
+      document.removeEventListener('mouseup', up);
+      document.body.style.cursor = '';
+      renderTimeline(host, tracks, opt);   /* 커서 위치 기준으로 다시 그린다 */
+    };
+    document.addEventListener('mousemove', mv);
+    document.addEventListener('mouseup', up);
+  };
+  if (ruler) ruler.onmousedown = startSeek;
+  const curEl = host.querySelector('.tl-cursor');
+  if (curEl) curEl.onmousedown = startSeek;
+
   /* 편집 모드 : 구간 삭제 · 구간 추가 */
   host.classList.toggle('tl-editing', !!opt.edit);
   host.querySelectorAll('[data-tld]').forEach(b => b.onclick = e => {
@@ -1811,9 +1864,13 @@ function syncTlEditBtn(tab) {
 function renderPip(clip) {
   const stage = document.getElementById('dtVideo'); if (!stage) return;
   let box = document.getElementById('dtPip');
-  const list = (clip && clip.extra) || [];
+  /* PIP 는 최대 4개. 표시 크기는 영상 패널 폭에 맞춰 반응형으로 준다 */
+  const list = ((clip && clip.extra) || []).slice(0, 4);
   if (!list.length) { if (box) box.remove(); return; }
   if (!box) { box = document.createElement('div'); box.id = 'dtPip'; box.className = 'dt-pip'; stage.appendChild(box); }
+  const stageW = stage.getBoundingClientRect().width || 900;
+  const w = Math.max(70, Math.min(150, Math.round(stageW * 0.11)));
+  box.style.setProperty('--pip-w', w + 'px');
   box.innerHTML = list.map((x, i) => `
     <button class="pip-i" data-pip="${i}" title="${x.cam} — 메인 화면과 전환">
       <img src="${x.img}" alt=""><span>${x.cam}</span>

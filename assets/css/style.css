@@ -3071,3 +3071,26 @@ body.dt-b .dt-sec-head > .btn-add,
 body.dt-b .dt-sec-head > .dt-search{font-size:11.5px;margin-left:auto}
 /* 섹션 사이는 라인으로 구분 */
 body.dt-b .dt-side > .dt-sec + .dt-sec{border-top:1px solid var(--ln-subtle);padding-top:8px}
+
+/* PIP : 영상 패널 폭에 따라 크기가 반응한다 (최대 4개) */
+.dt-pip .pip-i{width:var(--pip-w,112px);height:calc(var(--pip-w,112px) * 0.57)}
+.dt-pip .pip-i span{font-size:calc(var(--pip-w,112px) * 0.08)}
+
+/* 타임커서 : 눈금을 끌어 옮길 수 있게 */
+.tl-ruler{cursor:ew-resize}
+.tl-cursor{pointer-events:auto;cursor:ew-resize}
+.tl-cursor::before{cursor:ew-resize}
+
+/* ── 타임라인 : 인물별 탭 + 같이보기/하나씩 보기 ────────────────────────── */
+.tl-tabs{display:flex;gap:3px;margin-left:10px}
+.tl-tabs button{
+  height:22px;padding:0 9px;border-radius:11px;font-size:10.5px;
+  background:var(--bg-3);border:1px solid var(--ln-border);color:var(--tx-tertiary)
+}
+.tl-tabs button.on{background:var(--primary);border-color:var(--primary);color:#fff}
+/* 트랙 이름 : 이름 + 출현 시각만 */
+.tl-name em{font-style:normal;font-family:var(--mono);font-size:9.5px;color:var(--tx-helper);margin-left:5px}
+
+/* 경로 비교 : 타임라인이 화면 밖으로 밀리지 않도록 세로 배분을 잡는다 */
+.cmp-main{flex:1;display:flex;flex-direction:column;min-height:0;min-width:0}
+.cmp-main > .cmp-stage{flex:1;min-height:0}
