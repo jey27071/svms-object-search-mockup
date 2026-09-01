@@ -1887,6 +1887,10 @@ function renderTimeline(host, tracks, opt = {}) {
     const cx = TL.cursor * 100;
     if (cx >= l && cx <= l + w) n.classList.add('pass');
   });
+
+  /* 우측 영역(편집 버튼 등)은 innerHTML 재생성으로 비워지므로 다시 채운다.
+     이걸 빠뜨려 배율·탭을 누르면 편집 버튼이 사라졌다. */
+  if (typeof opt.onRight === 'function') opt.onRight();
 }
 
 function rulerHTML(opt = {}) {
@@ -1988,6 +1992,7 @@ function renderPip(clip) {
     renderTimeline(document.getElementById('dtTl'), TL.tracks, {
       edit: DT.edit,
       rightHTML: `<span class="tl-right" id="dtHistBtns2"></span>`,
+      onRight: () => { const t = S.tabs.find(x => x.id === S.activeTab); if (t) syncTlEditBtn(t); },
       onSelect: (tr, c) => { const m = document.getElementById('dtVideoImg'); if (m) m.src = c.img; renderPip(c); }
     });
     renderPip(clip);
@@ -2307,10 +2312,10 @@ function renderDetail(tab) {
   renderTimeline($('#dtTl'), TL_TRACKS, {
     edit: DT.edit,
     rightHTML: `<span class="tl-right" id="dtHistBtns2"></span>`,
+    onRight: () => syncTlEditBtn(tab),
     onSelect: (tr, c) => { const im = $('#dtVideoImg'); if (im) im.src = c.img; renderPip(c); },
     onAdd: () => openClipAdd(tab)
   });
-  syncTlEditBtn(tab);
   renderPanes();
   renderObjBar(o, label);
   renderObjGrid(o, label);
