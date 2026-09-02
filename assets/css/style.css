@@ -3422,31 +3422,27 @@ body.dt-b .dt-side > .dt-sec + .dt-sec{border-top:1px solid var(--ln-subtle);pad
   width:12px;height:12px;border-radius:50%;background:var(--bg-0);border:2px solid var(--tx-secondary)
 }
 
-/* ── 선택 팝업 단계 표시 ────────────────────────────────────────────────
-   두 팝업이 하나의 흐름임을 알리고, 각 단계가 왜 필요한지 한 줄로 설명한다. */
-.pk-steps{
-  flex:0 0 auto;padding:10px 16px;background:var(--bg-1);
-  border-bottom:1px solid var(--ln-subtle)
+/* ── 선택 팝업 : 좌측 안내에 단계 표시를 함께 묶는다 ────────────────────
+   3단계(이동 경로 확인)는 화면이 전환되므로 넣지 않는다. */
+.pk-guide{
+  background:var(--bg-2);border:1px solid var(--ln-subtle);
+  border-radius:6px;padding:12px 13px
 }
 .pk-step-list{
-  display:flex;align-items:center;gap:10px;margin:0;padding:0;list-style:none
+  display:flex;align-items:center;gap:6px;margin:0 0 10px;padding:0 0 9px;
+  list-style:none;border-bottom:1px solid var(--ln-subtle)
 }
-.pk-step-list li{display:flex;align-items:center;gap:8px}
-.pk-step-list .sp-arrow{color:var(--tx-helper);font-size:15px;padding:0 2px}
+.pk-step-list li{display:flex;align-items:center;gap:5px}
+.pk-step-list .sp-arrow{color:var(--tx-helper);font-size:13px}
 .pk-step-list .sp-n{
-  flex:0 0 22px;width:22px;height:22px;border-radius:50%;
+  flex:0 0 17px;width:17px;height:17px;border-radius:50%;
   display:flex;align-items:center;justify-content:center;
-  font-family:var(--mono);font-size:11px;font-weight:600;
+  font-family:var(--mono);font-size:9.5px;font-weight:600;
   background:var(--bg-3);border:1px solid var(--ln-border);color:var(--tx-helper)
 }
-.pk-step-list .sp-t b{display:block;font-size:11.5px;color:var(--tx-tertiary);font-weight:500}
-.pk-step-list .sp-t em{display:block;font-style:normal;font-size:10px;color:var(--tx-helper);margin-top:1px}
-/* 지난 단계 */
+.pk-step-list b{font-size:10.5px;font-weight:500;color:var(--tx-helper)}
 .pk-step-list li.done .sp-n{background:rgba(63,190,126,.18);border-color:var(--st-high);color:var(--st-high)}
-.pk-step-list li.done .sp-t b{color:var(--tx-secondary)}
-/* 현재 단계 */
+.pk-step-list li.done b{color:var(--tx-tertiary)}
 .pk-step-list li.now .sp-n{background:var(--primary);border-color:var(--primary);color:#fff}
-.pk-step-list li.now .sp-t b{color:var(--tx-primary);font-weight:700}
-.pk-step-list li.now .sp-t em{color:var(--tx-tertiary)}
-/* 남은 단계 */
-.pk-step-list li.next{opacity:.5}
+.pk-step-list li.now b{color:var(--tx-primary);font-weight:700}
+.pk-step-list li.next{opacity:.55}

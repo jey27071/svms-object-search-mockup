@@ -628,6 +628,7 @@ function pickSideHTML(opt) {
   const o = findObj(REID.seed) || OBJECTS[0];
   return `
     <div class="pk-guide">
+      ${pickStepsHTML(opt.step)}
       <b>${opt.title}</b>
       <p>${opt.desc}</p>
     </div>
@@ -729,21 +730,15 @@ function reidPool() {
 
 /* 두 팝업이 하나의 흐름임을 보여주는 단계 표시.
    왜 이 단계를 거치는지 한 줄 설명을 함께 둔다. */
+/* 3단계(이동 경로 확인)는 화면이 전환되므로 표시하지 않는다 */
 const PICK_STEPS = [
-  { n: 1, t: '동일 대상 선별', d: '검색 결과에서 같은 사람만 골라냅니다' },
-  { n: 2, t: '영상 클립 선택', d: '경로로 이어 볼 영상을 고릅니다' },
-  { n: 3, t: '이동 경로 확인', d: '고른 영상이 시간 순으로 이어집니다' }
+  { n: 1, t: '동일 대상 선별' },
+  { n: 2, t: '영상 클립 선택' }
 ];
 function pickStepsHTML(active) {
   return `<ol class="pk-step-list">${PICK_STEPS.map(s => {
     const st = s.n < active ? 'done' : s.n === active ? 'now' : 'next';
-    return `<li class="${st}">
-      <span class="sp-n">${s.n < active ? '✓' : s.n}</span>
-      <span class="sp-t">
-        <b>${s.t}</b>
-        <em>${s.d}</em>
-      </span>
-    </li>`;
+    return `<li class="${st}"><span class="sp-n">${s.n < active ? '✓' : s.n}</span><b>${s.t}</b></li>`;
   }).join('<li class="sp-arrow">›</li>')}</ol>`;
 }
 
@@ -762,11 +757,10 @@ function renderReid() {
   const sort = REID.sort || '유사도순';
   const allOn = REID.sel.size === pool.length;
 
-  $('#reidSteps').innerHTML = pickStepsHTML(1);
   $('#reidSide').innerHTML = pickSideHTML({
     title: '같은 사람을 고르세요',
     desc: '아래 검출 결과 중 <b>기준 대상과 동일 인물</b>인 것만 선택합니다.<br>선택한 항목으로 이동 경로를 구성합니다.',
-    sel: REID.sel.size, total: pool.length
+    step: 1, sel: REID.sel.size, total: pool.length
   });
   $('#reidTools').innerHTML = pickToolsHTML(sort, allOn, 'reid');
   $('#reidBody').innerHTML = pickGridHTML(pool, REID.sel, sort, REID.w);
@@ -869,11 +863,10 @@ function renderClips(all) {
   const shown = sorted.slice(0, REID.clipShown);
   const allOn = shown.length && shown.every(o => REID.clipSel.has(o.id));
 
-  $('#clipsSteps').innerHTML = pickStepsHTML(2);
   $('#clipsSide').innerHTML = pickSideHTML({
     title: '이동 경로에 쓸 영상을 고르세요',
     desc: '선별한 대상이 찍힌 영상 중 <b>경로로 이어 볼 클립</b>을 선택합니다.<br>고른 순서가 아니라 촬영 시각 순으로 이어집니다.',
-    sel: REID.clipSel.size, total: all.length
+    step: 2, sel: REID.clipSel.size, total: all.length
   });
   $('#clipsTools').innerHTML = pickToolsHTML(sort, allOn, 'clips');
   $('#clipsBody').innerHTML =
