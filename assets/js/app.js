@@ -808,48 +808,58 @@ function renderClipPreview() {
     .sort((a, b) => String(a.t).localeCompare(String(b.t)));
 
   if (!picked.length) {
-    host.innerHTML = `<div class="pv-head"><b>이동 경로 미리보기</b></div>
-      <div class="pv-empty">클립을 선택하면 시간 순서대로 어떻게 이어지는지 여기에 표시됩니다.</div>`;
+    host.innerHTML = `<div class="cp-head"><b>이동 경로 미리보기</b></div>
+      <div class="cp-empty">클립을 선택하면 시간 순서대로 어떻게 이어지는지 여기에 표시됩니다.</div>`;
     return;
   }
 
   const t0 = +tlTime(picked[0].t);
   const t1 = +tlTime(picked[picked.length - 1].t);
-  const span = Math.max(t1 - t0, 6e5);          /* 최소 10분 폭 */
-  /* 시간이 몰린 구간에서 썸네일이 겹치지 않도록 최소 간격을 확보한다
-     (시간 비례를 유지하되, 앞 노드보다 일정 폭 이상 떨어지게 민다) */
-  const N = picked.length;
-  const GAP = 100 / Math.max(1, N - 1);          /* 노드가 겹치지 않는 최소 간격 */
-  let prev = -99;
-  const raw = picked.map(o => ((+tlTime(o.t) - t0) / span) * 100);
-  const xs = raw.map(x => { const v = Math.max(x, prev + GAP); prev = v; return v; });
-  /* 뒤쪽이 밀려 100 을 넘으면 전체를 균등 배분으로 되돌린다 */
-  if (xs[xs.length - 1] > 100) xs.forEach((_, i) => { xs[i] = (i / Math.max(1, N - 1)) * 100; });
-  const pct = (o, i) => xs[i];
+  const span = Math.max(t1 - t0, 6e5);
+  /* 클립 수에 맞춰 안쪽 폭을 늘린다 — 좁으면 가로 스크롤이 생긴다 */
+  const SLOT = 96, PAD = 40;
+  const innerW = Math.max(picked.length * SLOT + PAD * 2, 600);
+  const x = t => PAD + ((t - t0) / span) * (innerW - PAD * 2);
 
-  /* 날짜가 바뀌는 지점 표시 */
-  let lastDay = '';
-  const days = picked.map(o => {
-    const d = String(o.t).slice(0, 10);
-    if (d === lastDay) return '';
-    lastDay = d;
-    return `<span class="pv-day" style="left:${pct(o, picked.indexOf(o))}%">${d}</span>`;
-  }).join('');
+  /* 겹치지 않게 최소 간격 확보 */
+  let prev = -1e9;
+  const xs = picked.map(o => {
+    const v = Math.max(x(+tlTime(o.t)), prev + SLOT * 0.78);
+    prev = v; return v;
+  });
+
+  /* 시간 눈금 — 구간 길이에 맞춰 간격을 고른다 */
+  const mins = span / 6e4;
+  const stepMin = [5, 10, 15, 30, 60, 120, 180, 360, 720].find(m => mins / m <= 10) || 1440;
+  const step = stepMin * 6e4;
+  let ticks = '', lastDay = '';
+  for (let t = Math.ceil(t0 / step) * step; t <= t1 + step * 0.5; t += step) {
+    const d = new Date(t), px = x(t);
+    if (px < 0 || px > innerW) continue;
+    const day = tlYMD(d);
+    const newDay = day !== lastDay; lastDay = day;
+    ticks += `<span class="cp-tick" style="left:${px}px"></span>
+      <span class="cp-time" style="left:${px}px">${tlHM(d)}</span>
+      ${newDay ? `<span class="cp-day" style="left:${px}px">${day}</span>` : ''}`;
+  }
 
   host.innerHTML = `
-    <div class="pv-head">
+    <div class="cp-head">
       <b>이동 경로 미리보기</b>
-      <span class="pv-sum">${picked.length}개 · ${String(picked[0].t).slice(5, 16)} ~ ${String(picked[picked.length - 1].t).slice(5, 16)}</span>
+      <span class="cp-sum">${picked.length}개 · ${String(picked[0].t).slice(5, 16)} ~ ${String(picked[picked.length - 1].t).slice(5, 16)}</span>
     </div>
-    <div class="pv-track">
-      <div class="pv-line"></div>
-      ${days}
-      ${picked.map((o, i) => `
-        <div class="pv-node" style="left:${pct(o, i)}%" title="${o.cam} · ${o.t}">
-          <img src="${o.img}" alt="">
-          <span class="pv-n">${i + 1}</span>
-          <span class="pv-cam">${o.cam}</span>
-        </div>`).join('')}
+    <div class="cp-scroll">
+      <div class="cp-inner" style="width:${innerW}px">
+        <div class="cp-ruler">${ticks}</div>
+        <div class="cp-axis"></div>
+        ${picked.map((o, i) => `
+          <div class="cp-node" style="left:${xs[i]}px" title="${o.cam} · ${o.t}">
+            <span class="cp-n">${i + 1}</span>
+            <img src="${o.img}" alt="">
+            <span class="cp-cam">${o.cam}</span>
+            <span class="cp-t">${String(o.t).slice(11, 16)}</span>
+          </div>`).join('')}
+      </div>
     </div>`;
 }
 
@@ -874,7 +884,9 @@ function renderClips(all) {
     + (REID.clipShown < all.length
       ? `<div class="pk-more"><button class="btn-ghost" id="clipMore">더보기 (${all.length - REID.clipShown}개 남음)</button>
          <p class="hintline">한 번에 ${REID.clipMax}개까지 불러옵니다.</p></div>` : '');
-  $('#clipsFoot').innerHTML = `<button class="btn-ghost" data-close>취소</button>
+  $('#clipsFoot').innerHTML = `<button class="btn-ghost" id="clipsBack">‹ 이전</button>
+    <span style="flex:1"></span>
+    <button class="btn-ghost" data-close>취소</button>
     <button class="btn-primary" id="clipsGo" ${REID.clipSel.size ? '' : 'disabled'}>완료</button>`;
 
   bindPickName();
@@ -900,6 +912,8 @@ function renderClips(all) {
   const more = $('#clipMore');
   if (more) more.onclick = () => { REID.clipShown += REID.clipMax; renderClips(all); };
   $$('#mdClips [data-close]').forEach(b => b.onclick = () => closeModal('#mdClips'));
+  /* 이전 단계(동일 대상 선별)로 되돌아간다 — 선별 결과는 그대로 유지 */
+  $('#clipsBack').onclick = () => { closeModal('#mdClips'); renderReid(); openModal('#mdReid'); };
   $('#clipsGo').onclick = () => { closeModal('#mdClips'); finishReid([...REID.clipSel]); };
   renderClipPreview();
 }
