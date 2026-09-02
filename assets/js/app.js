@@ -624,14 +624,18 @@ function seedName() {
   return (o && o.person) || '인물 A';
 }
 
+/* 단계 + 안내를 팝업 상단 전체 폭에 넓게 배치한다 */
+function pickTopHTML(opt) {
+  return `${pickStepsHTML(opt.step)}
+    <div class="pk-guide">
+      <b>${opt.title}</b>
+      <p>${opt.desc}</p>
+    </div>`;
+}
+
 function pickSideHTML(opt) {
   const o = findObj(REID.seed) || OBJECTS[0];
   return `
-    <div class="pk-guide">
-      ${pickStepsHTML(opt.step)}
-      <b>${opt.title}</b>
-      <p>${opt.desc}</p>
-    </div>
     <div class="pk-seed">
       <img src="${o.img}" alt="">
       <label class="pk-name">
@@ -757,11 +761,13 @@ function renderReid() {
   const sort = REID.sort || '유사도순';
   const allOn = REID.sel.size === pool.length;
 
-  $('#reidSide').innerHTML = pickSideHTML({
+  const reidGuide = {
     title: '같은 사람을 고르세요',
     desc: '아래 검출 결과 중 <b>기준 대상과 동일 인물</b>인 것만 선택합니다.<br>선택한 항목으로 이동 경로를 구성합니다.',
     step: 1, sel: REID.sel.size, total: pool.length
-  });
+  };
+  $('#reidTop').innerHTML = pickTopHTML(reidGuide);
+  $('#reidSide').innerHTML = pickSideHTML(reidGuide);
   $('#reidTools').innerHTML = pickToolsHTML(sort, allOn, 'reid');
   $('#reidBody').innerHTML = pickGridHTML(pool, REID.sel, sort, REID.w);
   $('#reidFoot').innerHTML = `<button class="btn-ghost" data-close>취소</button>
@@ -818,7 +824,7 @@ function renderClipPreview() {
   const span = Math.max(t1 - t0, 6e5);
   /* 클립 수에 맞춰 안쪽 폭을 늘린다 — 좁으면 가로 스크롤이 생긴다 */
   const SLOT = 96, PAD = 40;
-  const innerW = Math.max(picked.length * SLOT + PAD * 2, 600);
+  let innerW = Math.max(picked.length * SLOT + PAD * 2, 600);
   const x = t => PAD + ((t - t0) / span) * (innerW - PAD * 2);
 
   /* 겹치지 않게 최소 간격 확보 */
@@ -827,6 +833,11 @@ function renderClipPreview() {
     const v = Math.max(x(+tlTime(o.t)), prev + SLOT * 0.78);
     prev = v; return v;
   });
+  /* 최소 간격으로 밀린 마지막 노드까지 담기도록 안쪽 폭을 넓힌다
+     (썸네일이 가운데 정렬이라 절반 폭 + 여백만큼 더 필요하다) */
+  const NODE_HALF = 42;
+  const need = Math.ceil(xs[xs.length - 1] + NODE_HALF + PAD);
+  if (need > innerW) innerW = need;
 
   /* 시간 눈금 — 구간 길이에 맞춰 간격을 고른다 */
   const mins = span / 6e4;
@@ -873,11 +884,13 @@ function renderClips(all) {
   const shown = sorted.slice(0, REID.clipShown);
   const allOn = shown.length && shown.every(o => REID.clipSel.has(o.id));
 
-  $('#clipsSide').innerHTML = pickSideHTML({
+  const clipsGuide = {
     title: '이동 경로에 쓸 영상을 고르세요',
     desc: '선별한 대상이 찍힌 영상 중 <b>경로로 이어 볼 클립</b>을 선택합니다.<br>고른 순서가 아니라 촬영 시각 순으로 이어집니다.',
     step: 2, sel: REID.clipSel.size, total: all.length
-  });
+  };
+  $('#clipsTop').innerHTML = pickTopHTML(clipsGuide);
+  $('#clipsSide').innerHTML = pickSideHTML(clipsGuide);
   $('#clipsTools').innerHTML = pickToolsHTML(sort, allOn, 'clips');
   $('#clipsBody').innerHTML =
     pickGridHTML(shown, REID.clipSel, sort, REID.clipW, true)
