@@ -781,6 +781,59 @@ function renderReid() {
   };
 }
 
+/* 선택한 클립이 시간 흐름에서 어떻게 놓이는지 보여주는 미리보기.
+   실제 재생이 아니라 배치를 가늠하는 용도다. */
+function renderClipPreview() {
+  const host = document.getElementById('clipsPreview'); if (!host) return;
+  const picked = [...REID.clipSel].map(id => findObj(id)).filter(Boolean)
+    .sort((a, b) => String(a.t).localeCompare(String(b.t)));
+
+  if (!picked.length) {
+    host.innerHTML = `<div class="pv-head"><b>이동 경로 미리보기</b></div>
+      <div class="pv-empty">클립을 선택하면 시간 순서대로 어떻게 이어지는지 여기에 표시됩니다.</div>`;
+    return;
+  }
+
+  const t0 = +tlTime(picked[0].t);
+  const t1 = +tlTime(picked[picked.length - 1].t);
+  const span = Math.max(t1 - t0, 6e5);          /* 최소 10분 폭 */
+  /* 시간이 몰린 구간에서 썸네일이 겹치지 않도록 최소 간격을 확보한다
+     (시간 비례를 유지하되, 앞 노드보다 일정 폭 이상 떨어지게 민다) */
+  const N = picked.length;
+  const GAP = 100 / Math.max(1, N - 1);          /* 노드가 겹치지 않는 최소 간격 */
+  let prev = -99;
+  const raw = picked.map(o => ((+tlTime(o.t) - t0) / span) * 100);
+  const xs = raw.map(x => { const v = Math.max(x, prev + GAP); prev = v; return v; });
+  /* 뒤쪽이 밀려 100 을 넘으면 전체를 균등 배분으로 되돌린다 */
+  if (xs[xs.length - 1] > 100) xs.forEach((_, i) => { xs[i] = (i / Math.max(1, N - 1)) * 100; });
+  const pct = (o, i) => xs[i];
+
+  /* 날짜가 바뀌는 지점 표시 */
+  let lastDay = '';
+  const days = picked.map(o => {
+    const d = String(o.t).slice(0, 10);
+    if (d === lastDay) return '';
+    lastDay = d;
+    return `<span class="pv-day" style="left:${pct(o, picked.indexOf(o))}%">${d}</span>`;
+  }).join('');
+
+  host.innerHTML = `
+    <div class="pv-head">
+      <b>이동 경로 미리보기</b>
+      <span class="pv-sum">${picked.length}개 · ${String(picked[0].t).slice(5, 16)} ~ ${String(picked[picked.length - 1].t).slice(5, 16)}</span>
+    </div>
+    <div class="pv-track">
+      <div class="pv-line"></div>
+      ${days}
+      ${picked.map((o, i) => `
+        <div class="pv-node" style="left:${pct(o, i)}%" title="${o.cam} · ${o.t}">
+          <img src="${o.img}" alt="">
+          <span class="pv-n">${i + 1}</span>
+          <span class="pv-cam">${o.cam}</span>
+        </div>`).join('')}
+    </div>`;
+}
+
 function renderClips(all) {
   /* 클립 선택은 **날짜순이 기본** — 언제 찍힌 영상인지가 먼저 보여야 한다 */
   REID.clipSort = REID.clipSort || '최신순';
@@ -829,6 +882,7 @@ function renderClips(all) {
   if (more) more.onclick = () => { REID.clipShown += REID.clipMax; renderClips(all); };
   $$('#mdClips [data-close]').forEach(b => b.onclick = () => closeModal('#mdClips'));
   $('#clipsGo').onclick = () => { closeModal('#mdClips'); finishReid([...REID.clipSel]); };
+  renderClipPreview();
 }
 
 /* 선별 완료 → 대상 상세(이동 경로)로 이동 */
