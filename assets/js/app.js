@@ -773,7 +773,9 @@ function renderReid() {
   $('#reidGo').onclick = () => {
     closeModal('#mdReid');
     const clips = [...REID.sel];
-    if (clips.length <= 10) { finishReid(clips); return; }
+    /* 사양은 '클립 10개 이하면 이 단계 생략' 이지만, 시연에서 흐름을 다 보여주려고
+       항상 클립 선택을 거치게 둔다. 되돌리려면 아래 한 줄을 살리면 된다.
+       if (clips.length <= 10) { finishReid(clips); return; } */
     REID.clipShown = REID.clipMax;
     REID.clipSel = new Set();
     renderClips(clips);
@@ -920,7 +922,10 @@ function bindCards(root) {
       if (e.target.closest('[data-more]')) { openCtx(e, id); return; }
       if (e.target.closest('.cmp')) return;
       clearTimeout(clickT);
-      clickT = setTimeout(() => selectCard(id), 190);
+      /* 목업 시연용 : 결과를 한 번만 눌러도 선별 → 클립 선택 → 상세로 이어진다.
+         우측 미리보기도 함께 갱신한다. */
+      selectCard(id);
+      openReid(id);
     };
     /* 사양 : 결과에서 대상을 고르면 RE-ID 편집 팝업을 띄운다 */
     c.ondblclick = e => {
