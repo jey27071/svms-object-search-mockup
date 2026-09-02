@@ -614,135 +614,191 @@ function renderResults() {
    ============================================================ */
 const REID = { seed: null, sel: new Set(), sort: '유사도순', w: 160, clipMax: 12, clipShown: 12, clipSel: new Set() };
 
+/* ---- 두 팝업 공통 ----
+   좌측 : 무엇을 하는 화면인지 안내 + 기준 대상(이름 편집) + 선택 수
+   우측 : 필터 콤보 + 구분자로 묶은 선택 목록 */
+const PICK_SORTS = ['유사도순', '최신순', '위치순'];
+
+/* 기준 대상의 이름 — 여기서 정한 값이 동선 추적·사건 등록까지 이어진다 */
+function seedName() {
+  if (REID.name && REID.name.trim()) return REID.name.trim();
+  const o = findObj(REID.seed);
+  return (o && o.person) || '인물 A';
+}
+
+function pickSideHTML(opt) {
+  const o = findObj(REID.seed) || OBJECTS[0];
+  return `
+    <div class="pk-guide">
+      <b>${opt.title}</b>
+      <p>${opt.desc}</p>
+    </div>
+    <div class="pk-seed">
+      <img src="${o.img}" alt="">
+      <label class="pk-name">
+        <span>대상 이름</span>
+        <input id="pkName" value="${seedName()}" placeholder="인물 A" maxlength="20">
+      </label>
+      <dl class="pk-meta">
+        <div><dt>위치</dt><dd>${o.cam}</dd></div>
+        <div><dt>출현</dt><dd>${o.t}</dd></div>
+        <div><dt>유사도</dt><dd><span class="sim ${simCls(o.sim)}">${o.sim}%</span></dd></div>
+      </dl>
+    </div>
+    <div class="pk-count">선택 <em>${opt.sel}</em> / ${opt.total}</div>`;
+}
+
+function bindPickName() {
+  const n = document.getElementById('pkName');
+  if (n) n.oninput = e => { REID.name = e.target.value; };
+}
+
+/* 필터에 따라 카드에서 어떤 정보를 앞세울지 결정한다 */
+function pickCardHTML(o, checked, sort) {
+  const lead = sort === '최신순' ? fmtT(o.t) : sort === '위치순' ? o.cam : `${o.sim}%`;
+  const sub  = sort === '최신순' ? o.cam : sort === '위치순' ? fmtT(o.t) : `${o.cam} · ${fmtT(o.t)}`;
+  return `<label class="reid-card${checked ? ' on' : ''}">
+    <input type="checkbox" data-pick="${o.id}" ${checked ? 'checked' : ''}>
+    <div class="rc-th"><img src="${o.img}" alt="">
+      ${sort === '유사도순' ? '' : `<span class="sim ${simCls(o.sim)}">${o.sim}%</span>`}</div>
+    <div class="rc-meta">
+      <div class="rc-lead${sort === '유사도순' ? ' ' + simCls(o.sim) : ''}">${lead}</div>
+      <div class="rc-sub">${sub}</div>
+    </div>
+  </label>`;
+}
+
+/* 정렬 기준별 그룹 키 — 이 값으로 구분자를 넣는다 */
+function pickGroupKey(o, sort) {
+  if (sort === '최신순') return String(o.t).slice(0, 10);
+  if (sort === '위치순') return o.cam;
+  return o.sim >= 95 ? '95% 이상' : o.sim >= 90 ? '90 ~ 94%' : o.sim >= 85 ? '85 ~ 89%' : '85% 미만';
+}
+function pickSortFn(sort) {
+  if (sort === '최신순') return (a, b) => String(b.t).localeCompare(String(a.t));
+  if (sort === '위치순') return (a, b) => String(a.cam).localeCompare(String(b.cam)) || b.sim - a.sim;
+  return (a, b) => b.sim - a.sim;
+}
+
+/* 그룹 구분자 + 카드 */
+function pickGridHTML(list, selSet, sort, w) {
+  const sorted = list.slice().sort(pickSortFn(sort));
+  const groups = [];
+  sorted.forEach(o => {
+    const k = pickGroupKey(o, sort);
+    const g = groups.find(x => x.k === k);
+    (g ? g.items : (groups.push({ k, items: [] }), groups[groups.length - 1].items)).push(o);
+  });
+  return groups.map(g => `
+    <div class="pk-group">
+      <div class="pk-div"><span>${g.k}</span><em>${g.items.length}건</em></div>
+      <div class="reid-grid" style="--rw:${w}px">${g.items.map(o =>
+        pickCardHTML(o, selSet.has(o.id), sort)).join('')}</div>
+    </div>`).join('');
+}
+
+function pickToolsHTML(sort, allOn, id) {
+  return `
+    <label class="check sm"><input type="checkbox" id="${id}All" ${allOn ? 'checked' : ''}><i></i>전체 선택</label>
+    <div class="pk-right">
+      <div class="select sm" id="${id}Sort" data-value="${sort}">
+        <button class="select-btn">${sort}<i class="i i-16 i-chevron i-down caret"></i></button>
+        <div class="select-menu">${PICK_SORTS.map(v => `<div data-v="${v}">${v}</div>`).join('')}</div>
+      </div>
+      <label class="thumb-size"><input type="range" id="${id}Size" min="110" max="240" step="10" value="${REID.w}"></label>
+    </div>`;
+}
+
 function reidPool() {
-  const list = OBJECTS.slice();
-  const c = {
-    '유사도순': (a, b) => b.sim - a.sim,
-    '최신순':   (a, b) => b.t.localeCompare(a.t),
-    '위치순':   (a, b) => a.cam.localeCompare(b.cam)
-  };
-  return list.sort(c[REID.sort] || c['유사도순']);
+  return OBJECTS.slice();
 }
 
 function openReid(seedId) {
   REID.seed = seedId;
-  REID.sel = new Set();          /* 사양 : Default 전체 해제 */
+  REID.sel = new Set();          /* Default 전체 해제 */
+  REID.sort = REID.sort || '유사도순';
+  REID.w = REID.w || 160;
+  REID.name = '';                /* 이름은 이 선별에서 새로 정한다 */
   renderReid();
   openModal('#mdReid');
 }
 
 function renderReid() {
   const pool = reidPool();
-  const all = REID.sel.size === pool.length;
-  /* 기준 인물 — 어떤 대상을 기준으로 선별하는지 팝업 안에서 계속 보이게 한다 */
-  const seed = findObj(REID.seed) || pool[0];
-  $('#reidSeed').innerHTML = seed ? `
-    <img class="rs-th" src="${seed.img}" alt="">
-    <div class="rs-bd">
-      <div class="rs-top"><b>${cardTitle(seed)}</b><span class="badge">기준 대상</span>
-        <span class="sim ${simCls(seed.sim)}">${seed.sim}%</span></div>
-      <div class="rs-kv">${seed.cam} · ${seed.t}</div>
-    </div>` : '';
-  $('#reidTools').innerHTML = `
-    <label class="check sm"><input type="checkbox" id="reidAll" ${all ? 'checked' : ''}><i></i>전체 선택</label>
-    <span class="rt-count">선택 <em>${REID.sel.size}</em> / ${pool.length}</span>
-    <div class="rt-right">
-      <div class="seg" id="reidSort">${['유사도순', '최신순', '위치순']
-        .map(v => `<button class="${REID.sort === v ? 'on' : ''}" data-rs="${v}">${v}</button>`).join('')}</div>
-      <label class="thumb-size"><input type="range" id="reidSize" min="110" max="240" step="10" value="${REID.w}"></label>
-    </div>`;
-  $('#reidBody').innerHTML = `<div class="reid-grid" style="--rw:${REID.w}px">${pool.map(o => `
-    <label class="reid-card${REID.sel.has(o.id) ? ' on' : ''}">
-      <input type="checkbox" data-rid="${o.id}" ${REID.sel.has(o.id) ? 'checked' : ''}>
-      <div class="rc-th"><img src="${o.img}" alt=""><span class="sim ${simCls(o.sim)}">${o.sim}%</span></div>
-      <div class="rc-meta"><div class="rc-cam">${o.cam}</div><div class="rc-t">${fmtT(o.t)}</div></div>
-    </label>`).join('')}</div>`;
+  const sort = REID.sort || '유사도순';
+  const allOn = REID.sel.size === pool.length;
+
+  $('#reidSide').innerHTML = pickSideHTML({
+    title: '같은 사람을 고르세요',
+    desc: '아래 검출 결과 중 <b>기준 대상과 동일 인물</b>인 것만 선택합니다.<br>선택한 항목으로 이동 경로를 구성합니다.',
+    sel: REID.sel.size, total: pool.length
+  });
+  $('#reidTools').innerHTML = pickToolsHTML(sort, allOn, 'reid');
+  $('#reidBody').innerHTML = pickGridHTML(pool, REID.sel, sort, REID.w);
   $('#reidFoot').innerHTML = `<button class="btn-ghost" data-close>취소</button>
     <button class="btn-primary" id="reidGo" ${REID.sel.size ? '' : 'disabled'}>다음</button>`;
 
+  bindPickName();
   $('#reidAll').onchange = e => {
     REID.sel = e.target.checked ? new Set(pool.map(o => o.id)) : new Set();
     renderReid();
   };
-  $$('#reidBody [data-rid]').forEach(c => c.onchange = () => {
-    const id = c.dataset.rid;
+  $$('#reidBody [data-pick]').forEach(c => c.onchange = () => {
+    const id = c.dataset.pick;
     REID.sel.has(id) ? REID.sel.delete(id) : REID.sel.add(id);
     renderReid();
   });
-  $$('#reidSort [data-rs]').forEach(b => b.onclick = () => { REID.sort = b.dataset.rs; renderReid(); });
+  bindSelect('#reidSort', v => { REID.sort = v; renderReid(); });
   $('#reidSize').oninput = e => { REID.w = +e.target.value; renderReid(); };
   $$('#mdReid [data-close]').forEach(b => b.onclick = () => closeModal('#mdReid'));
   $('#reidGo').onclick = () => {
     closeModal('#mdReid');
     const clips = [...REID.sel];
-    /* 클립이 10개 이하면 선택 단계를 건너뛴다 */
     if (clips.length <= 10) { finishReid(clips); return; }
     REID.clipShown = REID.clipMax;
-    REID.clipSel = new Set();       /* 사양 : Default 전체 해제 */
+    REID.clipSel = new Set();
     renderClips(clips);
     openModal('#mdClips');
   };
 }
 
 function renderClips(all) {
-  /* 정렬 — RE-ID 목록과 같은 기준 */
-  const cmp = {
-    '유사도순': (a, b) => (findObj(b) || {}).sim - (findObj(a) || {}).sim,
-    '최신순':   (a, b) => String((findObj(b) || {}).t).localeCompare(String((findObj(a) || {}).t)),
-    '위치순':   (a, b) => String((findObj(a) || {}).cam).localeCompare(String((findObj(b) || {}).cam))
-  };
-  REID.clipSort = REID.clipSort || '유사도순';
+  /* 클립 선택은 **날짜순이 기본** — 언제 찍힌 영상인지가 먼저 보여야 한다 */
+  REID.clipSort = REID.clipSort || '최신순';
   REID.clipW = REID.clipW || 150;
-  const sorted = all.slice().sort(cmp[REID.clipSort] || cmp['유사도순']);
+  const sort = REID.clipSort;
+  const list = all.map(id => findObj(id)).filter(Boolean);
+  const sorted = list.slice().sort(pickSortFn(sort));
   const shown = sorted.slice(0, REID.clipShown);
-  const allOn = shown.length && shown.every(id => REID.clipSel.has(id));
+  const allOn = shown.length && shown.every(o => REID.clipSel.has(o.id));
 
-  /* 기준 대상 — 어떤 인물의 동선을 구성하는지 계속 보이게 한다 */
-  const seed = findObj(REID.seed) || findObj(all[0]);
-  $('#clipsSeed').innerHTML = seed ? `
-    <img class="rs-th" src="${seed.img}" alt="">
-    <div class="rs-bd">
-      <div class="rs-top"><b>${cardTitle(seed)}</b><span class="badge">기준 대상</span></div>
-      <div class="rs-kv">${seed.cam} · ${seed.t}</div>
-    </div>` : '';
-
-  $('#clipsTools').innerHTML = `
-    <label class="check sm"><input type="checkbox" id="clipAll" ${allOn ? 'checked' : ''}><i></i>전체 선택</label>
-    <span class="rt-count">선택 <em>${REID.clipSel.size}</em> / ${all.length}</span>
-    <div class="rt-right">
-      <div class="seg" id="clipSort">${['유사도순', '최신순', '위치순']
-        .map(v => `<button class="${REID.clipSort === v ? 'on' : ''}" data-cs="${v}">${v}</button>`).join('')}</div>
-      <label class="thumb-size"><input type="range" id="clipSize" min="110" max="240" step="10" value="${REID.clipW}"></label>
-    </div>`;
-
-  $('#clipsBody').innerHTML = `
-    <p class="hintline">한 번에 ${REID.clipMax}개까지 불러옵니다. 더 필요하면 아래 '더보기'를 눌러 주세요.</p>
-    <div class="reid-grid" style="--rw:${REID.clipW}px">${shown.map(id => {
-      const o = findObj(id); if (!o) return '';
-      const on = REID.clipSel.has(id);
-      return `<label class="reid-card${on ? ' on' : ''}">
-        <input type="checkbox" data-cid="${id}" ${on ? 'checked' : ''}>
-        <div class="rc-th"><img src="${o.img}" alt=""><span class="sim ${simCls(o.sim)}">${o.sim}%</span></div>
-        <div class="rc-meta"><div class="rc-cam">${o.cam}</div><div class="rc-t">${fmtT(o.t)}</div></div>
-      </label>`; }).join('')}</div>
-    ${REID.clipShown < all.length
-      ? `<button class="btn-ghost" id="clipMore" style="width:100%;margin:12px 0 4px">더보기 (${all.length - REID.clipShown}개 남음)</button>` : ''}`;
-
+  $('#clipsSide').innerHTML = pickSideHTML({
+    title: '이동 경로에 쓸 영상을 고르세요',
+    desc: '선별한 대상이 찍힌 영상 중 <b>경로로 이어 볼 클립</b>을 선택합니다.<br>고른 순서가 아니라 촬영 시각 순으로 이어집니다.',
+    sel: REID.clipSel.size, total: all.length
+  });
+  $('#clipsTools').innerHTML = pickToolsHTML(sort, allOn, 'clips');
+  $('#clipsBody').innerHTML =
+    pickGridHTML(shown, REID.clipSel, sort, REID.clipW)
+    + (REID.clipShown < all.length
+      ? `<div class="pk-more"><button class="btn-ghost" id="clipMore">더보기 (${all.length - REID.clipShown}개 남음)</button>
+         <p class="hintline">한 번에 ${REID.clipMax}개까지 불러옵니다.</p></div>` : '');
   $('#clipsFoot').innerHTML = `<button class="btn-ghost" data-close>취소</button>
     <button class="btn-primary" id="clipsGo" ${REID.clipSel.size ? '' : 'disabled'}>완료</button>`;
 
-  $('#clipAll').onchange = e => {
-    if (e.target.checked) shown.forEach(id => REID.clipSel.add(id));
-    else shown.forEach(id => REID.clipSel.delete(id));
+  bindPickName();
+  $('#clipsAll').onchange = e => {
+    if (e.target.checked) shown.forEach(o => REID.clipSel.add(o.id));
+    else shown.forEach(o => REID.clipSel.delete(o.id));
     renderClips(all);
   };
-  $$('#clipsBody [data-cid]').forEach(c => c.onchange = () => {
-    const id = c.dataset.cid;
+  $$('#clipsBody [data-pick]').forEach(c => c.onchange = () => {
+    const id = c.dataset.pick;
     REID.clipSel.has(id) ? REID.clipSel.delete(id) : REID.clipSel.add(id);
     renderClips(all);
   });
-  $$('#clipSort [data-cs]').forEach(b => b.onclick = () => { REID.clipSort = b.dataset.cs; renderClips(all); });
-  $('#clipSize').oninput = e => { REID.clipW = +e.target.value; renderClips(all); };
+  bindSelect('#clipsSort', v => { REID.clipSort = v; renderClips(all); });
+  $('#clipsSize').oninput = e => { REID.clipW = +e.target.value; renderClips(all); };
   const more = $('#clipMore');
   if (more) more.onclick = () => { REID.clipShown += REID.clipMax; renderClips(all); };
   $$('#mdClips [data-close]').forEach(b => b.onclick = () => closeModal('#mdClips'));
@@ -753,10 +809,16 @@ function renderClips(all) {
 function finishReid(ids) {
   const o = findObj(REID.seed) || findObj(ids[0]);
   if (!o) return;
-  toast(`${ids.length}건으로 이동 경로를 구성했습니다.`);
+  /* 선별 팝업에서 정한 이름을 이후 화면이 모두 물려받는다
+     (탭 타이틀 · 대상 정보 · 타임라인 트랙 · 사건 등록) */
+  const name = seedName();
+  o.person = name;
+  ids.forEach(id => { const x = findObj(id); if (x) x.person = name; });
+  if (TL_TRACKS[0]) TL_TRACKS[0].label = name;
+  toast(`'${name}' 으로 ${ids.length}건의 이동 경로를 구성했습니다.`);
   DT.clip = 0; DT.removed = new Set(); DT.edit = false; DT.area = null; DT.tracks = true;
   DT.tools = ['obj', 'single'];
-  newTab(`${o.cam} > ${cardTitle(o)}`, o, { kind: 'group' });
+  newTab(`${o.cam} > ${name}`, o, { kind: 'group', label: name });
 }
 
 /* 결과 카드 → 상세 화면. 유사 대상별 보기의 대표 카드면 대상 그룹 상세로 연다. */

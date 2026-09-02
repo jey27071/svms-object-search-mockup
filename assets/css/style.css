@@ -3267,3 +3267,61 @@ body.dt-b .dt-side > .dt-sec + .dt-sec{border-top:1px solid var(--ln-subtle);pad
 .st-row .st-num{font-style:normal;font-family:var(--mono);font-size:11px;color:var(--tx-tertiary)}
 .st-row .hintline{flex:1 0 100%;margin:2px 0 0}
 .st-row .seg button{height:26px;padding:0 10px;font-size:11px;border-radius:5px}
+
+/* ══ 선택 팝업 공통 (동일 대상 선별 · 영상 클립 선택) ════════════════════
+   좌: 안내 + 기준 대상(이름 편집) + 선택 수 / 우: 필터 + 구분자별 목록 */
+.modal.md-pick{
+  width:min(1320px,calc(100vw - 96px));height:min(860px,calc(100vh - 96px));
+  display:flex;flex-direction:column
+}
+.md-pick .pk-wrap{flex:1;min-height:0;display:flex}
+.md-pick .pk-side{
+  flex:0 0 268px;border-right:1px solid var(--ln-subtle);
+  padding:16px;display:flex;flex-direction:column;gap:14px;overflow-y:auto
+}
+.pk-guide b{display:block;font-size:15px;color:var(--tx-primary);margin-bottom:6px}
+.pk-guide p{margin:0;font-size:12px;line-height:1.6;color:var(--tx-tertiary)}
+.pk-guide p b{display:inline;font-size:inherit;color:var(--primary)}
+.pk-seed{background:var(--bg-2);border:1px solid var(--ln-subtle);border-radius:6px;padding:12px}
+.pk-seed > img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:4px;display:block}
+.pk-name{display:block;margin:10px 0 8px}
+.pk-name span{display:block;font-size:10.5px;color:var(--tx-helper);margin-bottom:4px}
+.pk-name input{
+  width:100%;height:32px;padding:0 10px;border-radius:5px;
+  background:var(--bg-1);border:1px solid var(--primary);color:var(--tx-primary);
+  font-size:13px;font-weight:600;outline:0
+}
+.pk-meta{margin:0;font-size:11px}
+.pk-meta > div{display:flex;gap:8px;padding:3px 0}
+.pk-meta dt{flex:0 0 42px;color:var(--tx-helper)}
+.pk-meta dd{margin:0;color:var(--tx-secondary);font-family:var(--mono);font-size:10.5px}
+.pk-count{margin-top:auto;font-size:12px;color:var(--tx-tertiary)}
+.pk-count em{font-style:normal;color:var(--primary);font-weight:700;font-size:15px}
+
+.md-pick .pk-main{flex:1;min-width:0;display:flex;flex-direction:column}
+.md-pick .pk-tools{
+  flex:0 0 auto;display:flex;align-items:center;gap:12px;
+  padding:10px 16px;border-bottom:1px solid var(--ln-subtle);background:var(--bg-1)
+}
+.pk-tools .pk-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.md-pick .pk-body{flex:1;min-height:0;overflow-y:auto;padding:4px 0 14px}
+/* 그룹 구분자 */
+.pk-group + .pk-group{border-top:1px solid var(--ln-subtle)}
+.pk-div{
+  position:sticky;top:0;z-index:2;display:flex;align-items:center;gap:8px;
+  padding:9px 16px 7px;background:var(--bg-1)
+}
+.pk-div span{font-size:12px;font-weight:600;color:var(--tx-primary)}
+.pk-div em{font-style:normal;font-size:10.5px;color:var(--tx-helper)}
+/* 카드 : 필터에 따라 앞세우는 정보가 달라진다 */
+.reid-card .rc-lead{font-size:12px;font-weight:600;color:var(--tx-primary);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.reid-card .rc-lead.hi{color:var(--st-high)}
+.reid-card .rc-lead.mid{color:var(--st-mid)}
+.reid-card .rc-lead.low{color:var(--st-low)}
+.reid-card .rc-sub{font-size:10px;color:var(--tx-helper);font-family:var(--mono);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* 클립 선택 : 더보기 */
+.pk-more{padding:14px 16px 4px;text-align:center}
+.pk-more button{width:100%}
+.pk-more .hintline{margin:6px 0 0}
