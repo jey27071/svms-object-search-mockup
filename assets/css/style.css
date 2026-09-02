@@ -3433,11 +3433,24 @@ body.dt-b .dt-side > .dt-sec + .dt-sec{border-top:1px solid var(--ln-subtle);pad
 
 /* ── 선택 팝업 : 좌측 안내에 단계 표시를 함께 묶는다 ────────────────────
    3단계(이동 경로 확인)는 화면이 전환되므로 넣지 않는다. */
-/* 단계 + 안내 : 팝업 상단 전체 폭 */
+/* 단계 + 안내(좌) · 기준 대상 + 선택 수(우) */
 .pk-top{
-  flex:0 0 auto;padding:12px 16px 14px;
+  flex:0 0 auto;display:flex;align-items:center;gap:24px;
+  padding:14px 16px 16px;
   background:var(--bg-2);border-bottom:1px solid var(--ln-border)
 }
+.pk-top-l{flex:1;min-width:0}
+.pk-top-r{
+  flex:0 0 auto;display:flex;align-items:center;gap:18px;
+  padding-left:24px;border-left:1px solid var(--ln-border)
+}
+.pk-seed-row{display:flex;align-items:center;gap:12px}
+.pk-seed-row > img{width:64px;height:74px;object-fit:cover;border-radius:5px;border:1px solid var(--ln-border)}
+.pk-seed-row .ps-bd{min-width:0}
+.pk-seed-row .pk-name{display:block;margin:0 0 6px}
+.pk-seed-row .pk-name input{width:180px}
+.ps-meta{font-size:10.5px;color:var(--tx-tertiary);font-family:var(--mono)}
+.pk-top-r .pk-count{margin:0;white-space:nowrap}
 .pk-guide b{font-size:16px}
 .pk-guide p{font-size:12.5px}
 .pk-step-list{
@@ -3492,3 +3505,7 @@ body.dt-b .dt-side > .dt-sec + .dt-sec{border-top:1px solid var(--ln-subtle);pad
   border:0;background:none;color:var(--tx-helper);border-radius:3px
 }
 #recentBlk .rb-li .x:hover{background:rgba(255,255,255,.1);color:var(--tx-primary)}
+
+
+/* 좌측 패널 제거 — 목록이 전체 폭을 쓴다 */
+.md-pick .pk-side{display:none}

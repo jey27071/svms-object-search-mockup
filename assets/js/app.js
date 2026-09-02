@@ -626,14 +626,30 @@ function seedName() {
 
 /* 단계 + 안내를 팝업 상단 전체 폭에 넓게 배치한다 */
 function pickTopHTML(opt) {
-  return `${pickStepsHTML(opt.step)}
-    <div class="pk-guide">
-      <b>${opt.title}</b>
-      <p>${opt.desc}</p>
+  const o = findObj(REID.seed) || OBJECTS[0];
+  return `
+    <div class="pk-top-l">
+      ${pickStepsHTML(opt.step)}
+      <div class="pk-guide"><b>${opt.title}</b><p>${opt.desc}</p></div>
+    </div>
+    <div class="pk-top-r">
+      <div class="pk-seed-row">
+        <img src="${o.img}" alt="">
+        <div class="ps-bd">
+          <label class="pk-name">
+            <span>대상 이름</span>
+            <input id="pkName" value="${seedName()}" placeholder="인물 A" maxlength="20">
+          </label>
+          <div class="ps-meta">${o.cam} · ${o.t} · <span class="sim ${simCls(o.sim)}">${o.sim}%</span></div>
+        </div>
+      </div>
+      <div class="pk-count">선택 <em>${opt.sel}</em> / ${opt.total}</div>
     </div>`;
 }
 
-function pickSideHTML(opt) {
+/* 좌측 패널은 없앴다 — 기준 대상과 선택 수를 상단 우측으로 올려 목록이 전체 폭을 쓴다 */
+function pickSideHTML(opt) { return ''; }
+function _pickSideHTMLLegacy(opt) {
   const o = findObj(REID.seed) || OBJECTS[0];
   return `
     <div class="pk-seed">
@@ -822,26 +838,26 @@ function renderClipPreview() {
   const t0 = +tlTime(picked[0].t);
   const t1 = +tlTime(picked[picked.length - 1].t);
   const span = Math.max(t1 - t0, 6e5);
-  /* 클립 수에 맞춰 안쪽 폭을 늘린다 — 좁으면 가로 스크롤이 생긴다 */
-  const SLOT = 96, PAD = 40;
-  let innerW = Math.max(picked.length * SLOT + PAD * 2, 600);
-  const x = t => PAD + ((t - t0) / span) * (innerW - PAD * 2);
 
-  /* 겹치지 않게 최소 간격 확보 */
-  let prev = -1e9;
-  const xs = picked.map(o => {
-    const v = Math.max(x(+tlTime(o.t)), prev + SLOT * 0.78);
-    prev = v; return v;
-  });
-  /* 최소 간격으로 밀린 마지막 노드까지 담기도록 안쪽 폭을 넓힌다
-     (썸네일이 가운데 정렬이라 절반 폭 + 여백만큼 더 필요하다) */
-  const NODE_HALF = 42;
-  const need = Math.ceil(xs[xs.length - 1] + NODE_HALF + PAD);
-  if (need > innerW) innerW = need;
+  /* 노드를 밀어내면 눈금과 어긋난다.
+     대신 **가장 촘촘한 간격이 슬롯 폭을 넘도록 전체 폭을 늘려** 시간 비례를 지킨다. */
+  const SLOT = 92, PAD = 56, NODE_HALF = 42;
+  let minGap = span;
+  for (let i = 1; i < picked.length; i++) {
+    const g = +tlTime(picked[i].t) - +tlTime(picked[i - 1].t);
+    if (g > 0 && g < minGap) minGap = g;
+  }
+  /* 가장 촘촘한 간격 기준으로 폭을 잡되, 지나치게 넓어지지 않게 상한을 둔다.
+     상한에 걸리면 가까운 노드끼리 살짝 겹치는데, 시간이 붙어 있다는 뜻이라 그대로 둔다. */
+  const byGap = minGap > 0 ? (span / minGap) * SLOT : 600;
+  const MAXW = 2400;
+  const innerW = Math.ceil(Math.min(Math.max(byGap, 600), MAXW) + PAD * 2);
+  const x = t => PAD + ((t - t0) / span) * (innerW - PAD * 2);
+  const xs = picked.map(o => x(+tlTime(o.t)));
 
   /* 시간 눈금 — 구간 길이에 맞춰 간격을 고른다 */
   const mins = span / 6e4;
-  const stepMin = [5, 10, 15, 30, 60, 120, 180, 360, 720].find(m => mins / m <= 10) || 1440;
+  const stepMin = [5, 10, 15, 30, 60, 120, 180, 360, 720].find(m => mins / m <= 12) || 1440;
   const step = stepMin * 6e4;
   let ticks = '', lastDay = '';
   for (let t = Math.ceil(t0 / step) * step; t <= t1 + step * 0.5; t += step) {
@@ -862,7 +878,7 @@ function renderClipPreview() {
     <div class="cp-scroll">
       <div class="cp-inner" style="width:${innerW}px">
         <div class="cp-ruler">${ticks}</div>
-        <div class="cp-axis"></div>
+        <div class="cp-axis" style="left:${PAD}px;right:${PAD}px"></div>
         ${picked.map((o, i) => `
           <div class="cp-node" style="left:${xs[i]}px" title="${o.cam} · ${o.t}">
             <span class="cp-n">${i + 1}</span>
