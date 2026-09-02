@@ -3176,25 +3176,24 @@ body.dt-b .dt-side > .dt-sec + .dt-sec{border-top:1px solid var(--ln-subtle);pad
 
 /* ── 접힘 : 확장 핸들만 GNB 패널에 붙은 형태 ────────────────────────────
    별도 카드가 아니라 GNB 오른쪽 가장자리에 손잡이만 남는다. */
+/* 접힘 레일은 자리를 차지하지 않는다 —
+   결과 패널이 탭바와 같은 왼쪽 끝까지 당겨지고, 핸들은 그 위에 겹친다 */
 .collapsed-rail{
-  flex:0 0 14px;width:14px;padding:0;display:flex;align-items:center;
-  background:transparent;border:0
+  position:absolute;left:0;top:0;bottom:0;width:0;
+  padding:0;background:transparent;border:0;
+  z-index:30;overflow:visible;pointer-events:none
 }
 .collapsed-rail .side-handle.out{
-  width:14px;height:56px;padding:0;
+  pointer-events:auto;
+  position:absolute;left:0;top:50%;transform:translateY(-50%);
+  width:16px;height:48px;padding:0;
   background:var(--bg-2);border:1px solid var(--ln-border);border-left:0;
-  border-radius:0 7px 7px 0
+  border-radius:0 8px 8px 0;box-shadow:2px 0 6px rgba(0,0,0,.4)
 }
-/* 접힘 상태에서는 GNB 와 핸들 사이 거터를 없애 붙어 보이게 한다 */
+/* 접힘 상태 : GNB 와 콘텐츠를 붙여 결과 패널이 왼쪽 끝까지 오게 한다 */
 .shell:has(#collapsedRail:not([hidden])){gap:0}
-.shell:has(#collapsedRail:not([hidden])) > .shell-main{margin-left:8px}
-/* 접힘 핸들 : 네이버 지도처럼 GNB 오른쪽 가장자리에 붙은 탭 형태 */
-.collapsed-rail .side-handle.out{
-  width:22px;height:64px;background:var(--bg-1);
-  border:1px solid var(--ln-border);border-left:0;border-radius:0 8px 8px 0;
-  box-shadow:2px 0 6px rgba(0,0,0,.35)
-}
-.collapsed-rail{flex:0 0 22px;width:22px}
+.shell:has(#collapsedRail:not([hidden])) > .shell-main{margin-left:0}
+/* (구) 접힘 핸들 크기·폭 규칙 제거 — 위의 절대배치 규칙을 되돌리고 있었다 */
 
 /* 패널 도구 구분선 · 다중 영상(2x2) */
 .pn-tools .pn-sep{width:1px;height:16px;background:rgba(255,255,255,.22);margin:0 3px;align-self:center}
@@ -3446,3 +3445,7 @@ body.dt-b .dt-side > .dt-sec + .dt-sec{border-top:1px solid var(--ln-subtle);pad
 .pk-step-list li.now .sp-n{background:var(--primary);border-color:var(--primary);color:#fff}
 .pk-step-list li.now b{color:var(--tx-primary);font-weight:700}
 .pk-step-list li.next{opacity:.55}
+
+
+/* 접힘 핸들이 결과 패널 위에 겹치도록 기준을 잡는다 */
+.workspace{position:relative}
