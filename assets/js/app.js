@@ -258,7 +258,7 @@ function buildFilters(mode) {
         <input type="range" class="slider" id="fSim" min="0" max="100" value="${S.sim}">
         <div class="sim-scale"><span>0%</span><span class="mid" id="fSimMid">${S.sim}% 이상</span><span>100%</span></div>
       </div>
-      <label class="check sm"><input type="checkbox" id="fAll" ${S.allResults ? 'checked' : ''}><i></i>모든 결과 출력</label>`, on));
+      `, on));
 
     if (f === 'cam') parts.push(accBlock('cam', '위치', camTreeHTML(), on));
 
@@ -325,9 +325,7 @@ function bindFilters(box) {
       const bb = $('.sim-bubble', box); if (bb) bb.style.left = S.sim + '%';
       savePrefs();
       const sc = $('#fSimScale', box); if (sc) sc.style.setProperty('--p', S.sim);
-      if (S.allResults) { S.allResults = false; $('#fAll', box).checked = false; } runSearch(true); };
-    $('#fAll', box).onchange = e => { S.allResults = e.target.checked; if (S.allResults) { S.sim = 0; sim.value = 0; $('#fSimVal', box).textContent = '0%';
-      const sc = $('#fSimScale', box); if (sc) sc.style.setProperty('--p', 0); } runSearch(true); };
+      if (S.searched) runSearch(true); };
   }
   $$('[data-cam]', box).forEach(cb => cb.onchange = () => {
     const v = cb.dataset.cam;
@@ -1012,7 +1010,7 @@ function renderChips() {
   /* 사양 §6-1 : 유사도·날짜는 **기본 적용** 필터라 Chip 은 띄우되 X 를 주지 않는다.
      나머지 필터만 X 로 개별 해제하고, 호버하면 선택한 값 목록을 툴팁으로 보여준다. */
   const fixed = [
-    { label: S.allResults ? '유사도 모든 결과' : `유사도 ${S.sim}% 이상` },
+    { label: `유사도 ${S.sim}% 이상` },
     { label: S.period }
   ];
   const removable = [];

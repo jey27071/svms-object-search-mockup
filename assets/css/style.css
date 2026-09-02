@@ -3242,8 +3242,8 @@ body.dt-b .dt-side > .dt-sec + .dt-sec{border-top:1px solid var(--ln-subtle);pad
 .dt-panes .pn-map > img{max-width:100%;max-height:100%}
 
 /* ── 설정 : LNB 하단 버튼 + 모달(좌 항목 / 우 세부) ─────────────────────── */
+/* 설정은 사건관리 바로 아래에 둔다 (하단 고정 아님) */
 .lnb{display:flex;flex-direction:column}
-.lnb .lnb-foot{margin-top:auto}
 /* 콘텐츠 분량에 맞춘 크기 */
 .modal.md-setting{width:640px;max-width:calc(100vw - 80px)}
 .md-setting .st-wrap{display:flex;min-height:280px;max-height:min(560px,70vh)}
