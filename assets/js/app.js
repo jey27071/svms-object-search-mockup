@@ -5285,11 +5285,11 @@ S.recentOpen = false;
     b.onclick = () => { if (S.q.trim()) { pushTextRecent(S.q.trim()); runSearch(false); } };
     wrap.appendChild(b);
   }
-  /* `최근 검색` 은 입력창 아래 블록 하나만 쓴다.
-     입력창 안에 겹쳐 뜨던 자동완성(001_2)은 같은 목록이 두 번 보여 걷어냈다. */
+  /* 포커스하면 입력창이 아래로 확장되며 `최근 검색` 이 이어 붙는다.
+     아래 필터를 밀어내지 않고 그 위로 덮는다. */
   const blk = document.createElement('div');
   blk.className = 'recent-blk'; blk.id = 'recentBlk';
-  wrap.parentElement.insertBefore(blk, wrap.nextSibling);
+  wrap.appendChild(blk);
   renderTextRecent();
   ta.addEventListener('keydown', e => {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); const v = S.q.trim(); if (v) { pushTextRecent(v); runSearch(false); } }
@@ -5306,9 +5306,11 @@ function renderTextRecent() { renderRecentBlk(); }
 /* 상시 `최근 검색` 블록 — li 32 / pitch 38 / 텍스트 x12 / ✕ 12×12 (시안 실측) */
 function renderRecentBlk() {
   const blk = $('#recentBlk'); if (!blk) return;
-  /* 사양 : 최근 검색은 **입력창을 선택했을 때** 그 아래로 펼쳐진다.
-     상시 노출하면 필터가 밀려나고, 검색 후에도 남아 방해가 된다. */
-  blk.hidden = !!S.searched || !S.textRecent.length || !S.recentOpen;
+  /* 입력창을 선택했을 때만 확장된다 */
+  const open = !S.searched && S.textRecent.length && S.recentOpen;
+  blk.hidden = !open;
+  const wrap = blk.closest('.textarea-wrap');
+  if (wrap) wrap.classList.toggle('rc-open', !!open);
   if (blk.hidden) { blk.innerHTML = ''; return; }
   blk.innerHTML = `<div class="rb-lb">최근 검색</div>
     <div class="rb-list">${S.textRecent.map((v, i) =>

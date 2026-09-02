@@ -3449,3 +3449,33 @@ body.dt-b .dt-side > .dt-sec + .dt-sec{border-top:1px solid var(--ln-subtle);pad
 
 /* 접힘 핸들이 결과 패널 위에 겹치도록 기준을 잡는다 */
 .workspace{position:relative}
+
+/* ── 텍스트 검색 : 포커스 시 입력창이 아래로 확장되며 최근 검색이 붙는다 ──
+   아래 필터(유사도·위치…)를 밀어내지 않고 그 위로 덮는다. */
+.mode-panel[data-panel="text"] .textarea-wrap{position:relative}
+.mode-panel[data-panel="text"] .textarea-wrap.rc-open{
+  border-color:var(--primary);border-bottom-left-radius:0;border-bottom-right-radius:0
+}
+#recentBlk{
+  margin:0;                       /* .recent-blk 의 상단 마진 상쇄 */
+  position:absolute;left:-1px;right:-1px;top:100%;z-index:40;
+  background:var(--bg-1);
+  border:1px solid var(--primary);border-top:1px solid var(--ln-subtle);
+  border-radius:0 0 8px 8px;
+  padding:10px 12px 12px;
+  box-shadow:0 12px 28px rgba(0,0,0,.55)
+}
+#recentBlk[hidden]{display:none}
+#recentBlk .rb-lb{font-size:10.5px;color:var(--tx-helper);margin:0 0 6px}
+#recentBlk .rb-list{display:flex;flex-direction:column;gap:0;align-items:stretch}
+#recentBlk .rb-li{
+  display:flex;align-items:center;gap:8px;height:30px;padding:0 4px;border-radius:4px;
+  font-size:12px;color:var(--tx-secondary);cursor:pointer;background:transparent;border:0
+}
+#recentBlk .rb-li:hover{background:var(--bg-3);color:var(--tx-primary)}
+#recentBlk .rb-li .t{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:left}
+#recentBlk .rb-li .x{
+  width:18px;height:18px;flex:0 0 18px;display:flex;align-items:center;justify-content:center;
+  border:0;background:none;color:var(--tx-helper);border-radius:3px
+}
+#recentBlk .rb-li .x:hover{background:rgba(255,255,255,.1);color:var(--tx-primary)}
