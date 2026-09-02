@@ -669,8 +669,14 @@ function pickCardHTML(o, checked, sort) {
 }
 
 /* 정렬 기준별 그룹 키 — 이 값으로 구분자를 넣는다 */
-function pickGroupKey(o, sort) {
-  if (sort === '최신순') return String(o.t).slice(0, 10);
+function pickGroupKey(o, sort, byDayHalf) {
+  if (sort === '최신순') {
+    const d = String(o.t).slice(0, 10);
+    if (!byDayHalf) return d;
+    /* 클립 선택은 날짜/시간대로 나눈다 — 하루치만 있어도 구분이 보이도록 */
+    const h = +String(o.t).slice(11, 13);
+    return `${d} ${h < 12 ? '오전' : '오후'}`;
+  }
   if (sort === '위치순') return o.cam;
   return o.sim >= 95 ? '95% 이상' : o.sim >= 90 ? '90 ~ 94%' : o.sim >= 85 ? '85 ~ 89%' : '85% 미만';
 }
@@ -681,11 +687,11 @@ function pickSortFn(sort) {
 }
 
 /* 그룹 구분자 + 카드 */
-function pickGridHTML(list, selSet, sort, w) {
+function pickGridHTML(list, selSet, sort, w, byDayHalf) {
   const sorted = list.slice().sort(pickSortFn(sort));
   const groups = [];
   sorted.forEach(o => {
-    const k = pickGroupKey(o, sort);
+    const k = pickGroupKey(o, sort, byDayHalf);
     const g = groups.find(x => x.k === k);
     (g ? g.items : (groups.push({ k, items: [] }), groups[groups.length - 1].items)).push(o);
   });
@@ -779,7 +785,7 @@ function renderClips(all) {
   });
   $('#clipsTools').innerHTML = pickToolsHTML(sort, allOn, 'clips');
   $('#clipsBody').innerHTML =
-    pickGridHTML(shown, REID.clipSel, sort, REID.clipW)
+    pickGridHTML(shown, REID.clipSel, sort, REID.clipW, true)
     + (REID.clipShown < all.length
       ? `<div class="pk-more"><button class="btn-ghost" id="clipMore">더보기 (${all.length - REID.clipShown}개 남음)</button>
          <p class="hintline">한 번에 ${REID.clipMax}개까지 불러옵니다.</p></div>` : '');

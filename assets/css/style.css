@@ -3107,8 +3107,8 @@ body.dt-b .dt-side > .dt-sec + .dt-sec{border-top:1px solid var(--ln-subtle);pad
 .reid-seed .rs-kv{margin-top:3px;font-size:11px;color:var(--tx-tertiary);font-family:var(--mono)}
 
 /* 클립 선택 팝업 : RE-ID 팝업과 같은 폼 (기준 대상 · 툴바 · 스크롤 본문) */
-.modal#mdClips{width:min(1200px,calc(100vw - 120px));height:calc(100vh - 140px);display:flex;flex-direction:column}
-.modal#mdClips .md-body{flex:1;min-height:0;overflow-y:auto}
+/* (구) 클립 팝업 전용 크기 규칙 제거 — ID 선택자라 .md-pick 을 덮어
+   두 팝업 크기가 달라졌다. 이제 .md-pick 하나로 통일한다. */
 
 /* ── 패널 도구 (영상 / 맵뷰) ────────────────────────────────────────────── */
 .pn-tools{position:absolute;right:8px;bottom:8px;z-index:6;display:flex;gap:2px;
@@ -3325,3 +3325,23 @@ body.dt-b .dt-side > .dt-sec + .dt-sec{border-top:1px solid var(--ln-subtle);pad
 .pk-more{padding:14px 16px 4px;text-align:center}
 .pk-more button{width:100%}
 .pk-more .hintline{margin:6px 0 0}
+
+
+/* ── 선택 팝업 구분자 강조 ──────────────────────────────────────────────
+   sticky 구분자가 더보기 영역과 겹쳐 흐려 보였다. 대비를 올리고 층을 분리한다. */
+.pk-div{
+  padding:10px 16px;background:var(--bg-2);
+  border-top:1px solid var(--ln-border);border-bottom:1px solid var(--ln-border);
+  box-shadow:0 1px 0 rgba(0,0,0,.35)
+}
+.pk-group:first-child .pk-div{border-top:0}
+.pk-div::before{
+  content:'';width:3px;height:13px;border-radius:2px;background:var(--primary);flex:0 0 3px
+}
+.pk-div span{font-size:12.5px;font-weight:700;letter-spacing:-.2px}
+.pk-div em{
+  font-style:normal;font-size:10.5px;color:var(--tx-secondary);
+  background:var(--bg-3);border-radius:9px;padding:1px 7px
+}
+/* 더보기는 구분자 아래 층에 두어 겹치지 않게 */
+.pk-more{position:relative;z-index:1;margin-top:8px;border-top:1px solid var(--ln-subtle)}
