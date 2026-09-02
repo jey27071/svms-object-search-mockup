@@ -695,12 +695,18 @@ function pickGridHTML(list, selSet, sort, w, byDayHalf) {
     const g = groups.find(x => x.k === k);
     (g ? g.items : (groups.push({ k, items: [] }), groups[groups.length - 1].items)).push(o);
   });
-  return groups.map(g => `
-    <div class="pk-group">
-      <div class="pk-div"><span>${g.k}</span><em>${g.items.length}건</em></div>
+  return groups.map(g => {
+    const on = g.items.every(o => selSet.has(o.id));
+    /* 구분자마다 그 묶음만 한 번에 켜고 끄는 버튼 */
+    return `<div class="pk-group">
+      <div class="pk-div"><span>${g.k}</span><em>${g.items.length}건</em>
+        <button class="pk-gall${on ? ' on' : ''}" data-gall="${g.items.map(o => o.id).join(',')}">
+          ${on ? '선택 해제' : '전체 선택'}</button>
+      </div>
       <div class="reid-grid" style="--rw:${w}px">${g.items.map(o =>
         pickCardHTML(o, selSet.has(o.id), sort)).join('')}</div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 
 function pickToolsHTML(sort, allOn, id) {
@@ -754,6 +760,13 @@ function renderReid() {
     REID.sel.has(id) ? REID.sel.delete(id) : REID.sel.add(id);
     renderReid();
   });
+  $$('#reidBody [data-gall]').forEach(b => b.onclick = e => {
+    e.preventDefault(); e.stopPropagation();
+    const ids = b.dataset.gall.split(',');
+    const on = ids.every(id => REID.sel.has(id));
+    ids.forEach(id => on ? REID.sel.delete(id) : REID.sel.add(id));
+    renderReid();
+  });
   bindSelect('#reidSort', v => { REID.sort = v; renderReid(); });
   $('#reidSize').oninput = e => { REID.w = +e.target.value; renderReid(); };
   $$('#mdReid [data-close]').forEach(b => b.onclick = () => closeModal('#mdReid'));
@@ -801,6 +814,13 @@ function renderClips(all) {
   $$('#clipsBody [data-pick]').forEach(c => c.onchange = () => {
     const id = c.dataset.pick;
     REID.clipSel.has(id) ? REID.clipSel.delete(id) : REID.clipSel.add(id);
+    renderClips(all);
+  });
+  $$('#clipsBody [data-gall]').forEach(b => b.onclick = e => {
+    e.preventDefault(); e.stopPropagation();
+    const ids = b.dataset.gall.split(',');
+    const on = ids.every(id => REID.clipSel.has(id));
+    ids.forEach(id => on ? REID.clipSel.delete(id) : REID.clipSel.add(id));
     renderClips(all);
   });
   bindSelect('#clipsSort', v => { REID.clipSort = v; renderClips(all); });

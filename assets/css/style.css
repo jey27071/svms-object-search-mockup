@@ -3345,3 +3345,10 @@ body.dt-b .dt-side > .dt-sec + .dt-sec{border-top:1px solid var(--ln-subtle);pad
 }
 /* 더보기는 구분자 아래 층에 두어 겹치지 않게 */
 .pk-more{position:relative;z-index:1;margin-top:8px;border-top:1px solid var(--ln-subtle)}
+/* 구분자별 전체 선택 버튼 */
+.pk-div .pk-gall{
+  margin-left:auto;height:24px;padding:0 10px;border-radius:12px;font-size:10.5px;
+  background:var(--bg-3);border:1px solid var(--ln-border);color:var(--tx-secondary)
+}
+.pk-div .pk-gall:hover{border-color:var(--primary);color:var(--tx-primary)}
+.pk-div .pk-gall.on{background:var(--primary);border-color:var(--primary);color:#fff}
