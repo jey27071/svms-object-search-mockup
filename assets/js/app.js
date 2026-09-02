@@ -717,7 +717,11 @@ function pickToolsHTML(sort, allOn, id) {
         <button class="select-btn">${sort}<i class="i i-16 i-chevron i-down caret"></i></button>
         <div class="select-menu">${PICK_SORTS.map(v => `<div data-v="${v}">${v}</div>`).join('')}</div>
       </div>
-      <label class="thumb-size"><input type="range" id="${id}Size" min="110" max="240" step="10" value="${REID.w}"></label>
+      <label class="size-slider" title="썸네일 크기">
+        <i class="ss-min"></i>
+        <input type="range" id="${id}Size" min="110" max="240" step="10" value="${REID.w}">
+        <i class="ss-max"></i>
+      </label>
     </div>`;
 }
 

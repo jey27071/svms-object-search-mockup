@@ -5,8 +5,8 @@
 <title>SVMS — 동선 추적 검색 (Working Mockup)</title>
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
-<link rel="stylesheet" href="assets/css/icons.css?v=202609021327">
-<link rel="stylesheet" href="assets/css/style.css?v=202609021327">
+<link rel="stylesheet" href="assets/css/icons.css?v=202609021341">
+<link rel="stylesheet" href="assets/css/style.css?v=202609021341">
 </head>
 <body>
 
@@ -262,8 +262,10 @@
             <button data-view="raw" title="원본 비율 보기">원본 비율</button>
           </div>
           <!-- 썸네일 크기 조절 -->
-          <label class="thumb-size" title="썸네일 크기">
+          <label class="size-slider" title="썸네일 크기">
+            <i class="ss-min"></i>
             <input type="range" id="thumbSize" min="140" max="320" step="10" value="200">
+            <i class="ss-max"></i>
           </label>
         </div>
       </div>
@@ -720,7 +722,7 @@
 
 <div class="toast" id="toast" hidden></div>
 
-<script src="assets/js/data.js?v=202609021327"></script>
-<script src="assets/js/app.js?v=202609021327"></script>
+<script src="assets/js/data.js?v=202609021341"></script>
+<script src="assets/js/app.js?v=202609021341"></script>
 </body>
 </html>
