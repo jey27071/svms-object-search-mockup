@@ -3582,3 +3582,81 @@ body.dt-b .dt-side > .dt-sec + .dt-sec{border-top:1px solid var(--ln-subtle);pad
   padding:1px 5px;font-family:var(--mono);font-size:10.5px;font-weight:600;
   color:var(--tx-primary);white-space:nowrap;z-index:6
 }
+
+/* ── 맵뷰 : GUI 참고안(검색상세 시안_260903) ──────────────────────────────
+   공간 이름 라벨 · 외부 이동(점선) · 공간 전환지점 · 범례 · 인접 동 이동 */
+:root{ --exit:#e050b0 }
+
+/* 경유 지점의 공간 이름 */
+.map-sp{
+  position:absolute;transform:translate(-50%,-160%);
+  background:var(--bg-0);border:1px solid var(--ln-border);border-radius:3px;
+  padding:1px 5px;font-size:9.5px;line-height:14px;color:var(--tx-primary);
+  white-space:nowrap;pointer-events:none;z-index:4
+}
+/* 공간 전환지점 */
+.map-sw{
+  position:absolute;transform:translate(-50%,-50%);
+  width:11px;height:11px;border-radius:50%;
+  background:transparent;border:2.5px solid var(--exit);z-index:5;
+  box-shadow:0 0 0 2px rgba(224,80,176,.22)
+}
+/* 외부로 이동 라벨 */
+.map-exit{
+  position:absolute;left:10px;bottom:44px;z-index:6;
+  display:flex;flex-direction:column;align-items:flex-start;gap:1px;
+  background:var(--bg-1);border:1px solid var(--exit);border-radius:4px;
+  padding:5px 22px 6px 8px;text-align:left;cursor:pointer
+}
+.map-exit b{font-size:10.5px;color:var(--tx-primary)}
+.map-exit span{font-size:9.5px;color:var(--tx-tertiary)}
+.map-exit .i{position:absolute;right:6px;top:50%;transform:translateY(-50%);opacity:.6}
+
+/* 범례 */
+.pn-legend .lg-sep{width:1px;height:11px;background:var(--ln-border);margin:0 2px}
+.pn-legend .lg-in{width:13px;height:2px;background:var(--primary);border-radius:0}
+.pn-legend .lg-out{
+  width:13px;height:0;border-top:2px dashed var(--exit);background:none;border-radius:0
+}
+.pn-legend .lg-sw{
+  width:9px;height:9px;border-radius:50%;background:none;border:2px solid var(--exit)
+}
+
+/* 인접 동 이동 */
+.pn-bldg{
+  position:absolute;right:10px;bottom:44px;z-index:6;display:flex;flex-direction:column;gap:5px
+}
+.pn-bldg button{
+  background:var(--bg-1);border:1px solid var(--ln-border);border-radius:12px;
+  padding:3px 10px;font-size:10px;color:var(--tx-secondary);cursor:pointer;white-space:nowrap
+}
+.pn-bldg button:hover{border-color:var(--primary);color:var(--tx-primary)}
+
+/* ── 영상 패널 : GUI 참고안 타일 머리말 · 주변 카메라 ────────────────────── */
+.pn-vid{position:relative}
+.pv-head{
+  position:absolute;left:0;right:0;top:0;z-index:4;
+  display:flex;align-items:center;gap:7px;padding:6px 9px;
+  background:linear-gradient(180deg,rgba(0,0,0,.74),rgba(0,0,0,.3) 66%,transparent);
+  font-size:10.5px;color:#fff;pointer-events:none
+}
+.pv-head .dot{width:7px;height:7px;border-radius:2px;flex:0 0 7px}
+.pv-head b{font-weight:600}
+.pv-head em{font-style:normal;color:rgba(255,255,255,.86)}
+.pv-head .rg{
+  font-family:var(--mono);font-size:9.5px;color:rgba(255,255,255,.62);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap
+}
+.pv-head .ic{margin-left:auto;opacity:.75;display:flex}
+.pn-quad .pq > span{position:relative;overflow:hidden}
+.pn-quad .pv-head{padding:4px 7px;font-size:9.5px;gap:5px}
+.pn-quad .pv-head .rg{display:none}
+
+/* 주변 카메라 */
+.pn-near{position:absolute;right:9px;bottom:9px;z-index:5}
+.pn-near button{
+  display:flex;align-items:center;gap:5px;
+  background:rgba(19,20,24,.9);border:1px solid var(--ln-border);border-radius:4px;
+  padding:4px 8px;font-size:10.5px;color:var(--tx-secondary);cursor:pointer
+}
+.pn-near button:hover{border-color:var(--primary);color:var(--tx-primary)}

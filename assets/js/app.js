@@ -2231,23 +2231,51 @@ function renderPip(clip) {
 const PANE = { n: 1, kind: ['video', 'map', 'video'], w: [null, null], mapTools: ['path'], vmode: ['single', 'single', 'single'] };
 
 /* 맵 패널의 이동 경로 — 타임라인 트랙을 그대로 지도 위에 얹는다 */
+/* GUI 참고안(검색상세 시안_260903) 맵뷰 :
+   - 경유 지점마다 **공간 이름 라벨**을 붙인다 (1F EV홀 · 3F 계단 …)
+   - 건물 안은 실선, 건물 밖은 **점선**, 둘이 만나는 곳에 **공간 전환지점**
+   - 범례로 세 기호의 뜻을 밝힌다 */
+const MAP_SPACES = ['1F 메인복도', '1F EV홀', '1F 회의실', '1F 계단', '3F A구역', '3F EV홀', '1F C구역', 'A동 출입구'];
+
 function paneMapPathHTML() {
   const tracks = (TL.tracks && TL.tracks.length) ? TL.tracks : [];
   if (!tracks.length) return '';
   const pt = (ci, n) => ({ x: 14 + ci * 19 + (n % 2) * 6, y: 26 + ci * 13 + (n % 3) * 5 });
+
   const svg = tracks.map((tr, ti) => {
     const pts = tr.clips.map((c, ci) => pt(ci, ti));
-    return `<path d="M${pts.map(t => `${t.x},${t.y}`).join(' L')}" stroke="${slotColor(tr.slot)}"
-      stroke-width="1.6" fill="none" stroke-dasharray="3 2.4" vector-effect="non-scaling-stroke"/>`;
+    if (pts.length < 2) return '';
+    /* 마지막 구간은 건물 밖으로 나가는 이동으로 본다 → 점선 */
+    const head = pts.slice(0, -1), tail = pts.slice(-2);
+    return `<path d="M${head.map(t => `${t.x},${t.y}`).join(' L')}" stroke="${slotColor(tr.slot)}"
+        stroke-width="1.8" fill="none" vector-effect="non-scaling-stroke"/>
+      <path d="M${tail.map(t => `${t.x},${t.y}`).join(' L')}" stroke="var(--exit)"
+        stroke-width="1.8" fill="none" stroke-dasharray="2.4 2" vector-effect="non-scaling-stroke"/>`;
   }).join('');
+
   const wps = tracks.map((tr, ti) => tr.clips.map((c, ci) => {
-    const t = pt(ci, ti);
-    return `<span class="map-wp" title="${c.cam}" style="left:${t.x}%;top:${t.y}%;background:${slotColor(tr.slot)}">${c.n}</span>`;
+    const t = pt(ci, ti), last = ci === tr.clips.length - 1;
+    return `<span class="map-wp" title="${c.cam}" style="left:${t.x}%;top:${t.y}%;background:${slotColor(tr.slot)}">${c.n}</span>
+      ${ti === 0 ? `<span class="map-sp" style="left:${t.x}%;top:${t.y}%">${MAP_SPACES[ci % MAP_SPACES.length]}</span>` : ''}
+      ${ti === 0 && last ? `<span class="map-sw" style="left:${t.x}%;top:${t.y}%" title="공간 전환지점"></span>` : ''}`;
   }).join('')).join('');
+
+  const last = tracks[0].clips[tracks[0].clips.length - 1];
   return `<div class="pn-path"><svg viewBox="0 0 100 100" preserveAspectRatio="none">${svg}</svg></div>
     <div class="pn-wps">${wps}</div>
-    <div class="pn-legend">${tracks.map(tr =>
-      `<span><i style="background:${slotColor(tr.slot)}"></i>${tr.label}</span>`).join('')}</div>`;
+    ${last ? `<button class="map-exit" title="이 지점에서 건물 밖으로 이동합니다">
+      <b>외부로 이동</b><span>${last.cam} → 외부</span><i class="i i-12 i-chevron"></i></button>` : ''}
+    <div class="pn-legend">
+      ${tracks.map(tr => `<span><i style="background:${slotColor(tr.slot)}"></i>${tr.label}</span>`).join('')}
+      <span class="lg-sep"></span>
+      <span><i class="lg-in"></i>실내 이동 경로</span>
+      <span><i class="lg-out"></i>외부 이동 경로</span>
+      <span><i class="lg-sw"></i>공간 전환지점</span>
+    </div>
+    <div class="pn-bldg">
+      <button title="인접 동으로 이동">‹ B동 (2건)</button>
+      <button title="인접 동으로 이동">A동 (2건) ›</button>
+    </div>`;
 }
 
 /* 패널 도구 — 영상이면 분석·뷰어 도구, 맵뷰면 지도 도구 */
@@ -2284,19 +2312,44 @@ function paneBody(kind, i) {
     </div>`;
   }
   const clips = (TL.tracks[0] && TL.tracks[0].clips) || [];
+  const tr = TL.tracks || [];
+
+  /* 참고안 : 타일마다 `● 대상 · 카메라명 · 기간` 머리말과 북마크/분할/확대 */
+  const tileHead = k => {
+    const c = clips[k] || clips[0] || {};
+    const t = tr[k % Math.max(tr.length, 1)] || tr[0];
+    return `<span class="pv-head">
+      <i class="dot" style="background:${t ? slotColor(t.slot) : 'var(--primary)'}"></i>
+      <b>${t ? t.label : '대상'}</b>
+      <em>${c.cam || '-'}</em>
+      <span class="rg">${c.from ? String(c.from).slice(0, 16) : ''} ~ ${c.to ? String(c.to).slice(11, 16) : ''}</span>
+      <span class="ic">${ICON.bookmark || ''}</span>
+    </span>`;
+  };
+
   if ((PANE.vmode[i] || 'single') === 'multi') {
     return `<div class="pn-vid pn-quad">
       <div class="pq">${[0, 1, 2, 3].map(k =>
         `<span><img src="${(clips[k] || clips[0] || {}).img || 'assets/img/video.png'}" alt="">
-         <b>${(clips[k] || clips[0] || {}).cam || '-'}</b></span>`).join('')}</div>
-      <span class="pn-tag">영상 ${i + 1} · 다중</span>
+         ${tileHead(k)}</span>`).join('')}</div>
       ${paneToolsHTML('video', i)}
+      ${paneNearCamHTML(i)}
     </div>`;
   }
   return `<div class="pn-vid">
     <img src="${(clips[Math.min(i, 3)] || {}).img || 'assets/img/video.png'}" alt="">
-    <span class="pn-tag">영상 ${i + 1}</span>
+    ${tileHead(Math.min(i, 3))}
     ${paneToolsHTML('video', i)}
+    ${paneNearCamHTML(i)}
+  </div>`;
+}
+
+/* 참고안 재생바 우측의 `주변 카메라 ▾` — 지금 보는 화면 옆 카메라로 바로 갈아탄다 */
+function paneNearCamHTML(i) {
+  return `<div class="pn-near">
+    <button data-pnc="${i}" title="주변 카메라로 전환">
+      <i class="i i-16 i-tool-cctv"></i>주변 카메라<i class="i i-12 i-chevron i-down"></i>
+    </button>
   </div>`;
 }
 
