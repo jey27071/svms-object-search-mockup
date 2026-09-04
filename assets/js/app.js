@@ -1834,11 +1834,16 @@ function tlHMS(d) {
   return `${z(d.getHours())}:${z(d.getMinutes())}:${z(d.getSeconds())}`;
 }
 
-function tlStep(spanMs, zoom) {
-  const mins = spanMs / 6e4 / zoom;
-  /* 하루(1440분)를 1x 로 보면 60분 간격 = 참고안의 00:00~24:00 매시 눈금 */
-  const cand = [5, 10, 15, 30, 60, 120, 180, 360];
-  return (cand.find(m => mins / m <= 26) || 720) * 6e4;
+/* 눈금 간격은 **실제 픽셀 폭**으로 정한다.
+   참고안은 전폭 타임라인이라 하루 매시가 들어가지만, 좁은 폭에서 매시를 찍으면
+   라벨이 서로 붙어 '0001:0002:0003' 처럼 읽을 수 없게 된다.
+   라벨 하나에 최소 64px 을 확보한다. */
+function tlStep(spanMs, zoom, px) {
+  const w = Math.max((px || 900) * zoom, 240);
+  const maxTicks = Math.max(Math.floor(w / 64), 4);
+  const cand = [1, 5, 10, 15, 30, 60, 120, 180, 360, 720];
+  const mins = spanMs / 6e4;
+  return (cand.find(m => mins / m <= maxTicks) || 1440) * 6e4;
 }
 
 /* 편집 중 '클립 다시 선택' — RE-ID 때 도출한 목록을 다시 불러와 재선택한다.
@@ -1886,7 +1891,7 @@ function renderTimeline(host, tracks, opt = {}) {
   const wid = c => Math.max(0.6, (+tlTime(c.to) - +tlTime(c.from)) / span * 100);
 
   /* 눈금 · 날짜 */
-  const step = tlStep(span, TL.zoom);
+  const step = tlStep(span, TL.zoom, host.clientWidth);
   let ticks = '', lastDay = '';
   for (let t = Math.ceil(d0 / step) * step; t <= d1; t += step) {
     const d = new Date(t), p = (t - d0) / span * 100;
