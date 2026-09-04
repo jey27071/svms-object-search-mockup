@@ -1124,6 +1124,9 @@ function bindPv() {
 
 function renderPreview() {
   const box = $('#previewList'); box.innerHTML = '';
+  /* 검색 전에는 미리 볼 것이 없다 — 패널을 접어 결과 영역에 자리를 내준다 */
+  const pv = document.getElementById('preview');
+  if (pv) pv.hidden = !S.searched;
   if (!S.preview.length) { box.innerHTML = `<div class="pv-empty">대상 카드를 선택하면<br>원본 영상을 미리 볼 수 있습니다.</div>`; return; }
   /* 펼쳐서 재생할 항목 : 사용자가 고른 것, 없으면 첫 번째 */
   const openUid = (PV.open && S.preview.some(x => x.uid === PV.open)) ? PV.open : (S.preview[0] || {}).uid;
@@ -1751,11 +1754,18 @@ makeDetachable('#sidePanel', '#btnDetach', '#sideHead');
 makeDetachable('#aiPanel', '#btnAiDetach', '#aiHead');
 
 /* ===================== 공통 렌더 ===================== */
+/* 결과가 없을 때 정렬·보기·크기 도구를 활성으로 두면 누를 수 있을 것처럼 보인다 */
+function syncResHead() {
+  const on = !!(S.searched && S.results && S.results.length);
+  const r = document.querySelector('.rh-right');
+  if (r) r.classList.toggle('off', !on);
+}
+
 function render() {
   const on = S.searched && !S.aiMode;
   $('#sortSelect').classList.toggle('disabled', !on);
   S.grouped = false;   /* 유사 대상별 보기 삭제 */
-  renderChips(); renderResults(); renderPreview(); renderCompare();
+  renderChips(); renderResults(); renderPreview(); renderCompare(); syncResHead();
 }
 
 $$('[data-close]').forEach(b => b.onclick = () => closeAllModals());

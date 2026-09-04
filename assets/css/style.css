@@ -3245,7 +3245,7 @@ body.dt-b .dt-side > .dt-sec + .dt-sec{border-top:1px solid var(--ln-subtle);pad
 .lnb{display:flex;flex-direction:column}
 /* 콘텐츠 분량에 맞춘 크기 */
 .modal.md-setting{width:640px;max-width:calc(100vw - 80px)}
-.md-setting .st-wrap{display:flex;min-height:280px;max-height:min(560px,70vh)}
+.md-setting .st-wrap{display:flex;min-height:0;max-height:min(560px,70vh)}
 .md-setting .st-nav{
   flex:0 0 148px;border-right:1px solid var(--ln-subtle);
   padding:10px 8px;display:flex;flex-direction:column;gap:2px
@@ -3714,3 +3714,30 @@ body.dt-b .dt-side > .dt-sec + .dt-sec{border-top:1px solid var(--ln-subtle);pad
 .map-sp.below{transform:translate(-50%,60%)}
 .map-sp.lft{transform:translate(-92%,-160%)}
 .map-sp.below.lft{transform:translate(-92%,60%)}
+
+/* ── 화면별 점검 (2026-09-05) ────────────────────────────────────────────
+   B 안에서 각 영역이 좁아지며 툴바가 줄바꿈돼 글자가 세로로 깨지던 것들. */
+
+/* 1) 결과 헤더 : '썸 네 일' '원 본 비 율' '검색 결과 (30/건)' */
+.results-head{flex-wrap:nowrap;min-width:0}
+.rh-label{flex:0 0 auto;white-space:nowrap}
+.results-head .chips{min-width:0;overflow-x:auto;flex-wrap:nowrap;scrollbar-width:none}
+.results-head .chips::-webkit-scrollbar{height:0}
+.results-head .chips > *{flex:0 0 auto;white-space:nowrap}
+.rh-right{flex:0 0 auto;flex-wrap:nowrap;white-space:nowrap}
+.view-seg{flex:0 0 auto;flex-wrap:nowrap}
+.view-seg button{white-space:nowrap;flex:0 0 auto}
+
+/* 2) 상세 재생바 : 도구가 겹치고 'Multi View' 라벨이 삐져나옴 */
+.dt-bar .grp.r{flex-wrap:nowrap;min-width:0;gap:2px}
+.dt-bar .grp.r > *{flex:0 0 auto}
+/* 좁은 패널에서는 보기 모드 셀렉트를 아이콘 버튼들에 양보한다 */
+body.dt-b #dtViewSel{display:none}
+
+/* 3) 설정 모달 : 항목이 하나뿐인 탭에서도 280px 를 강제해 아래가 텅 비었다.
+   내용 높이에 맞추되, 탭을 옮길 때 창이 튀지 않게 좌측 메뉴 높이만 확보한다. */
+.md-setting .st-nav{min-height:200px}
+.md-setting .st-body{padding-bottom:18px}
+
+/* 4) 결과가 없을 때 정렬·보기·크기 도구는 눌러도 소용없다 — 흐리게 두고 막는다 */
+.rh-right.off{opacity:.4;pointer-events:none}
