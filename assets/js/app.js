@@ -841,7 +841,7 @@ function renderClipPreview() {
 
   /* 노드를 밀어내면 눈금과 어긋난다.
      대신 **가장 촘촘한 간격이 슬롯 폭을 넘도록 전체 폭을 늘려** 시간 비례를 지킨다. */
-  const SLOT = 92, PAD = 56, NODE_HALF = 42;
+  const SLOT = 88, PAD = 52, NODE_HALF = 40;
   let minGap = span;
   for (let i = 1; i < picked.length; i++) {
     const g = +tlTime(picked[i].t) - +tlTime(picked[i - 1].t);
@@ -850,7 +850,7 @@ function renderClipPreview() {
   /* 가장 촘촘한 간격 기준으로 폭을 잡되, 지나치게 넓어지지 않게 상한을 둔다.
      상한에 걸리면 가까운 노드끼리 살짝 겹치는데, 시간이 붙어 있다는 뜻이라 그대로 둔다. */
   const byGap = minGap > 0 ? (span / minGap) * SLOT : 600;
-  const MAXW = 2400;
+  const MAXW = 6000;   /* 겹치느니 가로 스크롤 — 사용자 지시 */
   const innerW = Math.ceil(Math.min(Math.max(byGap, 600), MAXW) + PAD * 2);
   const x = t => PAD + ((t - t0) / span) * (innerW - PAD * 2);
   const xs = picked.map(o => x(+tlTime(o.t)));
@@ -864,7 +864,9 @@ function renderClipPreview() {
     const d = new Date(t), px = x(t);
     if (px < 0 || px > innerW) continue;
     const day = tlYMD(d);
-    const newDay = day !== lastDay; lastDay = day;
+    /* 첫 눈금에는 날짜를 붙이지 않는다 — 시각 라벨과 겹친다.
+       구간 전체 날짜는 머리말(cp-sum)에 이미 있고, 여기서는 날짜가 바뀌는 지점만 알린다. */
+    const newDay = lastDay !== '' && day !== lastDay; lastDay = day;
     ticks += `<span class="cp-tick" style="left:${px}px"></span>
       <span class="cp-time" style="left:${px}px">${tlHM(d)}</span>
       ${newDay ? `<span class="cp-day" style="left:${px}px">${day}</span>` : ''}`;

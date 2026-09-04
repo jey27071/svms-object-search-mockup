@@ -3270,7 +3270,7 @@ body.dt-b .dt-side > .dt-sec + .dt-sec{border-top:1px solid var(--ln-subtle);pad
 /* ══ 선택 팝업 공통 (동일 대상 선별 · 영상 클립 선택) ════════════════════
    좌: 안내 + 기준 대상(이름 편집) + 선택 수 / 우: 필터 + 구분자별 목록 */
 .modal.md-pick{
-  width:min(1320px,calc(100vw - 96px));height:min(860px,calc(100vh - 96px));
+  width:min(1320px,calc(100vw - 96px));height:min(900px,calc(100vh - 48px));
   display:flex;flex-direction:column
 }
 .md-pick .pk-wrap{flex:1;min-height:0;display:flex}
@@ -3509,3 +3509,25 @@ body.dt-b .dt-side > .dt-sec + .dt-sec{border-top:1px solid var(--ln-subtle);pad
 
 /* 좌측 패널 제거 — 목록이 전체 폭을 쓴다 */
 .md-pick .pk-side{display:none}
+
+
+/* ── 클립 팝업 세로 배분 ────────────────────────────────────────────────
+   미리보기와 상단 안내가 목록을 눌러 카드가 잘리던 것을 바로잡는다. */
+.pk-top{padding:11px 16px 12px;gap:20px}
+.pk-guide b{font-size:15px;line-height:1.3}
+.pk-guide p{font-size:12px;line-height:1.55;margin-top:3px}
+.pk-step-list{margin-bottom:7px}
+.pk-seed-row > img{width:56px;height:66px}
+
+.md-pick .pk-body{min-height:180px}
+.pk-preview{padding:7px 0 8px}
+.cp-head{padding:0 16px 5px}
+.cp-scroll{padding:0}
+.cp-inner{height:104px}
+.cp-ruler{height:22px}
+.cp-tick{top:14px;height:7px}
+.cp-axis{top:22px}
+.cp-node{top:28px;width:72px}
+.cp-node img{width:72px;height:46px}
+.cp-cam{margin-top:3px}
+.cp-empty{height:70px}
