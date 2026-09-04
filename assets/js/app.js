@@ -3126,6 +3126,17 @@ function fitCmpGrid() {
 }
 addEventListener('resize', () => { fitCmpGrid(); if (DT._tab && DT.tools.includes('path')) renderTracks(); });
 
+/* 스테이지 높이는 아래 타임라인이 그려진 뒤에야 확정된다.
+   렌더 시점 한 번만 맞추면 그때의 (더 큰) 높이로 굳어 타일이 탭바 뒤로 삐져나온다.
+   → 스테이지 크기가 변할 때마다 다시 맞춘다. */
+let _cmpRO = null;
+function watchCmpStage() {
+  const stage = $('#cmpMain .cmp-stage');
+  if (!stage || typeof ResizeObserver === 'undefined') return;
+  if (!_cmpRO) _cmpRO = new ResizeObserver(() => fitCmpGrid());
+  _cmpRO.disconnect(); _cmpRO.observe(stage);
+}
+
 function renderCmpView(tab) {
   const objs = CMP.objs;
   const slots = objs.length <= 2 ? 2 : 4;
@@ -3162,6 +3173,7 @@ function renderCmpView(tab) {
   grid.innerHTML = h;
   $('#cmpCtrl').innerHTML = ctrlHTML({ dimRight: true });
   fitCmpGrid();
+  watchCmpStage();
   $$('#cmpGrid [data-rmslot]').forEach(b => b.onclick = e => {
     e.stopPropagation();
     CMP.objs = CMP.objs.filter((_, i) => i !== +b.dataset.rmslot).map((o, i) => ({ ...o, slot: CMP_SLOTS[i].k, label: CMP_SLOTS[i].label }));
