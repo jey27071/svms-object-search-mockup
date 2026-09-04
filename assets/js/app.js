@@ -2026,9 +2026,9 @@ function renderTimeline(host, tracks, opt = {}) {
   /* 타임커서 : 눈금을 직접 끌어 옮긴다 (클릭·드래그 모두) */
   const inner0 = host.querySelector('.tl-inner');
   const ruler = host.querySelector('.tl-ruler');
-  const seekTo = clientX => {
-    const r = inner0.getBoundingClientRect();
-    TL.cursor = Math.max(0, Math.min(1, (clientX - r.left) / r.width));
+  /* 커서 위치에 딸린 표시(시각 배지 · 통과 썸네일 · 미리보기)를 한곳에서 갱신한다.
+     드래그가 끝나면 다시 그리는데, 그때 미리보기가 지워지던 문제도 이걸로 해결. */
+  const syncCursor = () => {
     const cur = host.querySelector('.tl-cursor');
     if (cur) cur.style.left = (TL.cursor * 100) + '%';
     const badge = host.querySelector('.tl-cur-t');
@@ -2049,6 +2049,13 @@ function renderTimeline(host, tracks, opt = {}) {
       if (bg && bg.backgroundImage) { pv.style.backgroundImage = bg.backgroundImage; pv.hidden = false; }
       else pv.hidden = true;
     }
+  };
+  syncCursor();
+
+  const seekTo = clientX => {
+    const r = inner0.getBoundingClientRect();
+    TL.cursor = Math.max(0, Math.min(1, (clientX - r.left) / r.width));
+    syncCursor();
   };
   const startSeek = e => {
     e.preventDefault();
@@ -2969,12 +2976,37 @@ function renderMapLayers(paths, camName) {
     host.append(ex, bl);
   }
 
+  /* CSS 로 방향만 엇갈려서는 촘촘한 구간에서 여전히 겹친다 — 실제로 재서 밀어낸다 */
+  requestAnimationFrame(() => spreadMapLabels($('#dtMapWps')));
+
   $('#dtLegend').className = 'dt-legend' + (paths.length > 1 ? ' multi' : '');
   $('#dtLegend').innerHTML = (paths.length > 1
     ? paths.map(p => `<span class="lg"><i style="background:${slotColor(p.slot)}"></i>${p.label} 출현 지점</span>`).join('')
     : `<span class="lg"><i></i>출현 지점 <em>( ${paths[0].pts.length}개 )</em></span>`)
     + `<span class="lg"><i class="lg-out"></i>외부 이동 경로</span>
        <span class="lg"><i class="lg-sw"></i>공간 전환지점</span>`;
+}
+
+/* 공간 이름 라벨이 서로 겹치면 위로 한 칸씩 올려 비킨다 */
+function spreadMapLabels(host) {
+  if (!host) return;
+  const labs = [...host.querySelectorAll('.map-sp')];
+  labs.forEach(l => l.style.marginTop = '');
+  for (let pass = 0; pass < 4; pass++) {
+    let moved = false;
+    for (let i = 1; i < labs.length; i++) {
+      const a = labs[i].getBoundingClientRect();
+      for (let j = 0; j < i; j++) {
+        const b = labs[j].getBoundingClientRect();
+        if (a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom) {
+          const cur = parseFloat(labs[i].style.marginTop || 0);
+          labs[i].style.marginTop = (cur - 15) + 'px';
+          moved = true; break;
+        }
+      }
+    }
+    if (!moved) break;
+  }
 }
 
 /* 맵뷰어 지도/층별 */
