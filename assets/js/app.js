@@ -3274,6 +3274,20 @@ function watchCmpStage() {
   _cmpRO.disconnect(); _cmpRO.observe(stage);
 }
 
+/* 비교 타일 머리말은 네 칸이 모두 같은 카메라·같은 시각을 쓰고 있었다.
+   타임라인이 보여주는 각 대상의 실제 구간을 그대로 쓴다. */
+function cmpSlotTrack(i) { return (typeof TL_TRACKS !== 'undefined' && TL_TRACKS[i]) || null; }
+function cmpSlotCam(i, o) {
+  const t = cmpSlotTrack(i);
+  return (t && t.clips && t.clips[0] && t.clips[0].cam) || (o && o.cam) || '-';
+}
+function cmpSlotRange(i) {
+  const t = cmpSlotTrack(i);
+  if (!t || !t.clips || !t.clips.length) return '';
+  const a = t.clips[0].from, b = t.clips[t.clips.length - 1].to;
+  return `${String(a).slice(0, 16)} ~ ${String(b).slice(11, 16)}`;
+}
+
 function renderCmpView(tab) {
   const objs = CMP.objs;
   const slots = objs.length <= 2 ? 2 : 4;
@@ -3290,8 +3304,8 @@ function renderCmpView(tab) {
         <div class="cmp-head">
           <span class="cmp-badge" style="background:${s.color}">${s.k}</span>
           <span class="slotn">${i + 1}</span>
-          <span class="nm">${o.cam}<i class="i i-16 i-chevron i-down caret"></i></span>
-          <span class="tm">2026-06-29 오전 00:52:03 ~ 02:10:11</span>
+          <span class="nm">${cmpSlotCam(i, o)}<i class="i i-16 i-chevron i-down caret"></i></span>
+          <span class="tm">${cmpSlotRange(i)}</span>
           ${i === 0 ? '' : `<button class="btn-icon x" data-rmslot="${i}">${ICON.x}</button>`}
         </div>
         <div class="cmp-box" style="left:52%;top:14%;width:12%;height:52%;border-color:${s.color};background:${s.color}12"><i style="background:${s.color}">${s.label}</i></div>
