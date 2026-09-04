@@ -2953,7 +2953,7 @@ function renderMapLayers(paths, camName) {
   $('#dtMapWps').innerHTML = paths.map((p, pi) => p.pts.map((t, ti) => {
     const last = ti === p.pts.length - 1;
     return `<span class="map-wp" title="${t.cam} · ${t.t}" style="left:${t.x}%;top:${t.y}%;background:${slotColor(p.slot)}">${t.n}</span>
-      ${one ? `<span class="map-sp ${ti % 2 ? 'below' : ''}" style="left:${t.x}%;top:${t.y}%">${t.cam}</span>` : ''}
+      ${one ? `<span class="map-sp ${ti % 2 ? 'below' : ''} ${ti % 4 >= 2 ? 'lft' : ''}" style="left:${t.x}%;top:${t.y}%">${t.cam}</span>` : ''}
       ${one && last ? `<span class="map-sw" style="left:${t.x}%;top:${t.y}%" title="공간 전환지점"></span>` : ''}`;
   }).join('')).join('');
 
