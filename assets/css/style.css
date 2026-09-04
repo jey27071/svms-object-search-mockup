@@ -3883,3 +3883,23 @@ body.dt-b #dtViewSel{display:none}
 /* 아주 좁으면 기간을 접는다 — 대상과 카메라가 먼저다 */
 @container (max-width: 320px){ .mv-head .tm{display:none} }
 .mv-tile{container-type:inline-size}
+
+/* ── 시안 비율 맞춤 (검색상세 시안_260903) ───────────────────────────────
+   좌 : 영상(2x2) → 재생바 → 편집줄 → 타임라인
+   우 : 대상정보(얇게) → 맵(크게) → 인접 동 → 사건 등록
+   시안 실측 비율 : 좌 67% / 우 29%, 영상이 세로의 약 3/4 */
+body.dt-b .dt-side{width:452px;flex:0 0 452px}
+
+/* 영상이 세로를 크게 차지하고 타임라인은 낮게 */
+body.dt-b .dt-panes{flex:1 1 auto;min-height:0}
+body.dt-b .dt-hist{flex:0 0 auto}
+
+/* 대상정보는 한 줄로 얇게 — 맵에 세로를 내준다 */
+body.dt-b .dt-side > .dt-sec:nth-of-type(1){flex:0 0 auto}
+body.dt-b .dt-objbar{gap:8px}
+body.dt-b .dt-objbar .ob-card img,
+body.dt-b .dt-objbar .ob-card > img{height:66px}
+
+/* 맵이 남은 세로를 모두 쓴다 */
+body.dt-b .dt-side > .dt-sec:nth-of-type(2){flex:1 1 auto;min-height:0}
+body.dt-b .dt-side .dt-map{flex:1;min-height:280px}

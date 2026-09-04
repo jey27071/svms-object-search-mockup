@@ -2545,7 +2545,9 @@ S.dtView = 'b';   /* A 안 삭제 — 상세는 B 안 하나뿐이다 */
 function setDtView() {
   S.dtView = 'b';
   document.body.classList.add('dt-b');
-  PANE.n = 2;                    /* 상단 패널 기본 2단 */
+  /* 시안(검색상세 시안_260903) : 상단은 **영상 한 칸**이고 그 안이 2x2 다.
+     맵은 우측 칼럼 전용이라 상단에 또 두지 않는다. */
+  PANE.n = 1;
   PANE.w = [null, null];
   const t = S.tabs.find(x => x.id === S.activeTab);
   if (t && t.obj) renderDetail(t);
