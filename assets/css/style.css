@@ -3676,3 +3676,22 @@ body.dt-b .dt-side > .dt-sec + .dt-sec{border-top:1px solid var(--ln-subtle);pad
 .dt-legend .lg-sw{
   width:9px;height:9px;border-radius:50%;background:none;border:2px solid var(--exit)
 }
+
+/* 공간 라벨을 위/아래 번갈아 놓아 서로 겹치지 않게 */
+.map-sp.below{transform:translate(-50%,60%)}
+
+/* 참고안 : 커서 지점 프레임 미리보기 */
+.tl-cur-pv{
+  position:absolute;left:50%;top:22px;transform:translateX(-50%);
+  width:104px;height:60px;border-radius:3px;
+  border:1.5px solid var(--primary);background:#000 center/cover no-repeat;
+  box-shadow:0 6px 18px rgba(0,0,0,.55);z-index:7;pointer-events:none
+}
+.tl-cur-pv[hidden]{display:none}
+
+/* ＋ 추가 */
+.tl-add{
+  background:none;border:1px dashed var(--ln-border);border-radius:12px;
+  padding:2px 9px;font-size:10.5px;color:var(--tx-tertiary);cursor:pointer
+}
+.tl-add:hover{border-color:var(--primary);color:var(--tx-primary)}

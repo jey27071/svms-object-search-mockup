@@ -1940,6 +1940,7 @@ function renderTimeline(host, tracks, opt = {}) {
         <button class="${TL.show.size === allTracks.length ? 'on' : ''}" data-tlall>전체</button>
         ${allTracks.map((t, i) => `<button class="${TL.show.has(i) ? 'on' : ''}" data-tltoggle="${i}"
           title="${t.label} 표시 켜기/끄기"><i style="background:${slotColor(t.slot)}"></i>${t.label}</button>`).join('')}
+        <button class="tl-add" data-tladdobj title="비교할 대상 추가">＋ 추가</button>
         <button class="btn-primary sm tl-go" data-tlcmpgo ${TL.show.size >= 2 ? '' : 'disabled'}>인물 비교 (${TL.show.size})</button>
       </div>` : ''}
       ${opt.edit ? `<button class="btn-ghost sm" data-tlreselect style="margin-left:8px">클립 다시 선택</button>
@@ -1951,7 +1952,7 @@ function renderTimeline(host, tracks, opt = {}) {
       <div class="tl-inner" style="width:${TL.zoom * 100}%">
         <div class="tl-ruler">${ticks}</div>
         <div class="tl-rows">${rows}</div>
-        <span class="tl-cursor" style="left:${TL.cursor * 100}%"><b class="tl-cur-t">${tlHMS(new Date(d0 + TL.cursor * span))}</b></span>
+        <span class="tl-cursor" style="left:${TL.cursor * 100}%"><span class="tl-cur-pv"></span><b class="tl-cur-t">${tlHMS(new Date(d0 + TL.cursor * span))}</b></span>
       </div>
     </div>`;
 
@@ -2008,6 +2009,14 @@ function renderTimeline(host, tracks, opt = {}) {
   host.querySelectorAll('[data-tlpick]').forEach(b => b.onclick = () => {
     TL.mode = 'one'; TL.pick = +b.dataset.tlpick; renderTimeline(host, allTracks, opt);
   });
+  const addObj = host.querySelector('[data-tladdobj]');
+  if (addObj) addObj.onclick = () => {
+    /* 아직 켜지 않은 대상을 하나 더 올린다 (참고안의 `+ 추가`) */
+    const off = allTracks.map((_, i) => i).find(i => !TL.show.has(i));
+    if (off === undefined) { toast('더 올릴 대상이 없습니다.'); return; }
+    TL.show.add(off);
+    renderTimeline(host, allTracks, opt);
+  };
   const zr = host.querySelector('.tl-zr');
   if (zr) zr.oninput = e => { TL.zoom = +e.target.value; renderTimeline(host, TL.tracks, opt); };
   host.querySelectorAll('[data-tlz]').forEach(b => b.onclick = () => {
@@ -2022,12 +2031,24 @@ function renderTimeline(host, tracks, opt = {}) {
     TL.cursor = Math.max(0, Math.min(1, (clientX - r.left) / r.width));
     const cur = host.querySelector('.tl-cursor');
     if (cur) cur.style.left = (TL.cursor * 100) + '%';
+    const badge = host.querySelector('.tl-cur-t');
+    if (badge) badge.textContent = tlHMS(new Date(d0 + TL.cursor * span));
     /* 커서가 지나는 썸네일을 즉시 키운다 */
+    let hit = null;
     host.querySelectorAll('.tl-th').forEach(n => {
       const l = parseFloat(n.style.left), w = parseFloat(n.style.width);
       const cx = TL.cursor * 100;
-      n.classList.toggle('pass', cx >= l && cx <= l + w);
+      const on = cx >= l && cx <= l + w;
+      n.classList.toggle('pass', on);
+      if (on && !hit) hit = n;
     });
+    /* 참고안 : 커서 지점의 프레임을 작은 미리보기로 보여준다 */
+    const pv = host.querySelector('.tl-cur-pv');
+    if (pv) {
+      const bg = hit ? (hit.querySelector('.tl-film') || {}).style : null;
+      if (bg && bg.backgroundImage) { pv.style.backgroundImage = bg.backgroundImage; pv.hidden = false; }
+      else pv.hidden = true;
+    }
   };
   const startSeek = e => {
     e.preventDefault();
@@ -2932,7 +2953,7 @@ function renderMapLayers(paths, camName) {
   $('#dtMapWps').innerHTML = paths.map((p, pi) => p.pts.map((t, ti) => {
     const last = ti === p.pts.length - 1;
     return `<span class="map-wp" title="${t.cam} · ${t.t}" style="left:${t.x}%;top:${t.y}%;background:${slotColor(p.slot)}">${t.n}</span>
-      ${one ? `<span class="map-sp" style="left:${t.x}%;top:${t.y}%">${t.cam}</span>` : ''}
+      ${one ? `<span class="map-sp ${ti % 2 ? 'below' : ''}" style="left:${t.x}%;top:${t.y}%">${t.cam}</span>` : ''}
       ${one && last ? `<span class="map-sw" style="left:${t.x}%;top:${t.y}%" title="공간 전환지점"></span>` : ''}`;
   }).join('')).join('');
 
