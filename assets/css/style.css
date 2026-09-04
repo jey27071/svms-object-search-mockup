@@ -3660,3 +3660,8 @@ body.dt-b .dt-side > .dt-sec + .dt-sec{border-top:1px solid var(--ln-subtle);pad
   padding:4px 8px;font-size:10.5px;color:var(--tx-secondary);cursor:pointer
 }
 .pn-near button:hover{border-color:var(--primary);color:var(--tx-primary)}
+
+/* 메인 영상 머리말의 대상 칩 */
+.dt-vhead .vh-obj{display:flex;align-items:center;gap:6px;flex:0 0 auto}
+.dt-vhead .vh-obj i{width:7px;height:7px;border-radius:2px;background:var(--primary)}
+.dt-vhead .vh-obj b{font-size:11.5px;font-weight:600;color:#fff}

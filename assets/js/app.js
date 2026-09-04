@@ -2551,6 +2551,12 @@ function renderDetail(tab) {
   /* 아래 대상정보 필드는 renderObjGrid 가 그 영역을 다시 그리면 사라진다.
      (A 안 삭제 후 상세는 항상 그리드를 쓴다) 없으면 건너뛴다. */
   const set = (sel, fn) => { const e = $(sel); if (e) fn(e); };
+  /* 참고안 : 영상 머리말에 지금 쫓는 대상을 먼저 표시 */
+  const vh = $('#dtVhObj');
+  if (vh) {
+    vh.querySelector('b').textContent = label;
+    vh.querySelector('i').style.background = TL.tracks && TL.tracks[0] ? slotColor(TL.tracks[0].slot) : 'var(--primary)';
+  }
   set('#dtObjImg', e => e.src = o.img);
   set('#dtObjName', e => e.textContent = label);
   set('#dtObjSim', e => e.textContent = `${o.sim}% 유사`);
