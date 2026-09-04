@@ -828,62 +828,62 @@ function renderClipPreview() {
     return;
   }
 
-  const t0 = +tlTime(picked[0].t);
-  const t1 = +tlTime(picked[picked.length - 1].t);
-  const span = Math.max(t1 - t0, 6e5);
-
-  /* 노드를 밀어내면 눈금과 어긋난다.
-     대신 **가장 촘촘한 간격이 슬롯 폭을 넘도록 전체 폭을 늘려** 시간 비례를 지킨다. */
-  const SLOT = 88, PAD = 52, NODE_HALF = 40;
-  let minGap = span;
-  for (let i = 1; i < picked.length; i++) {
-    const g = +tlTime(picked[i].t) - +tlTime(picked[i - 1].t);
-    if (g > 0 && g < minGap) minGap = g;
-  }
-  /* 가장 촘촘한 간격 기준으로 폭을 잡되, 지나치게 넓어지지 않게 상한을 둔다.
-     상한에 걸리면 가까운 노드끼리 살짝 겹치는데, 시간이 붙어 있다는 뜻이라 그대로 둔다. */
-  const byGap = minGap > 0 ? (span / minGap) * SLOT : 600;
-  const MAXW = 6000;   /* 겹치느니 가로 스크롤 — 사용자 지시 */
-  const innerW = Math.ceil(Math.min(Math.max(byGap, 600), MAXW) + PAD * 2);
-  const x = t => PAD + ((t - t0) / span) * (innerW - PAD * 2);
-  const xs = picked.map(o => x(+tlTime(o.t)));
-
-  /* 시간 눈금 — 구간 길이에 맞춰 간격을 고른다 */
-  const mins = span / 6e4;
-  const stepMin = [5, 10, 15, 30, 60, 120, 180, 360, 720].find(m => mins / m <= 12) || 1440;
-  const step = stepMin * 6e4;
-  let ticks = '', lastDay = '';
-  for (let t = Math.ceil(t0 / step) * step; t <= t1 + step * 0.5; t += step) {
-    const d = new Date(t), px = x(t);
-    if (px < 0 || px > innerW) continue;
-    const day = tlYMD(d);
-    /* 첫 눈금에는 날짜를 붙이지 않는다 — 시각 라벨과 겹친다.
-       구간 전체 날짜는 머리말(cp-sum)에 이미 있고, 여기서는 날짜가 바뀌는 지점만 알린다. */
-    const newDay = lastDay !== '' && day !== lastDay; lastDay = day;
-    ticks += `<span class="cp-tick" style="left:${px}px"></span>
-      <span class="cp-time" style="left:${px}px">${tlHM(d)}</span>
-      ${newDay ? `<span class="cp-day" style="left:${px}px">${day}</span>` : ''}`;
-  }
-
+  const fmt = o => String(o.t).slice(11, 16);
   host.innerHTML = `
     <div class="cp-head">
       <b>이동 경로 미리보기</b>
       <span class="cp-sum">${picked.length}개 · ${String(picked[0].t).slice(5, 16)} ~ ${String(picked[picked.length - 1].t).slice(5, 16)}</span>
+      <span class="cp-note">긴 공백 구간은 줄여서 보여줍니다</span>
     </div>
     <div class="cp-scroll">
-      <div class="cp-inner" style="width:${innerW}px">
-        <div class="cp-ruler">${ticks}</div>
-        <div class="cp-axis" style="left:${PAD}px;right:${PAD}px"></div>
+      <div class="cp-inner">
+        <div class="cp-axis"></div>
         ${picked.map((o, i) => `
-          <div class="cp-node" style="left:${xs[i]}px" title="${o.cam} · ${o.t}">
+          <div class="cp-node" data-cpn="${i}" title="${o.cam} · ${o.t}">
             <span class="cp-n">${i + 1}</span>
             <img src="${o.img}" alt="">
             <span class="cp-cam">${o.cam}</span>
-            <span class="cp-t">${String(o.t).slice(11, 16)}</span>
+            <span class="cp-t">${fmt(o)}</span>
           </div>`).join('')}
       </div>
     </div>`;
+
+  CP_TIMES = picked.map(o => +tlTime(o.t));
+  fitClipPreview();
 }
+
+let CP_TIMES = [];
+
+/* 클립을 시간 순서대로 놓되, 긴 공백은 눌러서 **모두 한 화면에** 담는다.
+   엄격한 시간 비례를 지키면 12개가 3800px 로 퍼져 두 개만 보였다.
+   간격은 √ 로 압축해 '얼마나 떨어져 있는지' 느낌만 남긴다. */
+function fitClipPreview() {
+  const sc = document.querySelector('#clipsPreview .cp-scroll');
+  const inner = document.querySelector('#clipsPreview .cp-inner');
+  if (!sc || !inner || CP_TIMES.length === 0) return;
+
+  const n = CP_TIMES.length, SLOT = 84, PAD = 46, HALF = 40;
+  const avail = Math.max(sc.clientWidth, 420);
+  const gaps = [];
+  for (let i = 1; i < n; i++) gaps.push(Math.max(CP_TIMES[i] - CP_TIMES[i - 1], 0));
+  const gmax = Math.max(...gaps, 1);
+  const wsum = gaps.reduce((a, g) => a + Math.sqrt(g / gmax), 0) || 1;
+
+  /* 최소 간격만으로도 넘치면 그때는 가로 스크롤 */
+  const fixed = PAD * 2 + SLOT * (n - 1);
+  const extra = Math.max(avail - fixed, 0);
+
+  let x = PAD;
+  const xs = [x];
+  gaps.forEach(g => { x += SLOT + extra * (Math.sqrt(g / gmax) / wsum); xs.push(x); });
+  const total = Math.ceil(x + PAD);
+
+  inner.style.width = Math.max(total, avail) + 'px';
+  inner.querySelectorAll('.cp-node').forEach((el, i) => { el.style.left = Math.round(xs[i]) + 'px'; });
+  const ax = inner.querySelector('.cp-axis');
+  if (ax) { ax.style.left = (PAD - HALF) + 'px'; ax.style.right = Math.max(inner.clientWidth - xs[n - 1] - HALF, 0) + 'px'; }
+}
+addEventListener('resize', fitClipPreview);
 
 function renderClips(all) {
   /* 클립 선택은 **날짜순이 기본** — 언제 찍힌 영상인지가 먼저 보여야 한다 */

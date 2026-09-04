@@ -3546,3 +3546,18 @@ body.dt-b .dt-side > .dt-sec + .dt-sec{border-top:1px solid var(--ln-subtle);pad
   background:linear-gradient(180deg,rgba(0,0,0,.72),rgba(0,0,0,.34) 62%,transparent)
 }
 .dt-box{z-index:2}
+
+/* 미리보기 : 눈금 대신 각 클립에 시각을 달고, 축은 첫~마지막 클립을 잇는다 */
+.cp-note{font-size:10px;color:var(--tx-helper);margin-left:auto;padding-right:16px}
+.cp-head{display:flex;align-items:baseline;gap:10px}
+.cp-inner{height:112px}
+.cp-axis{top:10px;height:2px}
+.cp-node{top:16px}
+.cp-node .cp-t{
+  font-family:var(--mono);font-size:10px;color:var(--tx-secondary);
+  display:block;margin-top:1px
+}
+.cp-node::before{
+  content:'';position:absolute;left:50%;top:-8px;width:1px;height:8px;
+  background:var(--ln-border);transform:translateX(-50%)
+}
