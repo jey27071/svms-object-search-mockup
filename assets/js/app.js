@@ -1897,6 +1897,7 @@ function renderTimeline(host, tracks, opt = {}) {
   tracks = idx.map(i => allTracks[i]);
   const [d0, d1] = tlDomain(tracks);
   const span = d1 - d0;
+  TL.d0 = d0; TL.span = span; TL._opt = opt;   /* 지도와 시각을 맞추기 위해 공유 */
   const pct = t => (+tlTime(t) - d0) / span * 100;
   const wid = c => Math.max(0.6, (+tlTime(c.to) - +tlTime(c.from)) / span * 100);
 
@@ -2052,6 +2053,8 @@ function renderTimeline(host, tracks, opt = {}) {
       n.classList.toggle('pass', on);
       if (on && !hit) hit = n;
     });
+    syncMapToCursor();   /* 지도의 현재 위치도 같이 옮긴다 */
+
     /* 참고안 : 커서 지점의 프레임을 작은 미리보기로 보여준다 */
     const pv = host.querySelector('.tl-cur-pv');
     if (pv) {
@@ -2935,6 +2938,66 @@ function renderArea() {
 })();
 
 /* ---- 맵뷰어 레이어 (CCTV 콘 / 경로 / 마커) ---- */
+/* ── 타임라인 ↔ 지도 연동 ────────────────────────────────────────────────
+   커서를 옮기면 지도의 현재 위치가 따라 움직이고, 지도 지점을 누르면
+   타임라인 커서가 그 시각으로 간다. 두 화면이 같은 시간을 가리키게 한다. */
+
+/* 커서 시각을 '하루 중 몇 시' 로 (지도 지점의 hh 와 같은 단위) */
+function cursorHours() {
+  if (!TL.span) return 0;
+  const d = new Date(TL.d0 + TL.cursor * TL.span);
+  return d.getHours() + d.getMinutes() / 60 + d.getSeconds() / 3600;
+}
+
+function syncMapToCursor() {
+  const now = cursorHours();
+  document.querySelectorAll('.dt-map, .pn-map').forEach(map => {
+    const wps = [...map.querySelectorAll('.map-wp[data-hh]')]
+      .sort((a, b) => +a.dataset.hh - +b.dataset.hh);
+    if (!wps.length) return;
+
+    let prev = null, next = null;
+    wps.forEach(w => {
+      const hh = +w.dataset.hh;
+      w.classList.toggle('past', hh <= now);
+      w.classList.remove('now');
+      if (hh <= now) prev = w; else if (!next) next = w;
+    });
+    if (prev) prev.classList.add('now');
+
+    /* 지점 사이를 지날 때는 두 점 사이를 비례로 채워 '이동 중' 을 보여준다 */
+    let mk = map.querySelector('.map-now');
+    if (!mk) { mk = el('span', 'map-now'); mk.title = '현재 위치'; map.appendChild(mk); }
+    const at = (a, b, r) => ({
+      x: +a.dataset.x + (+b.dataset.x - +a.dataset.x) * r,
+      y: +a.dataset.y + (+b.dataset.y - +a.dataset.y) * r
+    });
+    let pos = null;
+    if (prev && next) {
+      const a = +prev.dataset.hh, b = +next.dataset.hh;
+      pos = at(prev, next, b > a ? (now - a) / (b - a) : 0);
+    } else if (prev) pos = { x: +prev.dataset.x, y: +prev.dataset.y };
+    if (pos) { mk.hidden = false; mk.style.left = pos.x + '%'; mk.style.top = pos.y + '%'; }
+    else mk.hidden = true;   /* 첫 지점보다 이른 시각 — 아직 나타나기 전 */
+  });
+}
+
+/* 지도 지점 → 타임라인 커서 */
+function bindMapSeek() {
+  document.querySelectorAll('.map-wp[data-hh]').forEach(w => {
+    if (w._seek) return; w._seek = true;
+    w.onclick = e => {
+      e.stopPropagation();
+      if (!TL.span) return;
+      const target = TL.d0 + (+w.dataset.hh) * 36e5;
+      TL.cursor = Math.max(0, Math.min(1, (target - TL.d0) / TL.span));
+      const host = document.getElementById('dtTl');
+      if (host && TL.tracks) renderTimeline(host, TL.tracks, TL._opt || {});
+      syncMapToCursor();
+    };
+  });
+}
+
 function renderMapLayers(paths, camName) {
   const cctvOn = DT.mapTools.includes('cctv');
   $('#dtMapCones').hidden = !cctvOn;
@@ -2969,7 +3032,8 @@ function renderMapLayers(paths, camName) {
   const one = paths.length === 1;
   $('#dtMapWps').innerHTML = paths.map((p, pi) => p.pts.map((t, ti) => {
     const last = ti === p.pts.length - 1;
-    return `<span class="map-wp" title="${t.cam} · ${t.t}" style="left:${t.x}%;top:${t.y}%;background:${slotColor(p.slot)}">${t.n}</span>
+    return `<span class="map-wp" data-hh="${t.hh}" data-x="${t.x}" data-y="${t.y}"
+        title="${t.cam} · 이 지점으로 이동" style="left:${t.x}%;top:${t.y}%;background:${slotColor(p.slot)}">${t.n}</span>
       ${one ? `<span class="map-sp ${ti % 2 ? 'below' : ''} ${ti % 4 >= 2 ? 'lft' : ''}" style="left:${t.x}%;top:${t.y}%">${t.cam}</span>` : ''}
       ${one && last ? `<span class="map-sw" style="left:${t.x}%;top:${t.y}%" title="공간 전환지점"></span>` : ''}`;
   }).join('')).join('');
@@ -2987,7 +3051,7 @@ function renderMapLayers(paths, camName) {
   }
 
   /* CSS 로 방향만 엇갈려서는 촘촘한 구간에서 여전히 겹친다 — 실제로 재서 밀어낸다 */
-  requestAnimationFrame(() => spreadMapLabels($('#dtMapWps')));
+  requestAnimationFrame(() => { spreadMapLabels($('#dtMapWps')); bindMapSeek(); syncMapToCursor(); });
 
   $('#dtLegend').className = 'dt-legend' + (paths.length > 1 ? ' multi' : '');
   $('#dtLegend').innerHTML = (paths.length > 1

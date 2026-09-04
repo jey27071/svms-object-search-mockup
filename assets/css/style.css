@@ -3742,3 +3742,25 @@ body.dt-b #dtViewSel{display:none}
 
 /* 4) 결과가 없을 때 정렬·보기·크기 도구는 눌러도 소용없다 — 흐리게 두고 막는다 */
 .rh-right.off{opacity:.4;pointer-events:none}
+
+/* ── 타임라인 ↔ 지도 연동 ────────────────────────────────────────────────
+   아직 지나지 않은 지점은 흐리게, 지금 있는 지점은 또렷하게. */
+.map-wp{transition:opacity .12s, transform .12s, box-shadow .12s; cursor:pointer}
+.map-wp:not(.past){opacity:.34}
+.map-wp.past{opacity:.75}
+.map-wp.now{
+  opacity:1;transform:translate(-50%,-50%) scale(1.18);
+  box-shadow:0 0 0 3px rgba(255,255,255,.28), 0 2px 8px rgba(0,0,0,.5);
+  z-index:6
+}
+.map-wp:hover{opacity:1}
+
+/* 지점 사이를 지나는 '현재 위치' */
+.map-now{
+  position:absolute;transform:translate(-50%,-50%);z-index:7;pointer-events:none;
+  width:13px;height:13px;border-radius:50%;
+  background:#fff;border:2.5px solid var(--primary);
+  box-shadow:0 0 0 4px rgba(48,112,216,.28), 0 2px 8px rgba(0,0,0,.55);
+  transition:left .12s linear, top .12s linear
+}
+.map-now[hidden]{display:none}
