@@ -2829,6 +2829,8 @@ function renderCctvPins() {
 
 /* ---- 멀티뷰 (주변 카메라) ---- */
 function renderMulti() {
+  const vv = document.getElementById('dtVideo');
+  if (vv) vv.classList.toggle('has-multi', DT.tools.includes('multi'));
   $('#dtMulti').innerHTML = MULTI_TILES.map((t, i) => `
     <div class="mv-tile" data-mv="${i}" style="border-left-color:${t.boxes[0] ? slotColor(t.boxes[0].slot) : 'transparent'}">
       <img src="${t.img}" alt="">

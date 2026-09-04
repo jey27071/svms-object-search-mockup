@@ -3921,3 +3921,12 @@ body.dt-b .dt-editbar{
 body.dt-b .dt-video > .ov,
 body.dt-b .dt-video > .dt-box,
 body.dt-b .dt-video > .dt-pip{pointer-events:none}
+
+/* 4분할이 절대배치라 재생바 아래로 흐르지 않고 겹쳤다 — 흐름 안으로 */
+body.dt-b .dt-multi{position:static;inset:auto;flex:1;min-height:0}
+/* 4분할일 때 배경 단일 영상은 자리를 차지하지 않는다 */
+body.dt-b .dt-video.has-multi > img{display:none}
+/* 단일 영상 오버레이(박스·PIP)는 4분할에서 감춘다 */
+body.dt-b .dt-video.has-multi > .dt-box,
+body.dt-b .dt-video.has-multi > #ovPath,
+body.dt-b .dt-video.has-multi > #ovCctv{display:none}
