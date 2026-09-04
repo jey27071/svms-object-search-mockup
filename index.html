@@ -5,8 +5,8 @@
 <title>SVMS — 동선 추적 검색 (Working Mockup)</title>
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
-<link rel="stylesheet" href="assets/css/icons.css?v=202609050758">
-<link rel="stylesheet" href="assets/css/style.css?v=202609050758">
+<link rel="stylesheet" href="assets/css/icons.css?v=202609050800">
+<link rel="stylesheet" href="assets/css/style.css?v=202609050800">
 </head>
 <body>
 
@@ -303,13 +303,13 @@
           </div>
           <!-- 참고안 : 재생바 아래 별도 줄 — 편집 도구(연필·분할)와 확대 슬라이더 -->
           <div class="dt-editbar" id="dtEditBar">
-            <button class="btn-icon" title="영역 그리기"><i class="i i-16 i-tool-pen"></i></button>
-            <button class="btn-icon" title="구간 분할"><i class="i i-16 i-tool-split"></i></button>
+            <button class="btn-icon" title="영역 그리기"><i class="i i-16 i-tool-shape"></i></button>
+            <button class="btn-icon" title="구간 분할"><i class="i i-16 i-tool-multi"></i></button>
             <span class="eb-sp"></span>
             <label class="eb-zoom" title="영상 확대">
-              <i class="i i-14 i-zoom-out"></i>
+              <b class="zl">−</b>
               <input type="range" min="1" max="4" step="1" value="1">
-              <i class="i i-14 i-zoom-in"></i>
+              <b class="zl">＋</b>
             </label>
           </div>
           <button class="btn-flt" id="btnTracks" hidden>
@@ -740,7 +740,7 @@
 
 <div class="toast" id="toast" hidden></div>
 
-<script src="assets/js/data.js?v=202609050758"></script>
-<script src="assets/js/app.js?v=202609050758"></script>
+<script src="assets/js/data.js?v=202609050800"></script>
+<script src="assets/js/app.js?v=202609050800"></script>
 </body>
 </html>

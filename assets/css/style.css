@@ -3860,3 +3860,26 @@ body.dt-b #dtViewSel{display:none}
   color:rgba(255,255,255,.85);cursor:pointer
 }
 .mv-ic .tb:hover{color:#fff}
+
+/* 편집줄 확대 라벨 (없는 아이콘 대신 기호) */
+.eb-zoom .zl{font-size:12px;color:rgba(255,255,255,.7);line-height:1}
+
+/* 3D 적층 : 맵 영역을 넘지 않도록 크기·간격 조정 */
+.m3-floor{
+  left:12%;right:12%;
+  top:calc(8% + var(--i) * 24%);
+  height:30%;
+  transform:rotateX(56deg) rotateZ(-42deg) scale(.86)
+}
+.m3-riser{left:47%;top:14%;height:52%}
+
+/* 4분할 타일 머리말이 좁은 폭에서 세로로 깨지던 문제 */
+.mv-head{flex-wrap:nowrap;min-width:0;white-space:nowrap}
+.mv-head .nm{
+  flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap
+}
+.mv-head .tm{flex:0 1 auto;min-width:0}
+.mv-obj{white-space:nowrap}
+/* 아주 좁으면 기간을 접는다 — 대상과 카메라가 먼저다 */
+@container (max-width: 320px){ .mv-head .tm{display:none} }
+.mv-tile{container-type:inline-size}
