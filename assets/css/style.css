@@ -3718,13 +3718,14 @@ body.dt-b .dt-side > .dt-sec + .dt-sec{border-top:1px solid var(--ln-subtle);pad
 /* ── 화면별 점검 (2026-09-05) ────────────────────────────────────────────
    B 안에서 각 영역이 좁아지며 툴바가 줄바꿈돼 글자가 세로로 깨지던 것들. */
 
-/* 1) 결과 헤더 : '썸 네 일' '원 본 비 율' '검색 결과 (30/건)' */
-.results-head{flex-wrap:nowrap;min-width:0}
+/* 1) 결과 헤더 : '썸 네 일' '원 본 비 율' '검색 결과 (30/건)' 로 깨졌다.
+   줄바꿈을 막았더니 이번엔 칩이 '위' 처럼 잘렸다 —
+   낱말은 절대 쪼개지 않고, 자리가 모자라면 **묶음 단위로** 다음 줄에 내린다. */
+.results-head{flex-wrap:wrap;min-width:0;row-gap:8px}
 .rh-label{flex:0 0 auto;white-space:nowrap}
-.results-head .chips{min-width:0;overflow-x:auto;flex-wrap:nowrap;scrollbar-width:none}
-.results-head .chips::-webkit-scrollbar{height:0}
+.results-head .chips{flex-wrap:wrap;min-width:0}
 .results-head .chips > *{flex:0 0 auto;white-space:nowrap}
-.rh-right{flex:0 0 auto;flex-wrap:nowrap;white-space:nowrap}
+.rh-right{flex:0 0 auto;flex-wrap:nowrap;white-space:nowrap;margin-left:auto}
 .view-seg{flex:0 0 auto;flex-wrap:nowrap}
 .view-seg button{white-space:nowrap;flex:0 0 auto}
 
