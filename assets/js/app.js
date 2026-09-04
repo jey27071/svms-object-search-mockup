@@ -1777,7 +1777,7 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeAllModa
    단일 대상 상세 (상세화면 WF_0805)
    ============================================================ */
 const DT = {
-  clip: 0, map: 'floor', tools: ['obj'], bookmarks: new Set(), nearQ: '',
+  clip: 0, map: 'floor', tools: ['obj', 'multi'], bookmarks: new Set(), nearQ: '',   /* 참고안 : 2x2 가 기본 */
   area: null,        /* {mode:'shape'|'line', rect|line, drawing} — 영역 검색 */
   tracks: false,     /* 대상별 동선 패널 */
   mapTools: [],      /* 맵뷰어 도구 : cctv | path */
@@ -2831,8 +2831,15 @@ function renderMulti() {
     <div class="mv-tile" data-mv="${i}" style="border-left-color:${t.boxes[0] ? slotColor(t.boxes[0].slot) : 'transparent'}">
       <img src="${t.img}" alt="">
       <div class="mv-head">
+        ${t.boxes[0] ? `<i class="mv-dot" style="background:${slotColor(t.boxes[0].slot)}"></i>
+          <b class="mv-obj">${t.boxes[0].label}</b>` : ''}
         <span class="nm">${t.cam}${t.fixed ? '' : `<i class="i i-16 i-chevron i-down caret"></i>`}</span>
-        <span class="tm">2026-06-29 오전 00:52:03 ~ 02:10:11</span>
+        <span class="tm">${cmpSlotRange(i) || '2026-06-29 오전 00:52:03 ~ 02:10:11'}</span>
+        <span class="mv-ic">
+          <button class="tb" title="북마크">${ICON.bookmark || '☆'}</button>
+          <button class="tb" title="화면 분할"><i class="i i-14 i-tool-multi"></i></button>
+          <button class="tb" title="크게 보기"><i class="i i-14 i-tool-expand"></i></button>
+        </span>
       </div>
       ${t.boxes.map(b => `<div class="mv-box" style="left:${b.x}%;top:${b.y}%;width:${b.w}%;height:${b.h}%;border-color:${slotColor(b.slot)};background:${slotColor(b.slot)}14"><i style="background:${slotColor(b.slot)}">${b.label}</i></div>`).join('')}
     </div>`).join('');
