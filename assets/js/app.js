@@ -2256,25 +2256,15 @@ function paneMapPathHTML() {
   const wps = tracks.map((tr, ti) => tr.clips.map((c, ci) => {
     const t = pt(ci, ti), last = ci === tr.clips.length - 1;
     return `<span class="map-wp" title="${c.cam}" style="left:${t.x}%;top:${t.y}%;background:${slotColor(tr.slot)}">${c.n}</span>
-      ${ti === 0 ? `<span class="map-sp" style="left:${t.x}%;top:${t.y}%">${MAP_SPACES[ci % MAP_SPACES.length]}</span>` : ''}
       ${ti === 0 && last ? `<span class="map-sw" style="left:${t.x}%;top:${t.y}%" title="공간 전환지점"></span>` : ''}`;
   }).join('')).join('');
 
   const last = tracks[0].clips[tracks[0].clips.length - 1];
   return `<div class="pn-path"><svg viewBox="0 0 100 100" preserveAspectRatio="none">${svg}</svg></div>
     <div class="pn-wps">${wps}</div>
-    ${last ? `<button class="map-exit" title="이 지점에서 건물 밖으로 이동합니다">
-      <b>외부로 이동</b><span>${last.cam} → 외부</span><i class="i i-12 i-chevron"></i></button>` : ''}
     <div class="pn-legend">
       ${tracks.map(tr => `<span><i style="background:${slotColor(tr.slot)}"></i>${tr.label}</span>`).join('')}
-      <span class="lg-sep"></span>
-      <span><i class="lg-in"></i>실내 이동 경로</span>
-      <span><i class="lg-out"></i>외부 이동 경로</span>
-      <span><i class="lg-sw"></i>공간 전환지점</span>
-    </div>
-    <div class="pn-bldg">
-      <button title="인접 동으로 이동">‹ B동 (2건)</button>
-      <button title="인접 동으로 이동">A동 (2건) ›</button>
+      <span class="lg-sep"></span><span><i class="lg-out"></i>외부</span>
     </div>`;
 }
 
@@ -2929,14 +2919,41 @@ function renderMapLayers(paths, camName) {
   if (!multi) { $('#dtMapPath').hidden = true; $('#dtMapWps').hidden = true; $('#dtMarker').querySelector('span').textContent = camName || '1F 메인 복도'; $('#dtLegend').innerHTML = `<i></i>출현 지점 <em>( 1개 )</em>`; return; }
 
   $('#dtMapPath').hidden = false; $('#dtMapWps').hidden = false;
-  $('#dtMapPath').innerHTML = `<svg viewBox="0 0 100 100" preserveAspectRatio="none">${paths.map(p =>
-    `<path d="M${p.pts.map(t => `${t.x},${t.y}`).join(' L')}" stroke="${slotColor(p.slot)}" vector-effect="non-scaling-stroke"/>`).join('')}</svg>`;
-  $('#dtMapWps').innerHTML = paths.map(p => p.pts.map(t =>
-    `<span class="map-wp" title="${t.cam} · ${t.t}" style="left:${t.x}%;top:${t.y}%;background:${slotColor(p.slot)}">${t.n}</span>`).join('')).join('');
+  /* 참고안(검색상세 시안_260903) : 건물 안은 실선, 밖으로 나가는 마지막 구간은 점선 */
+  $('#dtMapPath').innerHTML = `<svg viewBox="0 0 100 100" preserveAspectRatio="none">${paths.map(p => {
+    const q = p.pts;
+    if (q.length < 2) return '';
+    const head = q.slice(0, -1), tail = q.slice(-2);
+    return `<path d="M${head.map(t => `${t.x},${t.y}`).join(' L')}" stroke="${slotColor(p.slot)}" vector-effect="non-scaling-stroke"/>
+      <path d="M${tail.map(t => `${t.x},${t.y}`).join(' L')}" stroke="var(--exit)" stroke-dasharray="2.6 2.2" vector-effect="non-scaling-stroke"/>`;
+  }).join('')}</svg>`;
+
+  const one = paths.length === 1;
+  $('#dtMapWps').innerHTML = paths.map((p, pi) => p.pts.map((t, ti) => {
+    const last = ti === p.pts.length - 1;
+    return `<span class="map-wp" title="${t.cam} · ${t.t}" style="left:${t.x}%;top:${t.y}%;background:${slotColor(p.slot)}">${t.n}</span>
+      ${one ? `<span class="map-sp" style="left:${t.x}%;top:${t.y}%">${t.cam}</span>` : ''}
+      ${one && last ? `<span class="map-sw" style="left:${t.x}%;top:${t.y}%" title="공간 전환지점"></span>` : ''}`;
+  }).join('')).join('');
+
+  /* 밖으로 나가는 지점과 인접 동 — 참고안의 '외부로 이동' · '‹ B동 (2건)' */
+  const host = $('#dtMapWps').parentElement;
+  host.querySelectorAll('.map-exit, .pn-bldg').forEach(n => n.remove());
+  if (one) {
+    const lastPt = paths[0].pts[paths[0].pts.length - 1];
+    const ex = el('button', 'map-exit', `<b>외부로 이동</b><span>${lastPt.cam} → 외부</span>`);
+    ex.title = '이 지점에서 건물 밖으로 이동합니다';
+    const bl = el('div', 'pn-bldg', `<button title="인접 동으로 이동">‹ B동 (2건)</button>
+      <button title="인접 동으로 이동">A동 (2건) ›</button>`);
+    host.append(ex, bl);
+  }
+
   $('#dtLegend').className = 'dt-legend' + (paths.length > 1 ? ' multi' : '');
-  $('#dtLegend').innerHTML = paths.length > 1
+  $('#dtLegend').innerHTML = (paths.length > 1
     ? paths.map(p => `<span class="lg"><i style="background:${slotColor(p.slot)}"></i>${p.label} 출현 지점</span>`).join('')
-    : `<i></i>출현 지점 <em>( ${paths[0].pts.length}개 )</em>`;
+    : `<span class="lg"><i></i>출현 지점 <em>( ${paths[0].pts.length}개 )</em></span>`)
+    + `<span class="lg"><i class="lg-out"></i>외부 이동 경로</span>
+       <span class="lg"><i class="lg-sw"></i>공간 전환지점</span>`;
 }
 
 /* 맵뷰어 지도/층별 */
