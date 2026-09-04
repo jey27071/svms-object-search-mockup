@@ -3531,3 +3531,10 @@ body.dt-b .dt-side > .dt-sec + .dt-sec{border-top:1px solid var(--ln-subtle);pad
 .cp-node img{width:72px;height:46px}
 .cp-cam{margin-top:3px}
 .cp-empty{height:70px}
+
+/* 트랙 이름이 첫 클립과 겹쳐 읽히지 않던 문제 —
+   이름에 배경 칩을 줘 클립 위에서도 또렷하게 남는다. */
+.tl-name{
+  background:rgba(13,14,18,.82);border:1px solid var(--ln-subtle);
+  border-radius:4px;padding:1px 6px;backdrop-filter:blur(2px)
+}
