@@ -2478,23 +2478,26 @@ function renderDetail(tab) {
   $('#dtCam').textContent = isGroup ? cur.cam : o.cam;
   $('#dtCamCaret').hidden = !isGroup;
   $('#dtRange').textContent = `${o.t.slice(0, 10)} 오전 00:52:03 ~ 02:10:11`;
-  $('#dtObjImg').src = o.img;
-  $('#dtObjName').textContent = label;
-  $('#dtObjSim').textContent = `${o.sim}% 유사`;
-  $('#dtObjTime').textContent = o.t;
-  $('#dtObjEvent').textContent = tab.event || (o.group === 'etc' ? '-' : '이동/계수');
-  $('#dtSwTop').style.background = colorHex(o.top);
-  $('#dtSwBot').style.background = colorHex(o.bottom);
-  $$('#dtVideo .dt-box i')[0].textContent = label;
+  /* 아래 대상정보 필드는 renderObjGrid 가 그 영역을 다시 그리면 사라진다.
+     (A 안 삭제 후 상세는 항상 그리드를 쓴다) 없으면 건너뛴다. */
+  const set = (sel, fn) => { const e = $(sel); if (e) fn(e); };
+  set('#dtObjImg', e => e.src = o.img);
+  set('#dtObjName', e => e.textContent = label);
+  set('#dtObjSim', e => e.textContent = `${o.sim}% 유사`);
+  set('#dtObjTime', e => e.textContent = o.t);
+  set('#dtObjEvent', e => e.textContent = tab.event || (o.group === 'etc' ? '-' : '이동/계수'));
+  set('#dtSwTop', e => e.style.background = colorHex(o.top));
+  set('#dtSwBot', e => e.style.background = colorHex(o.bottom));
+  const bx = $$('#dtVideo .dt-box i')[0]; if (bx) bx.textContent = label;
 
   /* 그룹 상세 : 통합 건수 배지 + 대상 추가 버튼 */
   let unify = $('#dtObjUnify');
-  if (isGroup && !unify) {
+  if (isGroup && !unify && $('#dtObjName')) {
     unify = el('span', 'badge sub', `${DT.clips.length}건 통합`);
     unify.id = 'dtObjUnify';
     $('#dtObjName').after(unify);
   } else if (unify) { unify.hidden = !isGroup; unify.textContent = `${DT.clips.length}건 통합`; }
-  $('#dtObjAdd').hidden = !isGroup;
+  set('#dtObjAdd', e => e.hidden = !isGroup);
 
   renderRuler();
   renderTracks(); renderCctvPins(); renderArea(); renderMulti(); applyTools();
