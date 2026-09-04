@@ -3730,7 +3730,7 @@ body.dt-b .dt-side > .dt-sec + .dt-sec{border-top:1px solid var(--ln-subtle);pad
 .view-seg button{white-space:nowrap;flex:0 0 auto}
 
 /* 2) 상세 재생바 : 도구가 겹치고 'Multi View' 라벨이 삐져나옴 */
-.dt-bar .grp.r{flex-wrap:nowrap;min-width:0;gap:2px}
+.dt-bar .grp.r{flex-wrap:nowrap;min-width:0;gap:5px}
 .dt-bar .grp.r > *{flex:0 0 auto}
 /* 좁은 패널에서는 보기 모드 셀렉트를 아이콘 버튼들에 양보한다 */
 body.dt-b #dtViewSel{display:none}
