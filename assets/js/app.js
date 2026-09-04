@@ -629,7 +629,6 @@ function pickTopHTML(opt) {
   const o = findObj(REID.seed) || OBJECTS[0];
   return `
     <div class="pk-top-l">
-      ${pickStepsHTML(opt.step)}
       <div class="pk-guide"><b>${opt.title}</b><p>${opt.desc}</p></div>
     </div>
     <div class="pk-top-r">
@@ -750,26 +749,20 @@ function reidPool() {
 
 /* 두 팝업이 하나의 흐름임을 보여주는 단계 표시.
    왜 이 단계를 거치는지 한 줄 설명을 함께 둔다. */
-/* 3단계(이동 경로 확인)는 화면이 전환되므로 표시하지 않는다 */
-const PICK_STEPS = [
-  { n: 1, t: '동일 대상 선별' },
-  { n: 2, t: '영상 클립 선택' }
-];
-function pickStepsHTML(active) {
-  return `<ol class="pk-step-list">${PICK_STEPS.map(s => {
-    const st = s.n < active ? 'done' : s.n === active ? 'now' : 'next';
-    return `<li class="${st}"><span class="sp-n">${s.n < active ? '✓' : s.n}</span><b>${s.t}</b></li>`;
-  }).join('<li class="sp-arrow">›</li>')}</ol>`;
-}
+/* 선별 단계를 없애 클립 선택 하나만 남았다 — 단계 표시는 두지 않는다 */
 
+/* 사양 변경 : `동일 대상 선별` 단계를 없앴다.
+   결과를 고르면 곧바로 `영상 클립 선택` 으로 간다. 후보는 모두 대상으로 본다. */
 function openReid(seedId) {
   REID.seed = seedId;
-  REID.sel = new Set();          /* Default 전체 해제 */
   REID.sort = REID.sort || '유사도순';
   REID.w = REID.w || 160;
-  REID.name = '';                /* 이름은 이 선별에서 새로 정한다 */
-  renderReid();
-  openModal('#mdReid');
+  REID.name = '';
+  REID.sel = new Set(reidPool().map(o => o.id));
+  REID.clipShown = REID.clipMax;
+  REID.clipSel = new Set();
+  renderClips([...REID.sel]);
+  openModal('#mdClips');
 }
 
 function renderReid() {
@@ -904,7 +897,7 @@ function renderClips(all) {
 
   const clipsGuide = {
     title: '이동 경로에 쓸 영상을 고르세요',
-    desc: '선별한 대상이 찍힌 영상 중 <b>경로로 이어 볼 클립</b>을 선택합니다.<br>고른 순서가 아니라 촬영 시각 순으로 이어집니다.',
+    desc: '기준 대상이 찍힌 영상 중 <b>경로로 이어 볼 클립</b>을 선택합니다.<br>고른 순서가 아니라 촬영 시각 순으로 이어집니다.',
     step: 2, sel: REID.clipSel.size, total: all.length
   };
   $('#clipsTop').innerHTML = pickTopHTML(clipsGuide);
@@ -915,9 +908,7 @@ function renderClips(all) {
     + (REID.clipShown < all.length
       ? `<div class="pk-more"><button class="btn-ghost" id="clipMore">더보기 (${all.length - REID.clipShown}개 남음)</button>
          <p class="hintline">한 번에 ${REID.clipMax}개까지 불러옵니다.</p></div>` : '');
-  $('#clipsFoot').innerHTML = `<button class="btn-ghost" id="clipsBack">‹ 이전</button>
-    <span style="flex:1"></span>
-    <button class="btn-ghost" data-close>취소</button>
+  $('#clipsFoot').innerHTML = `<button class="btn-ghost" data-close>취소</button>
     <button class="btn-primary" id="clipsGo" ${REID.clipSel.size ? '' : 'disabled'}>완료</button>`;
 
   bindPickName();
@@ -943,8 +934,6 @@ function renderClips(all) {
   const more = $('#clipMore');
   if (more) more.onclick = () => { REID.clipShown += REID.clipMax; renderClips(all); };
   $$('#mdClips [data-close]').forEach(b => b.onclick = () => closeModal('#mdClips'));
-  /* 이전 단계(동일 대상 선별)로 되돌아간다 — 선별 결과는 그대로 유지 */
-  $('#clipsBack').onclick = () => { closeModal('#mdClips'); renderReid(); openModal('#mdReid'); };
   $('#clipsGo').onclick = () => { closeModal('#mdClips'); finishReid([...REID.clipSel]); };
   renderClipPreview();
 }
@@ -2444,29 +2433,18 @@ function renderObjBar(o, label) {
            대상 정보는 썸네일·인물명·출현 일시만, 한 행에 4개까지
            맵뷰어가 남는 공간을 최대로 차지
    ============================================================ */
-S.dtView = localStorage.getItem('svms_dtview') || 'a';
+S.dtView = 'b';   /* A 안 삭제 — 상세는 B 안 하나뿐이다 */
 
-function setDtView(v) {
-  S.dtView = (v === 'b') ? 'b' : 'a';
-  try { localStorage.setItem('svms_dtview', S.dtView); } catch (_) {}
-  document.body.classList.toggle('dt-b', S.dtView === 'b');
-  /* B안은 상단 패널이 기본 2단 (A안은 1단) */
-  PANE.n = (S.dtView === 'b') ? 2 : 1;
+/* 사양 변경 : 타임라인을 하단 좌우 끝까지 쓰던 A 안을 없앴다.
+   상세 화면은 B 안 하나뿐이라 A-B 전환 스위치도 함께 걷어냈다. */
+function setDtView() {
+  S.dtView = 'b';
+  document.body.classList.add('dt-b');
+  PANE.n = 2;                    /* 상단 패널 기본 2단 */
   PANE.w = [null, null];
-  document.querySelectorAll('#dtViewSw [data-dtv]')
-    .forEach(b => b.classList.toggle('on', b.dataset.dtv === S.dtView));
   const t = S.tabs.find(x => x.id === S.activeTab);
   if (t && t.obj) renderDetail(t);
 }
-
-(function initDtViewSwitch() {
-  const r = document.querySelector('.win-tabs'); if (!r) return;
-  const sw = document.createElement('div');
-  sw.className = 'layout-sw'; sw.id = 'dtViewSw';
-  sw.innerHTML = `<button data-dtv="a">상세 A</button><button data-dtv="b">상세 B</button>`;
-  r.appendChild(sw);
-  sw.querySelectorAll('[data-dtv]').forEach(b => b.onclick = () => setDtView(b.dataset.dtv));
-})();
 
 /* B안 : 대상 정보를 최소 항목(썸네일·인물명·출현 일시)으로, 한 행 4개 그리드 */
 function renderObjGrid(o, label) {
@@ -5927,4 +5905,4 @@ loadPrefs();
 buildFilters(S.mode);
 syncSearchBtn();
 
-setDtView(S.dtView);
+setDtView();
