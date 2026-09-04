@@ -3903,3 +3903,21 @@ body.dt-b .dt-objbar .ob-card > img{height:66px}
 /* 맵이 남은 세로를 모두 쓴다 */
 body.dt-b .dt-side > .dt-sec:nth-of-type(2){flex:1 1 auto;min-height:0}
 body.dt-b .dt-side .dt-map{flex:1;min-height:280px}
+
+/* ── 시안 구조 : 재생바·편집줄을 영상 '아래' 별도 줄로 ────────────────────
+   지금은 영상 위에 겹쳐 있어 하단 두 타일을 가린다. */
+body.dt-b .dt-video{display:flex;flex-direction:column}
+body.dt-b .dt-video > img,
+body.dt-b #dtMulti{flex:1;min-height:0}
+body.dt-b .dt-ctrl{
+  position:static;flex:0 0 44px;height:44px;
+  background:var(--bg-1);border-top:1px solid var(--ln-border)
+}
+body.dt-b .dt-editbar{
+  position:static;flex:0 0 34px;
+  background:var(--bg-1);border-top:1px solid var(--ln-subtle)
+}
+/* 영상 위 오버레이(박스·PIP)는 영상 영역 안에서만 */
+body.dt-b .dt-video > .ov,
+body.dt-b .dt-video > .dt-box,
+body.dt-b .dt-video > .dt-pip{pointer-events:none}
