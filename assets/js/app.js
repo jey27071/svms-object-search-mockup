@@ -1816,20 +1816,29 @@ const tlHM = d => `${tlPad(d.getHours())}:${tlPad(d.getMinutes())}`;
 const tlYMD = d => `${d.getFullYear()}-${tlPad(d.getMonth() + 1)}-${tlPad(d.getDate())}`;
 
 /* 보이는 트랙들의 클립 전체를 감싸는 구간 */
+/* GUI 참고안(검색상세 시안_260903) : 타임라인은 **하루 전체**를 00:00~24:00 으로 깔고
+   그 위에 클립을 얹는다. 클립 구간만 잘라 보여주면 하루 중 언제인지가 안 보인다. */
 function tlDomain(tracks) {
   const all = tracks.flatMap(t => t.clips);
-  if (!all.length) return [Date.now(), Date.now() + 36e5];
+  if (!all.length) { const d = new Date(); d.setHours(0, 0, 0, 0); return [+d, +d + 864e5]; }
   const min = Math.min(...all.map(c => +tlTime(c.from)));
   const max = Math.max(...all.map(c => +tlTime(c.to)));
-  const pad = (max - min) * 0.04;
-  return [min - pad, max + pad];
+  const d0 = new Date(min); d0.setHours(0, 0, 0, 0);
+  const d1 = new Date(max); d1.setHours(0, 0, 0, 0); d1.setDate(d1.getDate() + 1);
+  return [+d0, +d1];
 }
 
 /* 배율에 따라 눈금 간격을 고른다 (분 단위) */
+function tlHMS(d) {
+  const z = n => String(n).padStart(2, '0');
+  return `${z(d.getHours())}:${z(d.getMinutes())}:${z(d.getSeconds())}`;
+}
+
 function tlStep(spanMs, zoom) {
   const mins = spanMs / 6e4 / zoom;
+  /* 하루(1440분)를 1x 로 보면 60분 간격 = 참고안의 00:00~24:00 매시 눈금 */
   const cand = [5, 10, 15, 30, 60, 120, 180, 360];
-  return (cand.find(m => mins / m <= 14) || 720) * 6e4;
+  return (cand.find(m => mins / m <= 26) || 720) * 6e4;
 }
 
 /* 편집 중 '클립 다시 선택' — RE-ID 때 도출한 목록을 다시 불러와 재선택한다.
@@ -1917,9 +1926,10 @@ function renderTimeline(host, tracks, opt = {}) {
   host.innerHTML = `
     <div class="tl-top">
       <div class="tl-zoom">
-        <button data-tlz="out" title="축소" ${TL.zoom <= 1 ? 'disabled' : ''}>−</button>
+        <button data-tlz="out" title="축소" ${TL.zoom <= 1 ? 'disabled' : ''}>${ICON.zoomOut || '−'}</button>
+        <input type="range" class="tl-zr" min="1" max="8" step="1" value="${TL.zoom}" title="타임라인 확대">
+        <button data-tlz="in" title="확대" ${TL.zoom >= 8 ? 'disabled' : ''}>${ICON.zoomIn || '+'}</button>
         <span class="tl-zv">${TL.zoom}x</span>
-        <button data-tlz="in" title="확대" ${TL.zoom >= 8 ? 'disabled' : ''}>+</button>
       </div>
       ${allTracks.length > 1 ? `<div class="tl-tabs">
         <button class="${TL.show.size === allTracks.length ? 'on' : ''}" data-tlall>전체</button>
@@ -1936,7 +1946,7 @@ function renderTimeline(host, tracks, opt = {}) {
       <div class="tl-inner" style="width:${TL.zoom * 100}%">
         <div class="tl-ruler">${ticks}</div>
         <div class="tl-rows">${rows}</div>
-        <span class="tl-cursor" style="left:${TL.cursor * 100}%"></span>
+        <span class="tl-cursor" style="left:${TL.cursor * 100}%"><b class="tl-cur-t">${tlHMS(new Date(d0 + TL.cursor * span))}</b></span>
       </div>
     </div>`;
 
@@ -1993,6 +2003,8 @@ function renderTimeline(host, tracks, opt = {}) {
   host.querySelectorAll('[data-tlpick]').forEach(b => b.onclick = () => {
     TL.mode = 'one'; TL.pick = +b.dataset.tlpick; renderTimeline(host, allTracks, opt);
   });
+  const zr = host.querySelector('.tl-zr');
+  if (zr) zr.oninput = e => { TL.zoom = +e.target.value; renderTimeline(host, TL.tracks, opt); };
   host.querySelectorAll('[data-tlz]').forEach(b => b.onclick = () => {
     TL.zoom = b.dataset.tlz === 'in' ? Math.min(8, TL.zoom * 2) : Math.max(1, TL.zoom / 2);
     renderTimeline(host, allTracks, opt);

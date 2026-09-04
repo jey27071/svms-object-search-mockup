@@ -3561,3 +3561,24 @@ body.dt-b .dt-side > .dt-sec + .dt-sec{border-top:1px solid var(--ln-subtle);pad
   content:'';position:absolute;left:50%;top:-8px;width:1px;height:8px;
   background:var(--ln-border);transform:translateX(-50%)
 }
+
+/* ── 타임라인 : GUI 참고안(검색상세 시안_260903) 맞춤 ─────────────────────
+   하루 전체 위에 클립을 얹고, 커서에 시각 배지를 단다. */
+.tl-zoom{display:flex;align-items:center;gap:7px}
+.tl-zoom .tl-zr{
+  width:88px;height:3px;-webkit-appearance:none;appearance:none;
+  background:var(--ln-border);border-radius:2px;outline:none
+}
+.tl-zoom .tl-zr::-webkit-slider-thumb{
+  -webkit-appearance:none;width:11px;height:11px;border-radius:50%;
+  background:var(--tx-primary);border:0;cursor:pointer
+}
+.tl-zoom .tl-zv{font-family:var(--mono);font-size:10px;color:var(--tx-helper);min-width:20px}
+
+/* 커서 시각 배지 */
+.tl-cursor .tl-cur-t{
+  position:absolute;left:50%;top:-19px;transform:translateX(-50%);
+  background:var(--bg-0);border:1px solid var(--ln-border);border-radius:3px;
+  padding:1px 5px;font-family:var(--mono);font-size:10.5px;font-weight:600;
+  color:var(--tx-primary);white-space:nowrap;z-index:6
+}
