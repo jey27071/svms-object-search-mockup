@@ -3538,3 +3538,11 @@ body.dt-b .dt-side > .dt-sec + .dt-sec{border-top:1px solid var(--ln-subtle);pad
   background:rgba(13,14,18,.82);border:1px solid var(--ln-subtle);
   border-radius:4px;padding:1px 6px;backdrop-filter:blur(2px)
 }
+
+/* 검출 박스 라벨이 영상 헤더의 카메라명·시각 위로 올라와 안 읽히던 문제 —
+   헤더를 박스보다 위에 두고, 글자가 묻히지 않게 상단 스크림을 준다. */
+.dt-vhead{
+  z-index:5;
+  background:linear-gradient(180deg,rgba(0,0,0,.72),rgba(0,0,0,.34) 62%,transparent)
+}
+.dt-box{z-index:2}
