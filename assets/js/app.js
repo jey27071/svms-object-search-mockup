@@ -2269,7 +2269,7 @@ function renderPip(clip) {
    · 우측 '대상 상세' 패널(맵뷰어·주변 대상)은 없앴다 —
      맵뷰는 패널 하나를 차지하고, 주변 대상은 삭제
    ============================================================ */
-const PANE = { n: 1, kind: ['video', 'map', 'video'], w: [null, null], mapTools: ['path'], vmode: ['single', 'single', 'single'] };
+const PANE = { n: 1, kind: ['video', 'map', 'video'], w: [null, null], mapTools: ['path'], vmode: ['multi', 'multi', 'multi'] };   /* 참고안 : 2x2 가 기본 */
 
 /* 맵 패널의 이동 경로 — 타임라인 트랙을 그대로 지도 위에 얹는다 */
 /* GUI 참고안(검색상세 시안_260903) 맵뷰 :
@@ -2318,7 +2318,7 @@ function paneToolsHTML(kind, i) {
       <button data-pmt="${i}:full" title="전체보기"><i class="i i-16 i-mv-expand"></i></button>
     </div>`;
   }
-  const vm = PANE.vmode[i] || 'single';
+  const vm = PANE.vmode[i] || 'multi';
   return `<div class="pn-tools">
     <button data-pvt="${i}:heat" title="히트맵"><i class="i i-16 i-tool-heatmap"></i></button>
     <button data-pvt="${i}:path" title="경로 확인"><i class="i i-16 i-tool-path"></i></button>
@@ -2354,11 +2354,15 @@ function paneBody(kind, i) {
       <b>${t ? t.label : '대상'}</b>
       <em>${c.cam || '-'}</em>
       <span class="rg">${c.from ? String(c.from).slice(0, 16) : ''} ~ ${c.to ? String(c.to).slice(11, 16) : ''}</span>
-      <span class="ic">${ICON.bookmark || ''}</span>
+      <span class="ic">
+        <button class="tb" title="북마크">${ICON.bookmark || '☆'}</button>
+        <button class="tb" title="화면 분할"><i class="i i-14 i-tool-multi"></i></button>
+        <button class="tb" title="크게 보기"><i class="i i-14 i-tool-expand"></i></button>
+      </span>
     </span>`;
   };
 
-  if ((PANE.vmode[i] || 'single') === 'multi') {
+  if ((PANE.vmode[i] || 'multi') === 'multi') {
     return `<div class="pn-vid pn-quad">
       <div class="pq">${[0, 1, 2, 3].map(k =>
         `<span><img src="${(clips[k] || clips[0] || {}).img || 'assets/img/video.png'}" alt="">
@@ -2379,7 +2383,7 @@ function paneBody(kind, i) {
 function paneNearCamHTML(i) {
   return `<div class="pn-near">
     <button data-pnc="${i}" title="주변 카메라로 전환">
-      <i class="i i-16 i-tool-cctv"></i>주변 카메라<i class="i i-12 i-chevron i-down"></i>
+      <i class="i i-16 i-tool-cctv"></i>주변 카메라<em>${(typeof MULTI_TILES !== 'undefined' ? MULTI_TILES.length : 4)}</em><i class="i i-12 i-chevron i-down"></i>
     </button>
   </div>`;
 }
@@ -2998,6 +3002,51 @@ function bindMapSeek() {
   });
 }
 
+/* ── 층별 3D 적층 뷰 (GUI 참고안) ───────────────────────────────────────
+   층을 비스듬히 쌓고, 층을 관통하는 선으로 층간 이동을 보여준다.
+   평면 한 장으로는 '몇 층에서 몇 층으로 갔는지' 가 드러나지 않는다. */
+const M3_FLOORS = [
+  { key: '3F', label: '3층' },
+  { key: '2F', label: '2층' },
+  { key: '1F', label: '1층' }
+];
+
+/* 지점 이름 앞머리로 어느 층인지 가른다 (3F·B1·1F …) */
+function m3FloorOf(cam) {
+  const t = String(cam || '');
+  if (/^3F|3층/.test(t)) return '3F';
+  if (/^2F|2층/.test(t)) return '2F';
+  return '1F';
+}
+
+function renderMap3d(paths) {
+  const host = document.getElementById('dtMap3d');
+  if (!host) return;
+  const on = DT.map === 'floor';
+  host.hidden = !on;
+  const img = document.getElementById('dtMapImg');
+  if (img) img.style.visibility = on ? 'hidden' : '';
+  if (!on) return;
+
+  const pts = (paths && paths[0] && paths[0].pts) || [];
+  host.innerHTML = M3_FLOORS.map((f, fi) => {
+    const mine = pts.filter(t => m3FloorOf(t.cam) === f.key);
+    return `<div class="m3-floor" style="--i:${fi}">
+      <img src="assets/img/floor.png" alt="">
+      <span class="m3-lb">${f.label}</span>
+      ${mine.map(t => `<span class="map-wp" data-hh="${t.hh}" data-x="${t.x}" data-y="${t.y}"
+          title="${t.cam} · 이 지점으로 이동"
+          style="left:${t.x}%;top:${t.y}%;background:${slotColor(paths[0].slot)}">${t.n}</span>
+        <span class="m3-sp" style="left:${t.x}%;top:${t.y}%">${t.cam}</span>`).join('')}
+    </div>`;
+  }).join('') + `<span class="m3-riser" title="층간 이동"></span>`;
+
+  bindMapSeek();
+  syncMapToCursor();
+}
+
+let MAP_PATHS_CACHE = null;
+
 function renderMapLayers(paths, camName) {
   const cctvOn = DT.mapTools.includes('cctv');
   $('#dtMapCones').hidden = !cctvOn;
@@ -3045,12 +3094,16 @@ function renderMapLayers(paths, camName) {
     const lastPt = paths[0].pts[paths[0].pts.length - 1];
     const ex = el('button', 'map-exit', `<b>외부로 이동</b><span>${lastPt.cam} → 외부</span>`);
     ex.title = '이 지점에서 건물 밖으로 이동합니다';
-    const bl = el('div', 'pn-bldg', `<button title="인접 동으로 이동">‹ B동 (2건)</button>
-      <button title="인접 동으로 이동">A동 (2건) ›</button>`);
+    const bl = el('div', 'pn-bldg', `<button title="인접 동으로 이동">« B동 (2건)</button>
+      <button title="인접 동으로 이동">» A동 (2건)</button>
+      <button title="인접 사업장으로 이동">« 사업장명사… (n)</button>
+      <button title="인접 동으로 이동">« A동 (2건)</button>`);
     host.append(ex, bl);
   }
 
   /* CSS 로 방향만 엇갈려서는 촘촘한 구간에서 여전히 겹친다 — 실제로 재서 밀어낸다 */
+  renderMap3d(paths);
+  MAP_PATHS_CACHE = paths;
   requestAnimationFrame(() => { spreadMapLabels($('#dtMapWps')); bindMapSeek(); syncMapToCursor(); });
 
   $('#dtLegend').className = 'dt-legend' + (paths.length > 1 ? ' multi' : '');
@@ -3088,7 +3141,8 @@ $$('#dtMapSeg button').forEach(b => b.onclick = () => {
   $$('#dtMapSeg button').forEach(x => x.classList.toggle('on', x === b));
   DT.map = b.dataset.m;
   $('#dtMapImg').src = DT.map === 'map' ? 'assets/img/map.png' : 'assets/img/floor.png';
-  $('#dtFloor').hidden = DT.map === 'map';
+  $('#dtFloor').hidden = true;                 /* 층 배지는 3D 각 층에 붙는다 */
+  renderMap3d(MAP_PATHS_CACHE);
 });
 /* 맵뷰어 도구 */
 $$('#dtMapTools [data-map]').forEach(b => b.onclick = () => {
