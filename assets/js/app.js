@@ -1812,6 +1812,7 @@ const ICON2 = {
    · 한 바에 클립이 여럿이면 대표 하나만 두고 개수를 표시,
      나머지는 영상 영역 PIP 로 재생하고 선택하면 메인과 스위칭
    ============================================================ */
+const TL_MAX = 4;   /* 한 번에 비교할 수 있는 대상 수 */
 const TL = {
   zoom: 1, cursor: 0.34, tracks: [], sel: { t: 0, c: 0 }, pip: 0,
   /* 여러 트랙을 같이 볼지(all) 하나만 볼지(one), 하나만 볼 때 어떤 인물인지 */
@@ -1889,7 +1890,8 @@ function renderTimeline(host, tracks, opt = {}) {
   TL.tracks = tracks;
   /* 보기 모드 : 하나씩 보기면 고른 인물 트랙만 그린다 */
   const allTracks = tracks;
-  if (!TL.show) TL.show = new Set(allTracks.map((_, i) => i));
+  /* 사양 : 기본은 기준 대상 **하나**. 필요할 때 `＋추가` 로 최대 4개까지 얹는다. */
+  if (!TL.show) TL.show = new Set([0]);
   /* 범위를 벗어난 인덱스 정리 */
   TL.show = new Set([...TL.show].filter(i => i < allTracks.length));
   if (!TL.show.size) TL.show = new Set([0]);
@@ -1951,7 +1953,9 @@ function renderTimeline(host, tracks, opt = {}) {
         <button class="${TL.show.size === allTracks.length ? 'on' : ''}" data-tlall>전체</button>
         ${allTracks.map((t, i) => `<button class="${TL.show.has(i) ? 'on' : ''}" data-tltoggle="${i}"
           title="${t.label} 표시 켜기/끄기"><i style="background:${slotColor(t.slot)}"></i>${t.label}</button>`).join('')}
-        <button class="tl-add" data-tladdobj title="비교할 대상 추가">＋ 추가</button>
+        <button class="tl-add" data-tladdobj
+          ${TL.show.size >= TL_MAX || TL.show.size >= allTracks.length ? 'disabled' : ''}
+          title="${TL.show.size >= TL_MAX ? `한 번에 ${TL_MAX}명까지 비교할 수 있습니다` : '비교할 대상 추가'}">＋ 추가</button>
         <button class="btn-primary sm tl-go" data-tlcmpgo ${TL.show.size >= 2 ? '' : 'disabled'}>인물 비교 (${TL.show.size})</button>
       </div>` : ''}
       ${opt.edit ? `<button class="btn-ghost sm" data-tlreselect style="margin-left:8px">클립 다시 선택</button>
@@ -1986,9 +1990,10 @@ function renderTimeline(host, tracks, opt = {}) {
 
   const allBtn = host.querySelector('[data-tlall]');
   if (allBtn) allBtn.onclick = () => {
-    TL.show = (TL.show.size === allTracks.length)
-      ? new Set([0])                                   /* 다시 누르면 한 명만 */
-      : new Set(allTracks.map((_, i) => i));
+    /* `전체` 도 한도(4명)를 넘지 않는다. 다시 누르면 기준 대상 한 명으로 */
+    const cap = Math.min(allTracks.length, TL_MAX);
+    TL.show = (TL.show.size >= cap) ? new Set([0])
+      : new Set(allTracks.slice(0, cap).map((_, i) => i));
     renderTimeline(host, allTracks, opt);
   };
   host.querySelectorAll('[data-tltoggle]').forEach(b => b.onclick = () => {
@@ -1997,7 +2002,7 @@ function renderTimeline(host, tracks, opt = {}) {
       if (TL.show.size === 1) { toast('최소 한 명은 표시해야 합니다.'); return; }
       TL.show.delete(i);
     } else {
-      if (TL.show.size >= 4) { toast('타임라인에는 최대 4명까지 표시할 수 있습니다.'); return; }
+      if (TL.show.size >= TL_MAX) { toast(`한 번에 ${TL_MAX}명까지 비교할 수 있습니다.`); return; }
       TL.show.add(i);
     }
     renderTimeline(host, allTracks, opt);
@@ -2022,7 +2027,8 @@ function renderTimeline(host, tracks, opt = {}) {
   });
   const addObj = host.querySelector('[data-tladdobj]');
   if (addObj) addObj.onclick = () => {
-    /* 아직 켜지 않은 대상을 하나 더 올린다 (참고안의 `+ 추가`) */
+    /* 아직 켜지 않은 대상을 하나 더 올린다. 한 번에 비교할 수 있는 건 4명까지. */
+    if (TL.show.size >= TL_MAX) { toast(`한 번에 ${TL_MAX}명까지 비교할 수 있습니다.`); return; }
     const off = allTracks.map((_, i) => i).find(i => !TL.show.has(i));
     if (off === undefined) { toast('더 올릴 대상이 없습니다.'); return; }
     TL.show.add(off);
