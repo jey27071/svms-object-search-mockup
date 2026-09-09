@@ -1910,14 +1910,17 @@ const tlYMD = d => `${d.getFullYear()}-${tlPad(d.getMonth() + 1)}-${tlPad(d.getD
 /* 보이는 트랙들의 클립 전체를 감싸는 구간 */
 /* GUI 참고안(검색상세 시안_260903) : 타임라인은 **하루 전체**를 00:00~24:00 으로 깔고
    그 위에 클립을 얹는다. 클립 구간만 잘라 보여주면 하루 중 언제인지가 안 보인다. */
+/* 시안(비교-대상4개) : 눈금이 08:00 에서 시작해 다음 날 07:00 까지 24시간.
+   자정이 아니라 업무 시작 시각을 기준으로 하루를 본다. */
+const TL_DAY_START = 8;
 function tlDomain(tracks) {
+  const dayOf = ms => { const d = new Date(ms); d.setHours(TL_DAY_START, 0, 0, 0);
+    if (ms < +d) d.setDate(d.getDate() - 1); return +d; };
   const all = tracks.flatMap(t => t.clips);
-  if (!all.length) { const d = new Date(); d.setHours(0, 0, 0, 0); return [+d, +d + 864e5]; }
+  if (!all.length) { const s0 = dayOf(Date.now()); return [s0, s0 + 864e5]; }
   const min = Math.min(...all.map(c => +tlTime(c.from)));
-  const max = Math.max(...all.map(c => +tlTime(c.to)));
-  const d0 = new Date(min); d0.setHours(0, 0, 0, 0);
-  const d1 = new Date(max); d1.setHours(0, 0, 0, 0); d1.setDate(d1.getDate() + 1);
-  return [+d0, +d1];
+  const d0 = dayOf(min);
+  return [d0, d0 + 864e5];
 }
 
 /* 배율에 따라 눈금 간격을 고른다 (분 단위) */
@@ -2966,7 +2969,25 @@ function renderMulti() {
       <button class="mv-near" data-mvnear="${i}">주변 카메라 (${(typeof MULTI_TILES !== 'undefined' ? MULTI_TILES.length : 3)})<i class="i i-12 i-mv-expand"></i></button>
       ${t.boxes.map(b => `<div class="mv-box" style="left:${b.x}%;top:${b.y}%;width:${b.w}%;height:${b.h}%;border-color:${slotColor(b.slot)};background:${slotColor(b.slot)}14"><i style="background:${slotColor(b.slot)}">${b.label}</i></div>`).join('')}
     </div>`).join('');
+  /* 시안 : `주변 카메라 (N)` 을 눌러야 팝오버가 뜬다 (상시 노출 아님) */
+  $$('#dtMulti [data-mvnear]').forEach(b => b.onclick = e => {
+    e.stopPropagation();
+    const tile = b.closest('.mv-tile');
+    const open = tile.querySelector('.mv-pop');
+    document.querySelectorAll('.mv-pop').forEach(x => x.remove());
+    if (open) return;
+    const pop = el('div', 'mv-pop', `
+      <div class="mp-head"><b>주변 카메라 (${MULTI_TILES.length})</b>
+        <button class="mp-x" title="닫기">&#10005;</button></div>
+      <div class="mp-grid">${MULTI_TILES.slice(0, 3).map(t =>
+        `<span><img src="${t.img}" alt=""><em>${t.cam}</em></span>`).join('')}</div>`);
+    tile.appendChild(pop);
+    pop.querySelector('.mp-x').onclick = ev => { ev.stopPropagation(); pop.remove(); };
+    pop.onclick = ev => ev.stopPropagation();
+  });
+
   $$('#dtMulti .mv-tile').forEach(n => n.onclick = e => {
+    if (e.target.closest('[data-mvnear]') || e.target.closest('.mv-pop')) return;
     const t = MULTI_TILES[+n.dataset.mv];
     if (e.target.closest('.nm') && !t.fixed) { openCamPicker(e, t, +n.dataset.mv); return; }
     openVideoView({ cam: t.cam, img: t.img });
@@ -3173,6 +3194,8 @@ function renderMap3d(paths) {
 
   bindMapSeek();
   syncMapToCursor();
+  /* 층마다 공간 라벨이 서로·바닥과 겹쳐 묻혔다 — 층별로 실측해 밀어낸다 */
+  requestAnimationFrame(() => host.querySelectorAll('.m3-floor').forEach(f => spreadMapLabels(f, '.m3-sp')));
 }
 
 let MAP_PATHS_CACHE = null;
@@ -3245,9 +3268,9 @@ function renderMapLayers(paths, camName) {
 }
 
 /* 공간 이름 라벨이 서로 겹치면 위로 한 칸씩 올려 비킨다 */
-function spreadMapLabels(host) {
+function spreadMapLabels(host, sel) {
   if (!host) return;
-  const labs = [...host.querySelectorAll('.map-sp')];
+  const labs = [...host.querySelectorAll(sel || '.map-sp')];
   labs.forEach(l => l.style.marginTop = '');
   for (let pass = 0; pass < 4; pass++) {
     let moved = false;

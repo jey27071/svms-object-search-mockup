@@ -4279,3 +4279,28 @@ body.dt-b .dt-panes{min-height:0}
 .dt-sec-head .map-lay{margin-right:6px}
 .dt-sec-head .map-lay button{display:flex;align-items:center;justify-content:center;width:28px;height:24px}
 .dt-sec-head .map-swap{margin-right:auto}
+
+/* 상시 노출 PIP 제거 — 시안은 `주변 카메라` 를 눌렀을 때만 뜬다 */
+body.dt-b #dtVideo > .dt-pip,
+body.dt-b .dt-video > .pip-row{display:none}
+
+/* 주변 카메라 팝오버 (시안) */
+.mv-pop{
+  position:absolute;right:8px;bottom:34px;z-index:8;width:min(420px,84%);
+  background:rgba(19,20,24,.96);border:1px solid var(--ln-border);border-radius:6px;
+  box-shadow:0 12px 28px rgba(0,0,0,.55);overflow:hidden
+}
+.mv-pop .mp-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:7px 10px;border-bottom:1px solid var(--ln-subtle);font-size:11.5px;color:var(--tx-primary)
+}
+.mv-pop .mp-x{background:none;border:0;color:var(--tx-tertiary);cursor:pointer;font-size:12px}
+.mv-pop .mp-x:hover{color:var(--tx-primary)}
+.mv-pop .mp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;padding:8px}
+.mv-pop .mp-grid span{position:relative;display:block;aspect-ratio:16/10;border-radius:4px;overflow:hidden;background:#000}
+.mv-pop .mp-grid img{width:100%;height:100%;object-fit:cover;display:block}
+.mv-pop .mp-grid em{
+  position:absolute;left:0;right:0;bottom:0;padding:2px 5px;font-style:normal;
+  background:linear-gradient(0deg,rgba(0,0,0,.8),transparent);
+  font-size:9.5px;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap
+}
