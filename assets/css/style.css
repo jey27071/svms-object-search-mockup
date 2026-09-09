@@ -4376,3 +4376,51 @@ body.dt-b .dt-side > .dt-side-head{display:none}
    .dt-sec + .dt-sec 규칙을 같은 형태로 되돌린다 (특이도를 맞춰야 이긴다) */
 body.dt-b .dt-side > .dt-sec + .dt-sec{border-top:0;padding-top:0}
 body.dt-b .dt-side > .dt-sec{border-top:0}
+
+/* ── 상세 맵 : 시안(비교-대상4개) 정밀 대조 ─────────────────────────────
+   시안은 흰 카드 안에 3D 적층, 층 배지 없이 공간 라벨만.
+   동 선택은 카드 **안** 좌상단, 도구는 카드 **안** 우측 세로 스택. */
+
+/* 층 배지 제거 */
+.m3-lb{display:none}
+
+/* 층을 더 크고 완만하게 (시안 기울기) */
+.m3-floor{
+  left:6%;right:6%;
+  top:calc(14% + var(--i) * 22%);
+  height:34%;
+  transform:rotateX(60deg) rotateZ(-45deg) scale(1.02)
+}
+.m3-floor .map-wp{transform:translate(-50%,-50%) rotateZ(45deg) rotateX(-60deg)}
+.m3-floor .map-wp.now{transform:translate(-50%,-50%) rotateZ(45deg) rotateX(-60deg) scale(1.18)}
+.m3-sp{transform:translate(-50%,-190%) rotateZ(45deg) rotateX(-60deg)}
+.m3-riser{left:38%;top:20%;height:52%;background:none;border-left:2px dashed var(--primary);width:0}
+
+/* 동 선택을 맵 카드 안 좌상단으로 */
+body.dt-b .dt-sec-head .dt-bldg{
+  position:absolute;left:14px;top:52px;z-index:9;margin:0
+}
+body.dt-b .dt-sec{position:relative}
+
+/* 맵 도구를 우측 세로 스택으로 (시안) */
+body.dt-b .dt-map .dt-map-tools{
+  right:10px;top:10px;left:auto;
+  flex-direction:column;gap:4px;padding:4px;border-radius:6px;
+  background:rgba(0,0,0,.06)
+}
+body.dt-b .dt-map .dt-map-tools .sepv{width:18px;height:1px;margin:2px 0}
+body.dt-b .dt-map .dt-map-tools .btn-icon{
+  width:30px;height:30px;border-radius:5px;background:rgba(255,255,255,.9);
+  color:#2b2f36;border:1px solid rgba(0,0,0,.08)
+}
+body.dt-b .dt-map .dt-map-tools .btn-icon.on{background:var(--primary);color:#fff;border-color:var(--primary)}
+/* 확대/축소도 같은 스택 아래에 */
+body.dt-b .dt-map .dt-zoom{
+  right:10px;top:auto;bottom:auto;left:auto;
+  position:absolute;top:132px;display:flex;flex-direction:column;gap:0;
+  border-radius:5px;overflow:hidden;border:1px solid rgba(0,0,0,.08)
+}
+body.dt-b .dt-map .dt-zoom button{
+  width:30px;height:28px;background:rgba(255,255,255,.9);color:#2b2f36;border:0
+}
+body.dt-b .dt-map .dt-zoom button + button{border-top:1px solid rgba(0,0,0,.08)}
