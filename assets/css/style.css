@@ -4097,7 +4097,7 @@ body.dt-b #dtTl .tl-top{display:none}
 
 /* 트랙이 늘어도 하단 컨트롤을 덮지 않게 세로를 나눈다 */
 body.dt-b #dtTl{display:flex;flex-direction:column;min-height:0}
-body.dt-b #dtTl .tl-scroll{flex:1;min-height:0;overflow-y:auto}
+body.dt-b #dtTl .tl-scroll{flex:0 0 auto;min-height:0;overflow-y:visible}
 body.dt-b #dtTl .tl-foot{flex:0 0 auto}
 
 /* 비교 인원에 따른 영상 분할 (기본 1 · 최대 4) */
@@ -4262,9 +4262,10 @@ body.dt-b .pn-switch{display:none}
 /* 맵 상단 `지도 / 층별` 세그 : 시안은 `A동 (1건)` 동 선택으로 대체 */
 body.dt-b #dtMapSeg{display:none}
 
-/* 타임라인 : 시안 비율(영상 593 / 타임라인 375)에 맞춰 4행이 잘리지 않게 */
-body.dt-b #dtTl{min-height:352px}
-body.dt-b .dt-panes{min-height:0}
+/* 타임라인 높이는 **트랙 수를 따라간다** (시안 : 1~4명에 따라 달라진다).
+   고정하면 1명일 때도 4명 자리를 차지해 영상이 그만큼 작아진다. */
+body.dt-b #dtTl{flex:0 0 auto;min-height:0}
+body.dt-b .dt-panes{flex:1 1 auto;min-height:0}
 
 /* 타일 우하단 `주변 카메라 (N)` (시안) */
 .mv-near{
