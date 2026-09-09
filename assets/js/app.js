@@ -169,10 +169,12 @@ function syncPanels() {
    · 유사도      : 유사도 점수가 나오는 텍스트 · 이미지 검색만
    · 색상        : **텍스트 검색에만**
    · 차종        : 차량번호 검색만 */
+/* 시안 1-1안(Solid/요청사항 반영) : 위치 → 기간 → 유사도 순.
+   색상 필터는 시안에서 빠졌다. */
 const FILTER_DEF = {
-  text:   ['sim', 'cam', 'color', 'period'],
+  text:   ['cam', 'period', 'sim'],
   /* 인물 검색은 이미지 검출·등록 인물 두 방식을 함께 쓰므로 유사도가 붙는다 */
-  person: ['sim', 'cam', 'period'],
+  person: ['cam', 'period', 'sim'],
   algo:   ['cam', 'period'],
   car:    ['cam', 'cartype', 'period'],
   aim:    []
@@ -252,11 +254,11 @@ function buildFilters(mode) {
   const parts = [];
   for (const f of FILTER_DEF[mode]) {
     /* 시안(4307:27540) : 슬라이더 위 라벨 없이, 아래에 현재값(파랑) + 100% 를 둔다 */
+    /* 시안 : `대상 유사도` 라벨과 현재값을 한 줄에 두고 그 아래 슬라이더만 */
     if (f === 'sim') parts.push(accBlock('sim', '유사도', `
-      <div class="slider-row">
-        <div class="sim-bubble" style="left:${S.sim}%"><b id="fSimVal">${S.sim}%</b></div>
+      <div class="sim-head"><span>대상 유사도</span><b id="fSimVal">${S.sim}%</b></div>
+      <div class="slider-row plain">
         <input type="range" class="slider" id="fSim" min="0" max="100" value="${S.sim}">
-        <div class="sim-scale"><span>0%</span><span class="mid" id="fSimMid">${S.sim}% 이상</span><span>100%</span></div>
       </div>
       `, on));
 
@@ -275,13 +277,18 @@ function buildFilters(mode) {
     if (f === 'period') parts.push(accBlock('period', '기간', `
       ${['당일', '최근 3일', '최근 7일', '날짜 미정'].map(p =>
         `<label class="radio sm"><input type="radio" name="fp" data-p="${p}" ${S.period === p ? 'checked' : ''}><i></i>${p}</label>`).join('')}
-      <div class="date-wrap" ${S.period === '날짜 지정' ? '' : 'hidden'}>
-        <div class="date-row"><span class="lb">시작</span>
-          <span class="date-fld">${ICON.cal}<input type="date" id="dFrom" value="${S.dFrom}"></span>
-          <span class="date-fld">${ICON.clock}<input type="time" id="tFrom" value="${S.tFrom}"></span></div>
-        <div class="date-row"><span class="lb">종료</span>
-          <span class="date-fld">${ICON.cal}<input type="date" id="dTo" value="${S.dTo}"></span>
-          <span class="date-fld">${ICON.clock}<input type="time" id="tTo" value="${S.tTo}"></span></div>
+      <!-- 시안 : 시작일·종료일은 라디오와 무관하게 늘 보이고, 라벨이 위에 붙는다 -->
+      <div class="date-wrap">
+        <div class="date-grp"><span class="lb">시작일</span>
+          <div class="date-row">
+            <span class="date-fld">${ICON.cal}<input type="date" id="dFrom" value="${S.dFrom}"></span>
+            <span class="date-fld">${ICON.clock}<input type="time" id="tFrom" value="${S.tFrom}"></span>
+          </div></div>
+        <div class="date-grp"><span class="lb">종료일</span>
+          <div class="date-row">
+            <span class="date-fld">${ICON.cal}<input type="date" id="dTo" value="${S.dTo}"></span>
+            <span class="date-fld">${ICON.clock}<input type="time" id="tTo" value="${S.tTo}"></span>
+          </div></div>
       </div>`, on));
   }
   const box = $(`.filters[data-filters="${mode}"]`);
