@@ -4460,3 +4460,68 @@ body.dt-b #dtTl .tl-obj{left:-70px}
 
 /* 커서가 레인과 같은 기준을 쓰도록 gutter 폭을 변수로 공유 */
 body.dt-b #dtTl .tl-inner{--tl-gut:74px}
+
+/* ══ 커서 미리보기 정리 (2026-09-09) ═══════════════════════════════════
+   커서가 지나는 클립이 **확대**되는 것과 커서 위 **큰 미리보기**가
+   같은 정보를 두 번 보여주며 서로 겹쳤다.
+   시안(기본 상세>썸네일)은 커서 위 미리보기 하나만 쓴다. */
+
+/* 1) 커서 통과 시 클립 확대 없앰 — 호버·선택 때만 살짝 강조 */
+body.dt-b #dtTl .tl-th.pass{transform:none;box-shadow:none;z-index:auto}
+body.dt-b #dtTl .tl-th.pass{border-color:var(--primary)}
+body.dt-b #dtTl .tl-th:hover,
+body.dt-b #dtTl .tl-th.on{transform:none;box-shadow:0 2px 10px rgba(0,0,0,.5)}
+
+/* 2) 미리보기를 타임라인 **위쪽**으로 빼서 클립을 가리지 않게
+      (시안 실측 199x112 + 아래 시각 배지) */
+body.dt-b #dtTl .tl-cur-pv{
+  top:auto;bottom:calc(100% - 26px);
+  width:180px;height:101px;border-radius:4px;
+  border:1.5px solid var(--primary);
+  box-shadow:0 10px 26px rgba(0,0,0,.6);z-index:12
+}
+/* 시각 배지는 미리보기 바로 아래 */
+body.dt-b #dtTl .tl-cursor .tl-cur-t{
+  top:auto;bottom:calc(100% - 26px);transform:translate(-50%, 100%);
+  opacity:1;z-index:12
+}
+/* 미리보기가 없을 때는 배지도 눈금 줄에 붙인다 */
+body.dt-b #dtTl .tl-cursor:has(.tl-cur-pv[hidden]) .tl-cur-t{
+  bottom:auto;top:0;transform:translateX(-50%)
+}
+
+/* 미리보기가 눈금 줄을 덮던 문제 —
+   시안처럼 타임라인 **밖(영상 영역 위)** 으로 띄운다. */
+body.dt-b #dtTl{overflow:visible}
+body.dt-b #dtTl .tl-scroll{overflow-x:auto;overflow-y:visible}
+body.dt-b #dtTl .tl-inner{overflow:visible}
+body.dt-b #dtTl .tl-cur-pv{
+  bottom:calc(100% + 8px);          /* 눈금 위로 완전히 올린다 */
+  width:190px;height:107px
+}
+body.dt-b #dtTl .tl-cursor .tl-cur-t{
+  bottom:calc(100% + 8px);transform:translate(-50%, 100%)
+}
+
+/* 미리보기가 재생바 뒤로 숨던 문제 — 층위를 올리고 조상의 자르기를 푼다 */
+body.dt-b .dt-hist{overflow:visible;position:relative;z-index:40}
+body.dt-b #dtTl .tl-cur-pv{z-index:60}
+/* 시각 배지를 미리보기 **안 하단**으로 (눈금·날짜와 겹치지 않게) */
+body.dt-b #dtTl .tl-cursor .tl-cur-t{
+  bottom:calc(100% + 12px);transform:translateX(-50%);
+  z-index:61;background:rgba(0,0,0,.78);border-color:transparent;color:#fff
+}
+
+/* 밖으로 띄우면 상위 스택에 가려 아예 사라진다 —
+   타임라인 **안**, 눈금 바로 아래에 둔다. 클립 확대를 없앴으므로
+   겹치는 것은 미리보기 하나뿐이다. */
+body.dt-b .dt-hist{overflow:hidden;z-index:auto}
+body.dt-b #dtTl{overflow:hidden}
+body.dt-b #dtTl .tl-cur-pv{
+  bottom:auto;top:34px;
+  width:170px;height:96px;z-index:60
+}
+body.dt-b #dtTl .tl-cursor .tl-cur-t{
+  bottom:auto;top:34px;transform:translate(-50%,-100%);
+  z-index:61;background:rgba(0,0,0,.82);border-color:transparent;color:#fff
+}
