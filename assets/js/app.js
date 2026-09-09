@@ -3197,7 +3197,11 @@ function renderMap3d(paths) {
   bindMapSeek();
   syncMapToCursor();
   /* 층마다 공간 라벨이 서로·바닥과 겹쳐 묻혔다 — 층별로 실측해 밀어낸다 */
-  requestAnimationFrame(() => host.querySelectorAll('.m3-floor').forEach(f => spreadMapLabels(f, '.m3-sp')));
+  requestAnimationFrame(() => {
+    host.querySelectorAll('.m3-floor').forEach(f => spreadMapLabels(f, '.m3-sp'));
+    /* 층이 비스듬히 겹쳐 있어 다른 층 라벨과도 부딪친다 — 맵 전체로 한 번 더 */
+    spreadMapLabels(host, '.m3-sp');
+  });
 }
 
 let MAP_PATHS_CACHE = null;
