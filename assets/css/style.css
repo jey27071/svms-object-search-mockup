@@ -4396,10 +4396,7 @@ body.dt-b .dt-side > .dt-sec{border-top:0}
 .m3-sp{transform:translate(-50%,-190%) rotateZ(45deg) rotateX(-60deg)}
 .m3-riser{left:38%;top:20%;height:52%;background:none;border-left:2px dashed var(--primary);width:0}
 
-/* 동 선택을 맵 카드 안 좌상단으로 */
-body.dt-b .dt-sec-head .dt-bldg{
-  position:absolute;left:14px;top:52px;z-index:9;margin:0
-}
+/* 시안(맵뷰어) : 상단 한 줄 — 좌측 동 선택, 우측 레이아웃 토글 + 바꾸기 */
 body.dt-b .dt-sec{position:relative}
 
 /* 맵 도구를 우측 세로 스택으로 (시안) */
@@ -4433,7 +4430,33 @@ body.dt-b .dt-side{width:534px;flex:0 0 534px}
 /* 행 높이는 JS(ROW)가 정한다 — CSS 로 덮어쓰면 썸네일 계산과 어긋나 잘린다 */
 body.dt-b #dtTl .tl-foot{padding:5px 12px}
 body.dt-b #dtTl .tl-obj{width:64px}
-body.dt-b #dtTl .tl-lane{margin-left:74px}
 
 /* 맵 기본은 평면도 한 장 — 3D 층은 층별을 골랐을 때만 */
 body.dt-b .dt-map .map-3d[hidden]{display:none}
+
+/* ── 맵뷰 상단 줄 : 시안(맵뷰어 4481:27552) 배치 ─────────────────────────
+   좌측 `A동 (5) ▾` · 우측 레이아웃 토글 2개 + 자리 바꾸기 */
+body.dt-b .dt-side .dt-sec-head{
+  display:flex;align-items:center;gap:8px;padding:0 2px 10px
+}
+/* `맵뷰어` 라벨과 아이콘은 시안에 없다 */
+body.dt-b .dt-side .dt-sec-head > svg.ic,
+body.dt-b .dt-side .dt-sec-head > .ic{display:none}
+body.dt-b .dt-side .dt-sec-head{font-size:0}          /* 라벨 텍스트 숨김 */
+body.dt-b .dt-side .dt-sec-head > *{font-size:12px}   /* 자식은 원래 크기로 */
+
+body.dt-b .dt-sec-head .dt-bldg{order:1;margin:0 auto 0 0;position:static}
+body.dt-b .dt-sec-head .map-lay{order:2;margin:0}
+body.dt-b .dt-sec-head .map-swap{order:3;margin:0}
+
+/* ── 타임라인 좌표계 통일 ────────────────────────────────────────────────
+   눈금·클립·커서가 서로 다른 기준을 쓰면 위치가 어긋난다.
+   트랙 라벨 자리를 .tl-inner 의 padding 으로 잡으면
+   절대배치(눈금·커서)와 레인(클립)이 같은 시작점을 공유한다. */
+body.dt-b #dtTl .tl-inner{box-sizing:border-box;padding-left:74px}
+body.dt-b #dtTl .tl-lane{margin-left:0}
+/* 라벨은 그 padding 자리에 놓는다 */
+body.dt-b #dtTl .tl-obj{left:-70px}
+
+/* 커서가 레인과 같은 기준을 쓰도록 gutter 폭을 변수로 공유 */
+body.dt-b #dtTl .tl-inner{--tl-gut:74px}

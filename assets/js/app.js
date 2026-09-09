@@ -1635,7 +1635,7 @@ function renderPM() {
   const ok = $('#pmOk'); if (ok) ok.onclick = () => { closeModal('#mdPerson'); renderPersonGrid(); };
   const q = $('#pmQ'); if (q) q.oninput = e => { pmQuery = e.target.value; renderPM(); $('#pmQ').focus(); };
 }
-const IMG_POOL = ['assets/img/ai01.png?v=202609091658', 'assets/img/ai02.png?v=202609091658', 'assets/img/ai05.png?v=202609091658', 'assets/img/ai06.png?v=202609091658', 'assets/img/ai09.png?v=202609091658'];
+const IMG_POOL = ['assets/img/ai01.png?v=202609091706', 'assets/img/ai02.png?v=202609091706', 'assets/img/ai05.png?v=202609091706', 'assets/img/ai06.png?v=202609091706', 'assets/img/ai09.png?v=202609091706'];
 function pmNew() { pmForm = { name: '', desc: '', imgs: [] }; pmView = 'new'; renderPM(); }
 
 $('#btnTabAdd').onclick = () => { S.activeTab = 'search'; renderTabs(); syncPanels(); toast('검색 홈 탭으로 이동합니다. (새 탭은 카드 더블클릭으로 생성됩니다)'); };
@@ -1675,7 +1675,7 @@ function renderHistory() {
         <div class="hs-main">
           ${it.sub.length ? `<span class="hs-cv">${ICON.caret}</span>` : '<span style="width:10px"></span>'}
           <!-- 와이어프레임(히스토리 팝업) : 썸네일 + 검색어 + 일시 -->
-          <img class="hs-th" src="${(OBJECTS[(di * 3 + i) % OBJECTS.length] || {}).img || 'assets/img/obj01.png?v=202609091658'}" alt="">
+          <img class="hs-th" src="${(OBJECTS[(di * 3 + i) % OBJECTS.length] || {}).img || 'assets/img/obj01.png?v=202609091706'}" alt="">
           <span class="hs-bd"><b class="hs-q">${it.q}</b><em class="hs-t">${d.date} 14:52</em></span>
           ${it.ai ? '<span class="hs-ai">AI</span>' : ''}
           <span class="hs-n">${it.n}건</span>
@@ -1985,6 +1985,12 @@ function renderTimeline(host, tracks, opt = {}) {
   tracks = idx.map(i => allTracks[i]);
   const [d0, d1] = tlDomain(tracks);
   const span = d1 - d0;
+  /* 커서 기본 위치를 첫 클립에 맞춘다 — 기본값(0.34)이면 클립에서 멀리 떨어져
+     미리보기도 안 뜨고 무엇을 보는 커서인지 알 수 없다. */
+  if (!TL._cursorSet && tracks[0] && tracks[0].clips[0]) {
+    TL.cursor = Math.max(0, Math.min(1, (+tlTime(tracks[0].clips[0].from) - d0) / span));
+    TL._cursorSet = true;
+  }
   TL.d0 = d0; TL.span = span; TL._opt = opt;   /* 지도와 시각을 맞추기 위해 공유 */
   const pct = t => (+tlTime(t) - d0) / span * 100;
   const wid = c => Math.max(0.6, (+tlTime(c.to) - +tlTime(c.from)) / span * 100);
@@ -2012,7 +2018,7 @@ function renderTimeline(host, tracks, opt = {}) {
   const rows = tracks.map((tr, ti) => `
     <div class="tl-row" data-tr="${ti}">
       <div class="tl-obj" style="--slot:${typeof slotColor === 'function' ? slotColor(tr.slot) : 'var(--primary)'}">
-        <img src="${(tr.clips[0] || {}).img || 'assets/img/obj01.png?v=202609091658'}" alt="">
+        <img src="${(tr.clips[0] || {}).img || 'assets/img/obj01.png?v=202609091706'}" alt="">
         <span class="nm">${tr.label}</span>
         ${ti > 0 ? `<button class="rm" data-tlrm="${ti}" title="${tr.label} 제거">${ICON.xs || '×'}</button>` : ''}
       </div>
@@ -2022,15 +2028,13 @@ function renderTimeline(host, tracks, opt = {}) {
              폭을 클립 길이 비율로 잡으면 24시간 축에서 몇 분짜리는 실처럼 좁아져
              크기가 들쭉날쭉해진다. 시안은 100x56 고정이고 개수만큼 블록이 길어진다. */
           const THW = 5.6;                 /* 썸네일 한 칸 폭 (레인 대비 %) */
-          let prevEnd = -1e9;
           return tr.clips.map((c, ci) => {
-            let l = pct(c.from);
-            if (l < prevEnd) l = prevEnd;  /* 앞 썸네일과 겹치면 이어 붙인다 → 한 덩어리 */
-            prevEnd = l + THW;
+            /* 위치는 **실제 시각** 그대로. 밀어내면 눈금·커서와 어긋난다.
+               가까운 구간은 자연히 붙어 한 덩어리로 보인다. */
+            const l = pct(c.from);
             const w = THW;
             const extra = (c.extra || []).length;
             const on = TL.sel.t === ti && TL.sel.c === ci;
-            const head = ci === 0 || pct(c.from) >= (prevEnd - THW) + 0.1;
             return `<div class="tl-bar${on ? ' on' : ''}" style="left:${l}%;width:${w}%;--bc:${typeof slotColor === 'function' ? slotColor(tr.slot) : 'var(--primary)'}" data-tr="${ti}" data-c="${ci}"></div>
             <div class="tl-th${on ? ' on' : ''}${opt.edit ? ' edit' : ''}" style="left:${l}%;width:${w}%" data-tr="${ti}" data-c="${ci}" title="${c.cam}">
               <span class="tl-film" style="background-image:url('${c.img}')"></span>
@@ -2064,7 +2068,7 @@ function renderTimeline(host, tracks, opt = {}) {
       <div class="tl-inner" style="width:${TL.zoom * 100}%">
         <div class="tl-ruler">${ticks}</div>
         <div class="tl-rows">${rows}</div>
-        <span class="tl-cursor" style="left:${TL.cursor * 100}%"><i class="tl-cur-mk"></i><span class="tl-cur-pv"></span><b class="tl-cur-t">${tlHMS(new Date(d0 + TL.cursor * span))}</b></span>
+        <span class="tl-cursor" style="left:calc(var(--tl-gut, 0px) + (100% - var(--tl-gut, 0px)) * ${TL.cursor})"><i class="tl-cur-mk"></i><span class="tl-cur-pv"></span><b class="tl-cur-t">${tlHMS(new Date(d0 + TL.cursor * span))}</b></span>
       </div>
     </div>
     <!-- 시안(비교-대상4개) : 좌 편집도구 · 중앙 확대 · 우 인물 추가/사건 등록 -->
@@ -2174,7 +2178,7 @@ function renderTimeline(host, tracks, opt = {}) {
      드래그가 끝나면 다시 그리는데, 그때 미리보기가 지워지던 문제도 이걸로 해결. */
   const syncCursor = () => {
     const cur = host.querySelector('.tl-cursor');
-    if (cur) cur.style.left = (TL.cursor * 100) + '%';
+    if (cur) cur.style.left = `calc(var(--tl-gut, 0px) + (100% - var(--tl-gut, 0px)) * ${TL.cursor})`;
     const badge = host.querySelector('.tl-cur-t');
     if (badge) badge.textContent = tlHMS(new Date(d0 + TL.cursor * span));
     /* 커서가 지나는 썸네일을 즉시 키운다 */
@@ -2200,7 +2204,10 @@ function renderTimeline(host, tracks, opt = {}) {
 
   const seekTo = clientX => {
     const r = inner0.getBoundingClientRect();
-    TL.cursor = Math.max(0, Math.min(1, (clientX - r.left) / r.width));
+    /* 좌측 라벨 자리(gutter)를 뺀 **레인 폭** 기준으로 센다 —
+       그래야 커서가 눈금·클립과 같은 위치를 가리킨다. */
+    const gut = parseFloat(getComputedStyle(inner0).paddingLeft) || 0;
+    TL.cursor = Math.max(0, Math.min(1, (clientX - r.left - gut) / (r.width - gut)));
     syncCursor();
   };
   const startSeek = e => {
@@ -2469,7 +2476,7 @@ function paneToolsHTML(kind, i) {
 function paneBody(kind, i) {
   if (kind === 'map') {
     return `<div class="pn-map">
-      <img src="assets/img/floor.png?v=202609091658" alt="맵뷰">
+      <img src="assets/img/floor.png?v=202609091706" alt="맵뷰">
       ${PANE.mapTools.includes('path') ? paneMapPathHTML() : ''}
       ${PANE.mapTools.includes('cctv') ? `<div class="pn-cones">${MAP_CCTV.map(c =>
         `<span class="map-cone" style="left:${c.x}%;top:${c.y}%;rotate:${c.deg}deg"><i></i><b></b></span>`).join('')}</div>` : ''}
@@ -2500,14 +2507,14 @@ function paneBody(kind, i) {
   if ((PANE.vmode[i] || 'multi') === 'multi') {
     return `<div class="pn-vid pn-quad">
       <div class="pq">${[0, 1, 2, 3].map(k =>
-        `<span><img src="${(clips[k] || clips[0] || {}).img || 'assets/img/video.png?v=202609091658'}" alt="">
+        `<span><img src="${(clips[k] || clips[0] || {}).img || 'assets/img/video.png?v=202609091706'}" alt="">
          ${tileHead(k)}</span>`).join('')}</div>
       ${paneToolsHTML('video', i)}
       ${paneNearCamHTML(i)}
     </div>`;
   }
   return `<div class="pn-vid">
-    <img src="${(clips[Math.min(i, 3)] || {}).img || 'assets/img/video.png?v=202609091658'}" alt="">
+    <img src="${(clips[Math.min(i, 3)] || {}).img || 'assets/img/video.png?v=202609091706'}" alt="">
     ${tileHead(Math.min(i, 3))}
     ${paneToolsHTML('video', i)}
     ${paneNearCamHTML(i)}
@@ -2555,7 +2562,7 @@ function renderPanes() {
     if (PANE.kind[0] !== 'map') v.insertAdjacentHTML('beforeend', paneToolsHTML('video', 0));
     if (PANE.kind[0] === 'map') {
       v.insertAdjacentHTML('afterbegin', `<div class="pn-map">
-        <img src="assets/img/floor.png?v=202609091658" alt="맵뷰">
+        <img src="assets/img/floor.png?v=202609091706" alt="맵뷰">
         ${PANE.mapTools.includes('path') ? paneMapPathHTML() : ''}
         ${PANE.mapTools.includes('cctv') ? `<div class="pn-cones">${MAP_CCTV.map(c =>
           `<span class="map-cone" style="left:${c.x}%;top:${c.y}%;rotate:${c.deg}deg"><i></i><b></b></span>`).join('')}</div>` : ''}
@@ -3208,7 +3215,7 @@ function renderMap3d(paths) {
   host.innerHTML = M3_FLOORS.map((f, fi) => {
     const mine = pts.filter(t => m3FloorOf(t.cam) === f.key);
     return `<div class="m3-floor" style="--i:${fi}">
-      <img src="assets/img/floor.png?v=202609091658" alt="">
+      <img src="assets/img/floor.png?v=202609091706" alt="">
       ${mine.map(t => `<span class="map-wp" data-hh="${t.hh}" data-x="${t.x}" data-y="${t.y}"
           title="${t.cam} · 이 지점으로 이동"
           style="left:${t.x}%;top:${t.y}%;background:${slotColor(paths[0].slot)}">${t.n}</span>
@@ -3334,7 +3341,7 @@ function spreadMapLabels(host, sel) {
 $$('#dtMapSeg button').forEach(b => b.onclick = () => {
   $$('#dtMapSeg button').forEach(x => x.classList.toggle('on', x === b));
   DT.map = b.dataset.m;
-  $('#dtMapImg').src = DT.map === 'map' ? 'assets/img/map.png?v=202609091658' : 'assets/img/floor.png?v=202609091658';
+  $('#dtMapImg').src = DT.map === 'map' ? 'assets/img/map.png?v=202609091706' : 'assets/img/floor.png?v=202609091706';
   $('#dtFloor').hidden = true;                 /* 층 배지는 3D 각 층에 붙는다 */
   renderMap3d(MAP_PATHS_CACHE);
 });
@@ -3906,7 +3913,7 @@ function mvwPaths() {
 }
 function renderMapView() {
   const paths = mvwPaths();
-  const mapImg = DT.map === 'map' ? 'assets/img/map.png?v=202609091658' : 'assets/img/floor.png?v=202609091658';
+  const mapImg = DT.map === 'map' ? 'assets/img/map.png?v=202609091706' : 'assets/img/floor.png?v=202609091706';
   const seg = `<div class="seg"><button class="${DT.map === 'map' ? 'on' : ''}" data-mm="map">지도</button><button class="${DT.map === 'map' ? '' : 'on'}" data-mm="floor">층별</button></div>`;
   /* 사양서 Detail_000_4 · 4-4) : 주변 카메라 / 이동 경로 / 전체 보기
      이동 경로는 **단일 대상일 때 비활성** (그룹·경로비교에서만 사용) */
@@ -3968,7 +3975,7 @@ function renderMapView() {
   /* 바인딩 */
   $$('#mvwBody [data-mm]').forEach(b => b.onclick = () => {
     DT.map = b.dataset.mm;
-    $('#dtMapImg').src = DT.map === 'map' ? 'assets/img/map.png?v=202609091658' : 'assets/img/floor.png?v=202609091658';
+    $('#dtMapImg').src = DT.map === 'map' ? 'assets/img/map.png?v=202609091706' : 'assets/img/floor.png?v=202609091706';
     $('#dtFloor').hidden = DT.map === 'map';
     renderMapView();
   });
@@ -4413,7 +4420,7 @@ function applyDemo() {
   }
   if (d === 'personmgr') { switchMode('person'); renderPersonGrid(); openPersonMgr(); }
   if (d === 'history')   { HIST.open.add('0-0'); $('#btnHistory').click(); }
-  if (d === 'imagemodal'){ setMode('person'); setPfWay('img'); loadImage('assets/img/obj01.png?v=202609091658'); }
+  if (d === 'imagemodal'){ setMode('person'); setPfWay('img'); loadImage('assets/img/obj01.png?v=202609091706'); }
   if (d === 'person') { setMode('person'); S.selPersons = ['p1', 'p3']; renderPersonGrid(); buildFilters('person'); runSearch(false); }
   if (d === 'algo')   { setMode('algo'); S.algos = ['침입', '배회']; renderAlgoGrid(); buildFilters('algo'); runSearch(false); }
   if (d === 'image')  { setMode('person'); setPfWay('img'); }
@@ -4496,7 +4503,7 @@ function imsBuild() {
 }
 
 function openImgSearch(src) {
-  IMS.src = src || (OBJECTS[0] || {}).img || 'assets/img/video.png?v=202609091658';
+  IMS.src = src || (OBJECTS[0] || {}).img || 'assets/img/video.png?v=202609091706';
   IMS.kind = '전체'; IMS.sel = new Set(); IMS.items = [];
   const img = document.getElementById('imsImg'); if (img) img.src = IMS.src;
   document.getElementById('imsGrid').innerHTML = '';
@@ -5034,7 +5041,7 @@ function csDetailHTML(c) {
           <button class="btn-ghost sm" style="margin-left:auto" data-csmap>전체 보기</button>
         </div>
         <div style="position:relative;height:196px;border-radius:6px;overflow:hidden;background:var(--bg-1);border:1px solid var(--ln-subtle)">
-          <img src="assets/img/map.png?v=202609091658" style="width:100%;height:100%;object-fit:cover;opacity:.85" alt="">
+          <img src="assets/img/map.png?v=202609091706" style="width:100%;height:100%;object-fit:cover;opacity:.85" alt="">
           ${c.path.map((p, i) => {
             const x = 16 + (i * 23) % 68, y = 22 + (i * 17) % 54;
             return `<span style="position:absolute;left:${x}%;top:${y}%;width:9px;height:9px;border-radius:50%;
