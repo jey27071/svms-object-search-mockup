@@ -5,8 +5,8 @@
 <title>SVMS — 동선 추적 검색 (Working Mockup)</title>
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
-<link rel="stylesheet" href="assets/css/icons.css?v=202609091254">
-<link rel="stylesheet" href="assets/css/style.css?v=202609091254">
+<link rel="stylesheet" href="assets/css/icons.css?v=202609091315">
+<link rel="stylesheet" href="assets/css/style.css?v=202609091315">
 </head>
 <body>
 
@@ -267,17 +267,25 @@
             <button class="select-btn">유사도순<i class="i i-16 i-chevron i-down caret"></i></button>
             <div class="select-menu" id="sortMenu"></div>
           </div>
-          <!-- 시안 1-1안 : 정렬만 둔다. 보기 모드·크기 조절은 시안에 없어 감춘다
-               (기능은 남겨 두고 표시만 끈다 — 되살릴 때 hidden 만 떼면 된다) -->
-          <div class="seg view-seg" id="viewSeg" hidden>
-            <button class="on" data-view="thumb" title="썸네일 보기">썸네일</button>
-            <button data-view="raw" title="원본 비율 보기">원본 비율</button>
+          <!-- 와이어프레임(기본/최소화) : 정렬 · 그룹별 보기 · 크기 · 레이아웃 -->
+          <div class="select sm" id="groupSelect" data-value="그룹별 보기">
+            <button class="select-btn"><i class="i i-16 i-listview"></i>그룹별 보기<i class="i i-16 i-chevron i-down caret"></i></button>
+            <div class="select-menu">
+              <div data-v="그룹별 보기">그룹별 보기</div>
+              <div data-v="전체 보기">전체 보기</div>
+            </div>
           </div>
-          <label class="size-slider" title="썸네일 크기" hidden>
+          <span class="rh-sep"></span>
+          <label class="size-slider" title="썸네일 크기">
             <i class="ss-min"></i>
             <input type="range" id="thumbSize" min="140" max="320" step="10" value="200">
             <i class="ss-max"></i>
           </label>
+          <!-- 레이아웃 : 격자 / 목록 -->
+          <div class="seg view-seg" id="viewSeg">
+            <button class="on" data-view="thumb" title="격자 보기"><i class="i i-16 i-tool-multi"></i></button>
+            <button data-view="raw" title="목록 보기"><i class="i i-16 i-listview"></i></button>
+          </div>
         </div>
       </div>
       <div class="results-body" id="resultsBody"></div>
@@ -751,7 +759,7 @@
 
 <div class="toast" id="toast" hidden></div>
 
-<script src="assets/js/data.js?v=202609091254"></script>
-<script src="assets/js/app.js?v=202609091254"></script>
+<script src="assets/js/data.js?v=202609091315"></script>
+<script src="assets/js/app.js?v=202609091315"></script>
 </body>
 </html>

@@ -45,7 +45,7 @@ const S = {
   persons: PERSONS.slice(), selPersons: [], personSort: '등록일순', personQ: '',
   algos: [],
   uploaded: null, extracted: [], extSel: [],
-  tabs: [{ id: 'search', title: '검색홈', fixed: true }], activeTab: 'search',
+  tabs: [{ id: 'search', title: '검색 홈', fixed: true, home: true }], activeTab: 'search',
   recent: AI_RECENT.map(r => ({ ...r }))
 };
 
@@ -87,7 +87,9 @@ function renderTabs() {
   S.tabs.forEach(t => {
     const n = el('div', 'tab' + (t.id === S.activeTab ? ' on' : '') + (t.fixed ? ' fixed' : ''));
     /* 사양서 Search main_000_1 · 4-1) : 검색 탭은 기본 탭으로 **닫기 불가** → ✕ 자체를 두지 않는다 */
-    n.innerHTML = `<span>${t.title}</span>` + (t.fixed ? '' : `<button class="x">${ICON.xs}</button>`);
+    /* 와이어프레임 : 고정 탭은 집 아이콘을 앞에 둔다 */
+    n.innerHTML = (t.home ? `<svg viewBox="0 0 16 16" class="tab-home" aria-hidden="true"><path d="M2.6 7.2L8 2.8l5.4 4.4V13a.6.6 0 0 1-.6.6H3.2a.6.6 0 0 1-.6-.6z" stroke="currentColor" stroke-width="1.2" fill="none" stroke-linejoin="round"/></svg>` : '')
+      + `<span>${t.title}</span>` + (t.fixed ? '' : `<button class="x">${ICON.xs}</button>`);
     n.onclick = e => {
       if (e.target.closest('.x')) {
         if (t.fixed) { S.activeTab = t.id; }
@@ -553,6 +555,8 @@ function cardHTML(o, opt = {}) {
     </div>
     <div class="meta">
       <div><div class="loc">${cardTitle(o)}</div><div class="tm">${fmtT(o.t)}</div></div>
+      <!-- 와이어프레임 : 카드 하단에 북마크를 둔다 -->
+      <button class="cbk${bm ? ' on' : ''}" data-cbk="${o.id}" title="북마크">${ICON.bmark}</button>
       <button class="more" data-more="${o.id}">${ICON.more}</button>
     </div>
   </div>`;
@@ -566,14 +570,14 @@ function renderResults() {
     body.innerHTML = `<div class="empty" style="flex-direction:column;gap:10px">
       <div style="font-size:15px;color:#8ea0b0">${t ? t.title : ''}</div>
       <div style="font-size:12px;color:#5a6875">상세/경로 비교 화면은 UI사양서에 정의되어 있지 않아<br>탭 생성까지만 구현되어 있습니다.</div></div>`;
-    $('#resCount').textContent = '검색 결과 (-)';
+    $('#resCount').innerHTML = `검색 결과 <em class="rc-badge">-</em>`;
     return;
   }
 
   /* AI 대화(우측 에이전트 · 좌측 AI 검색) 결과도 가운데 목록에 싣는다 */
   const aiOn = (S.aiMode || S.mode === 'aim');
   const aiList = (S.aiResults && S.aiResults.length) ? S.aiResults : AI_RESULT;
-  $('#resCount').textContent = `검색 결과 (${(aiOn && S.aiStage === 'done' ? aiList.length : S.results.length)}건)`;
+  $('#resCount').innerHTML = `검색 결과 <em class="rc-badge">${(aiOn && S.aiStage === 'done' ? aiList.length : S.results.length)}건</em>`;
   renderSortMenu();
 
   /* AI 모드 */
@@ -1018,6 +1022,14 @@ function bindCards(root) {
     const id = c.dataset.id;
     let clickT = null;
     c.onclick = e => {
+      const bkb = e.target.closest('[data-cbk]');
+      if (bkb) {
+        e.stopPropagation();
+        const bid = bkb.dataset.cbk;
+        S.bookmarks.has(bid) ? S.bookmarks.delete(bid) : S.bookmarks.add(bid);
+        renderResults();
+        return;
+      }
       if (e.target.closest('[data-more]')) { openCtx(e, id); return; }
       if (e.target.closest('.cmp')) return;
       clearTimeout(clickT);
@@ -1201,15 +1213,13 @@ function renderPreview() {
         </div>`);
       box.appendChild(n);
     } else {
-      const n = el('div', 'pv mini', `
-        <div class="th"><img src="${p.img}" alt=""></div>
-        <div class="bd">
-          <div class="nm">${pvTitle(p)}</div>
-          <div class="ln">${p.person || '인물 A'}</div>
-          <div class="ln">${p.t}</div>
-          <div class="ln">${p.event || '이동/계수'}</div>
-        </div>
-        <button class="btn-icon x" data-close-pv="${p.uid}">${ICON.x}</button>`);
+      /* 와이어프레임(기본/최소화) : 한 줄 행 — 제목 · 일시 · 북마크 · 닫기 */
+      const bm2 = S.bookmarks.has(p.id);
+      const n = el('div', 'pv row', `
+        <span class="nm">${pvTitle(p)}</span>
+        <span class="tm">${p.t}</span>
+        <button class="bk${bm2 ? ' on' : ''}" data-bk="${p.id}" title="북마크">${ICON.bmark}</button>
+        <button class="x" data-close-pv="${p.uid}" title="목록에서 제거">${ICON.x}</button>`);
       /* 접힌 항목을 고르면 **그 자리에서** 펼쳐져 재생된다 (순서는 그대로) */
       n.onclick = e => {
         if (e.target.closest('[data-close-pv]')) return;
@@ -1626,7 +1636,7 @@ function renderPM() {
 const IMG_POOL = ['assets/img/ai01.png', 'assets/img/ai02.png', 'assets/img/ai05.png', 'assets/img/ai06.png', 'assets/img/ai09.png'];
 function pmNew() { pmForm = { name: '', desc: '', imgs: [] }; pmView = 'new'; renderPM(); }
 
-$('#btnTabAdd').onclick = () => { S.activeTab = 'search'; renderTabs(); syncPanels(); toast('검색홈 탭으로 이동합니다. (새 탭은 카드 더블클릭으로 생성됩니다)'); };
+$('#btnTabAdd').onclick = () => { S.activeTab = 'search'; renderTabs(); syncPanels(); toast('검색 홈 탭으로 이동합니다. (새 탭은 카드 더블클릭으로 생성됩니다)'); };
 
 /* ===================== 히스토리 ===================== */
 /* 사양 §4 : 히스토리 버튼 → 화면 Dim + 팝업. 최근 7일 · 최신순.
