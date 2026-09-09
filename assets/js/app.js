@@ -102,6 +102,22 @@ function renderTabs() {
       renderTabs(); syncPanels();
     };
     box.appendChild(n);
+    /* 사양 : 패널을 접으면 **검색홈 탭 바로 오른쪽**에 펼침 버튼이 붙는다.
+       가장자리 핸들이 아니라 탭 줄 안에 있어야 눈에 띈다. */
+    if (t.fixed) {
+      const ex = el('button', 'tab-expand', `
+        <svg viewBox="0 0 16 16" class="ic" aria-hidden="true">
+          <rect x="2.2" y="2.8" width="11.6" height="10.4" rx="1.6" stroke="currentColor" stroke-width="1.2" fill="none"/>
+          <path d="M6.6 2.8v10.4" stroke="currentColor" stroke-width="1.2"/>
+          <path d="M9.4 6.2L11.6 8L9.4 9.8" stroke="currentColor" stroke-width="1.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>`);
+      ex.id = 'btnTabExpand';
+      ex.title = '검색 패널 펼치기';
+      ex.setAttribute('aria-label', '검색 패널 펼치기');
+      ex.hidden = !S._collapsed;
+      ex.onclick = e => { e.stopPropagation(); setCollapsed(false); };
+      box.appendChild(ex);
+    }
   });
 }
 /* 검색 탭은 **최대 10개**. 넘치면 가장 오래된 탭부터 닫는다(선입선출).
@@ -1761,9 +1777,12 @@ function renderRecent() {
 S._collapsed = false;
 function setCollapsed(v) {
   S._collapsed = v;
-  $('#collapsedRail').hidden = !v;
+  /* 펼침은 탭바 버튼이 맡는다 — 가장자리 핸들은 쓰지 않는다 */
+  $('#collapsedRail').hidden = true;
   $('#sidePanel').hidden = v || S.aiMode;
   $('#aiPanel').hidden = v || !S.aiMode;
+  const ex = document.getElementById('btnTabExpand');
+  if (ex) ex.hidden = !v;
 }
 $('#btnCollapse').onclick = () => setCollapsed(true);
 /* 시안 1-1안 : 패널 머리말의 접기 버튼도 같은 동작 */

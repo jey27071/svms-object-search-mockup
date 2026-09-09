@@ -4013,3 +4013,16 @@ body.dt-b .dt-video.has-multi > #ovCctv{display:none}
 /* 펼친 상태에서는 요약이 중복이라 감춘다 */
 .acc.open > .acc-head .acc-sum{display:none}
 .acc.disabled .acc-sum{color:var(--tx-helper)}
+
+/* ── 접힘 펼침 버튼 : 검색홈 탭 오른쪽 ───────────────────────────────────
+   가장자리 핸들 대신 탭 줄 안에 둔다. */
+.tab-expand{
+  flex:0 0 auto;display:flex;align-items:center;justify-content:center;
+  width:28px;height:28px;margin:0 2px 0 6px;
+  background:var(--bg-2);border:1px solid var(--ln-border);border-radius:5px;
+  color:var(--tx-secondary);cursor:pointer
+}
+.tab-expand:hover{border-color:var(--primary);color:var(--tx-primary)}
+.tab-expand[hidden]{display:none}
+/* 접힘 레일(구 핸들)은 더 쓰지 않는다 */
+.collapsed-rail{display:none}
