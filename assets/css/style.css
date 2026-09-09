@@ -4537,3 +4537,30 @@ body.dt-b #dtTl .tl-cursor .tl-cur-t{
 }
 /* 영상 ↔ 맵 자리 바꾸기 */
 body.dt-swap .detail{flex-direction:row-reverse}
+
+/* ══ 타임라인 세부 : 시안(비교 대상 N개) 실측 ═══════════════════════════ */
+
+/* 구간 막대를 썸네일 위 **별도 줄**로 얇게 */
+body.dt-b #dtTl .tl-bar{height:4px;border-radius:2px;top:2px;opacity:1}
+
+/* 캡션(위치명)을 썸네일 **아래**로 빼고 한 줄로 */
+body.dt-b #dtTl .tl-th{overflow:visible}
+body.dt-b #dtTl .tl-film{border-radius:3px;overflow:hidden}
+body.dt-b #dtTl .tl-cam{
+  position:absolute;left:0;right:0;bottom:-15px;
+  font-size:9.5px;line-height:14px;color:var(--tx-tertiary);
+  background:none;padding:0;text-align:center;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap
+}
+/* 클립 수 배지는 캡션 줄 오른쪽 끝에 */
+body.dt-b #dtTl .tl-more{
+  top:auto;bottom:-15px;right:-2px;
+  background:none;color:var(--primary);font-size:9.5px;padding:0
+}
+
+/* 커서 : 상단 원형 핸들 (시안) */
+body.dt-b #dtTl .tl-cur-mk{
+  border:0;width:9px;height:9px;border-radius:50%;
+  background:#fff;box-shadow:0 0 0 2px rgba(0,0,0,.35);
+  top:24px;left:50%;transform:translate(-50%,-50%)
+}
