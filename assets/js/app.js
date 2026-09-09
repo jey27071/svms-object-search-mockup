@@ -1990,7 +1990,9 @@ function renderTimeline(host, tracks, opt = {}) {
   /* 눈금 · 날짜 */
   const step = tlStep(span, TL.zoom, host.clientWidth);
   let ticks = '', lastDay = '';
-  for (let t = Math.ceil(d0 / step) * step; t <= d1; t += step) {
+  /* 눈금은 epoch 배수가 아니라 **도메인 시작(08:00)** 부터 센다.
+     epoch 배수로 잡으면 시간대(+9) 때문에 09:00·11:00 처럼 어긋난다. */
+  for (let t = d0; t <= d1; t += step) {
     const d = new Date(t), p = (t - d0) / span * 100;
     const day = tlYMD(d);
     const isNewDay = day !== lastDay;
