@@ -4564,3 +4564,22 @@ body.dt-b #dtTl .tl-cur-mk{
   background:#fff;box-shadow:0 0 0 2px rgba(0,0,0,.35);
   top:24px;left:50%;transform:translate(-50%,-50%)
 }
+
+/* 맵 하단 이동 칩 (시안 맵뷰어) — 외부 이동 / 실내 이동 */
+body.dt-b .dt-map .pn-bldg{
+  left:12px;right:auto;bottom:12px;display:flex;flex-direction:column;gap:6px
+}
+.pn-bldg .mv-out,
+.pn-bldg .mv-in{
+  display:flex;align-items:center;gap:8px;text-align:left;
+  background:rgba(255,255,255,.94);border:1px solid var(--exit);border-radius:5px;
+  padding:5px 10px;cursor:pointer;color:#2b2f36
+}
+.pn-bldg .mv-in{border-color:var(--primary)}
+.pn-bldg .mv-out i,
+.pn-bldg .mv-in i{font-style:normal;font-size:13px;color:var(--exit)}
+.pn-bldg .mv-in i{color:var(--primary)}
+.pn-bldg b{display:block;font-size:11px;font-weight:600}
+.pn-bldg em{display:block;font-style:normal;font-size:9.5px;color:#6b7280}
+/* 기존 `외부로 이동` 라벨은 칩으로 대체 */
+.dt-map .map-exit{display:none}
