@@ -1152,16 +1152,23 @@ function renderPreview() {
         </div>
         <div class="pv-info">
           <div class="pv-title"><span>${pvTitle(p)}</span><span class="bk${bm ? ' on' : ''}" data-bk="${p.id}">${ICON.bmark}</span></div>
-          <dl class="pv-meta">
-            <div><dt>영상 시간</dt><dd>${clipSpan(p.t)}</dd></div>
+          <dl class="pv-meta cols3">
+            <div><dt>대상 정보</dt><dd>${p.person || '인물 A'}</dd></div>
+            <div><dt>이벤트 시간</dt><dd>${p.t}</dd></div>
+            <div><dt>이벤트</dt><dd>${p.event || '이동/계수'}</dd></div>
           </dl>
         </div>`);
       box.appendChild(n);
     } else {
       const n = el('div', 'pv mini', `
         <div class="th"><img src="${p.img}" alt=""></div>
-        <div style="flex:1;min-width:0"><div class="nm">${p.cam}</div><div class="tm">${fmtT(p.t)}</div></div>
-        <button class="btn-icon" data-close-pv="${p.uid}">${ICON.x}</button>`);
+        <div class="bd">
+          <div class="nm">${pvTitle(p)}</div>
+          <div class="ln">${p.person || '인물 A'}</div>
+          <div class="ln">${p.t}</div>
+          <div class="ln">${p.event || '이동/계수'}</div>
+        </div>
+        <button class="btn-icon x" data-close-pv="${p.uid}">${ICON.x}</button>`);
       /* 접힌 항목을 고르면 **그 자리에서** 펼쳐져 재생된다 (순서는 그대로) */
       n.onclick = e => {
         if (e.target.closest('[data-close-pv]')) return;

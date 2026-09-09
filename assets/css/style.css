@@ -3949,3 +3949,50 @@ body.dt-b .dt-video.has-multi > #ovCctv{display:none}
 .date-grp .lb{display:block;font-size:11.5px;color:var(--tx-secondary);margin-bottom:6px}
 .date-grp .date-row{display:flex;gap:8px}
 .date-grp .date-fld{flex:1;min-width:0}
+
+/* ── 원본 영상 패널 : 시안 1-1안 ────────────────────────────────────────
+   펼친 항목은 제목+북마크 아래 3열 메타, 접힌 항목은 좌 썸네일 + 우 정보 나열 */
+.pv-meta.cols3{display:flex;gap:0;margin-top:10px}
+.pv-meta.cols3 > div{
+  flex:1;min-width:0;padding:0 12px;
+  border-left:1px solid var(--ln-subtle)
+}
+.pv-meta.cols3 > div:first-child{padding-left:0;border-left:0}
+.pv-meta.cols3 dt{font-size:10.5px;color:var(--tx-helper);margin-bottom:4px}
+.pv-meta.cols3 dd{
+  margin:0;font-size:11.5px;color:var(--tx-primary);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap
+}
+
+/* 접힌 항목 */
+.pv.mini{
+  display:flex;gap:0;align-items:stretch;position:relative;
+  background:var(--bg-2);border:1px solid var(--ln-subtle);border-radius:6px;
+  overflow:hidden;cursor:pointer;padding:0
+}
+.pv.mini:hover{border-color:var(--primary)}
+.pv.mini .th{flex:0 0 46%;aspect-ratio:16/9;background:#000}
+.pv.mini .th img{width:100%;height:100%;object-fit:cover;display:block}
+.pv.mini .bd{flex:1;min-width:0;padding:11px 12px;display:flex;flex-direction:column;gap:5px}
+.pv.mini .bd .nm{
+  font-size:13px;font-weight:600;color:var(--tx-primary);margin-bottom:3px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap
+}
+.pv.mini .bd .ln{
+  font-size:11px;color:var(--tx-tertiary);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap
+}
+.pv.mini .btn-icon.x{position:absolute;right:6px;top:6px;opacity:0;transition:opacity .12s}
+.pv.mini:hover .btn-icon.x{opacity:.8}
+
+/* ── 결과 영역 : 시안 1-1안 ─────────────────────────────────────────────
+   헤더는 `검색 결과 (N건)` 과 정렬만. 칩은 시안에 없어 감춘다. */
+.results-head #chips{display:none}
+.results-head #viewSeg[hidden],
+.results-head .size-slider[hidden]{display:none}
+
+/* 카드 그리드 : 시안은 5열 고정, 16:9 */
+.results-body .grid{
+  grid-template-columns:repeat(5, minmax(0, 1fr)) !important;
+  gap:12px
+}
