@@ -193,7 +193,7 @@ const FILTER_DEF = {
   text:   ['cam', 'period', 'sim'],
   /* 인물 검색은 이미지 검출·등록 인물 두 방식을 함께 쓰므로 유사도가 붙는다 */
   person: ['cam', 'period', 'sim'],
-  algo:   ['cam', 'period'],
+  algo:   ['cam', 'period', 'sim'],
   car:    ['cam', 'cartype', 'period'],
   aim:    []
 };
@@ -1674,11 +1674,14 @@ function renderHistory() {
         return `<div class="hs-item${HIST.open.has(key) ? ' open' : ''}" data-hs="${key}">
         <div class="hs-main">
           ${it.sub.length ? `<span class="hs-cv">${ICON.caret}</span>` : '<span style="width:10px"></span>'}
-          <span class="hs-q">${it.q}</span>
+          <!-- 와이어프레임(히스토리 팝업) : 썸네일 + 검색어 + 일시 -->
+          <img class="hs-th" src="${(OBJECTS[(di * 3 + i) % OBJECTS.length] || {}).img || 'assets/img/obj01.png'}" alt="">
+          <span class="hs-bd"><b class="hs-q">${it.q}</b><em class="hs-t">${d.date} 14:52</em></span>
           ${it.ai ? '<span class="hs-ai">AI</span>' : ''}
           <span class="hs-n">${it.n}건</span>
           <button class="btn-ghost sm hs-case" data-hscase="${key}">사건 등록</button>
           <button class="btn-icon bk${HIST.bm.has(key) ? ' on' : ''}" data-hsbk="${key}" title="북마크">${ICON.bmark}</button>
+          <button class="btn-icon hs-x" data-hsrm="${key}" title="기록 삭제">${ICON.x}</button>
         </div>
         ${it.sub.length ? `<div class="hs-sub">${it.sub.map((sb, j) => {
           const sk = `${key}-${j}`;
@@ -1707,6 +1710,12 @@ function renderHistory() {
     if (e.target.closest('[data-hsbk]')) return;
     const [di, i, j] = r.dataset.hssub.split('-').map(Number);
     runHistoryQuery(HISTORY[di].items[i].sub[j].q, HISTORY[di].items[i].ai);
+  });
+  /* 와이어프레임 : 항목 우측 ✕ 로 기록 삭제 */
+  $$('#historyBody [data-hsrm]').forEach(b => b.onclick = e => {
+    e.stopPropagation();
+    const it = b.closest('.hs-item'); if (it) it.remove();
+    toast('검색 기록을 삭제했습니다.');
   });
   /* 행별 북마크 — 아이콘 활성화 전환 */
   $$('#historyBody [data-hsbk]').forEach(b => b.onclick = e => {
