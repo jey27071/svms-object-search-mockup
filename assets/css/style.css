@@ -4424,3 +4424,16 @@ body.dt-b .dt-map .dt-zoom button{
   width:30px;height:28px;background:rgba(255,255,255,.9);color:#2b2f36;border:0
 }
 body.dt-b .dt-map .dt-zoom button + button{border-top:1px solid rgba(0,0,0,.08)}
+
+/* ── 와이어(기본 상세 4656:32031) 실측 반영 ─────────────────────────────
+   Container 1386 : 우측패널 534 = 72% : 28% */
+body.dt-b .dt-side{width:534px;flex:0 0 534px}
+
+/* 타임라인 : 와이어는 154px (하단 컨트롤 32) — 지금보다 훨씬 얇다 */
+/* 행 높이는 JS(ROW)가 정한다 — CSS 로 덮어쓰면 썸네일 계산과 어긋나 잘린다 */
+body.dt-b #dtTl .tl-foot{padding:5px 12px}
+body.dt-b #dtTl .tl-obj{width:64px}
+body.dt-b #dtTl .tl-lane{margin-left:74px}
+
+/* 맵 기본은 평면도 한 장 — 3D 층은 층별을 골랐을 때만 */
+body.dt-b .dt-map .map-3d[hidden]{display:none}
