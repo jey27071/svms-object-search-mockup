@@ -2515,12 +2515,13 @@ function renderPanes() {
     if (rz) rz.hidden = !on;
   });
 
-  /* 첫 칸에도 종류 전환을 붙인다 */
+  /* 시안(비교-대상4개) : 좌측은 **영상 전용**이라 영상/맵뷰 전환을 두지 않는다.
+     맵은 우측 칼럼이 맡는다. (2026-09-09 사양 삭제) */
   const v = document.getElementById('dtVideo');
   if (v) {
-    let sw = v.querySelector('.pn-switch');
-    if (!sw) { v.insertAdjacentHTML('beforeend', paneSwitchHTML(0)); sw = v.querySelector('.pn-switch'); }
-    v.classList.toggle('as-map', PANE.kind[0] === 'map');
+    const oldSw = v.querySelector('.pn-switch'); if (oldSw) oldSw.remove();
+    PANE.kind[0] = 'video';
+    v.classList.remove('as-map');
     /* 첫 칸도 맵뷰로 바꾸면 지도와 도구를 그대로 붙인다 (기존엔 도구가 없었다) */
     let mp = v.querySelector('.pn-map');
     if (mp) mp.remove();
