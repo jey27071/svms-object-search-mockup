@@ -4338,3 +4338,40 @@ body.tl-seeking .tl-cursor .tl-cur-t{opacity:1}
 /* 트랙 라벨 : ✕ 상시 (시안) */
 .tl-obj .rm{opacity:.85}
 .tl-obj:hover .rm{opacity:1}
+
+/* ── 상세 우측 맵 : 의미 없는 구분선 · 버튼 · 버블 칩 ─────────────────────
+   맵 전용 칼럼이라 섹션 구분선이 나눌 것이 없다. */
+body.dt-b .dt-side .dt-sec{border-top:0}
+body.dt-b .dt-side .dt-sec-head{border-bottom:0}
+body.dt-b .dt-side > .dt-sec[hidden]{display:none}
+
+/* 상단 도구를 시안처럼 한 줄 세그먼트로 (파란 원형 → 사각 토글) */
+.dt-sec-head .map-lay{display:flex;gap:0;border:1px solid var(--ln-border);border-radius:5px;overflow:hidden}
+.dt-sec-head .map-lay button{
+  width:30px;height:26px;border:0;border-radius:0;background:transparent;
+  display:flex;align-items:center;justify-content:center;color:var(--tx-tertiary);cursor:pointer
+}
+.dt-sec-head .map-lay button + button{border-left:1px solid var(--ln-border)}
+.dt-sec-head .map-lay button.on{background:var(--primary);color:#fff}
+.dt-sec-head .map-swap{margin:0 auto 0 8px;color:var(--tx-tertiary)}
+.dt-sec-head .map-swap:hover{color:var(--tx-primary)}
+
+/* 맵 안 배지·칩이 우상단 도구에 가리던 문제 —
+   도구는 오른쪽 위, 층 배지는 왼쪽 위로 떼어놓고 칩을 도구 위로 올린다 */
+.dt-map .dt-map-tools{z-index:6}
+.dt-map .dt-floor{z-index:7}
+.dt-map .dt-marker{z-index:8}
+.dt-map .map-wp,
+.dt-map .map-sp,
+.dt-map .map-sw{z-index:9}
+/* 도구와 겹치는 우상단 영역에는 칩이 오지 않게 여백 */
+.dt-map .pn-wps{position:absolute;inset:0;padding:34px 96px 0 0;pointer-events:none}
+
+/* 맵 칼럼 상단의 의미 없는 선 두 줄 —
+   ① 내용이 비어 9px 껍데기만 남은 .dt-side-head 의 아래 테두리
+   ② 맵 섹션의 위 테두리. 맵 하나뿐이라 나눌 것이 없다. */
+body.dt-b .dt-side > .dt-side-head{display:none}
+/* 앞 섹션(대상정보)을 감춘 뒤로는 나눌 짝이 없다 —
+   .dt-sec + .dt-sec 규칙을 같은 형태로 되돌린다 (특이도를 맞춰야 이긴다) */
+body.dt-b .dt-side > .dt-sec + .dt-sec{border-top:0;padding-top:0}
+body.dt-b .dt-side > .dt-sec{border-top:0}
