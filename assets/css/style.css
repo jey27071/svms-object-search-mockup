@@ -4143,3 +4143,76 @@ body.dt-b #dtTl .tl-foot{flex:0 0 auto}
 }
 .card .meta .cbk:hover{color:var(--tx-primary)}
 .card .meta .cbk.on{color:var(--primary)}
+
+/* ── 인물 검색 서브탭 (와이어프레임 검색/인물) ─────────────────────────── */
+.subtabs{display:flex;gap:18px;border-bottom:1px solid var(--ln-subtle);margin-bottom:12px}
+.subtabs button{
+  background:none;border:0;padding:8px 2px;cursor:pointer;
+  font-size:13px;color:var(--tx-tertiary);border-bottom:2px solid transparent;margin-bottom:-1px
+}
+.subtabs button.on{color:var(--primary);border-bottom-color:var(--primary);font-weight:600}
+.subtabs button:hover{color:var(--tx-primary)}
+
+/* 접힌 아코디언 요약을 배지로 (와이어프레임) */
+.acc-sum{
+  background:rgba(48,112,216,.16);border:1px solid rgba(48,112,216,.42);
+  border-radius:4px;padding:1px 7px;font-size:11px
+}
+.acc.disabled .acc-sum{background:none;border-color:var(--ln-subtle)}
+
+/* 등록 인물 빈 상태 (와이어프레임) */
+.person-box .empty-dashed{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
+  min-height:180px;border:1px dashed var(--ln-border);border-radius:6px;
+  font-size:12px;color:var(--tx-helper);text-align:center;line-height:1.7
+}
+
+/* ── 이미지 검색 모달 ──────────────────────────────────────────────────── */
+.modal.md-img{width:720px;max-width:calc(100vw - 80px);display:flex;flex-direction:column}
+.md-img .md-head{align-items:flex-start}
+.md-sub{margin:4px 0 0;font-size:11.5px;color:var(--tx-helper)}
+.md-img .md-body{padding:0 20px 16px;overflow-y:auto}
+.ims-head{display:flex;align-items:center;justify-content:space-between;margin:14px 0 8px}
+.ims-head .lb{font-size:12.5px;font-weight:600;color:var(--tx-primary)}
+.ims-pic{
+  border-radius:6px;overflow:hidden;background:#000;
+  aspect-ratio:16/9;border:1px solid var(--ln-border)
+}
+.ims-pic img{width:100%;height:100%;object-fit:cover;display:block}
+.ims-filters{display:flex;gap:7px;margin-bottom:10px}
+.ims-filters button{
+  background:none;border:1px solid var(--ln-border);border-radius:13px;
+  padding:3px 12px;font-size:11.5px;color:var(--tx-tertiary);cursor:pointer
+}
+.ims-filters button.on{border-color:var(--primary);color:var(--primary)}
+.ims-all{display:block;margin-bottom:10px}
+.ims-grid{display:grid;grid-template-columns:repeat(6, minmax(0,1fr));gap:10px}
+.ims-card{
+  position:relative;aspect-ratio:3/4;border-radius:5px;overflow:hidden;
+  border:1.5px solid var(--ln-border);background:#000;cursor:pointer
+}
+.ims-card.on{border-color:var(--primary)}
+.ims-card img{width:100%;height:100%;object-fit:cover;display:block}
+.ims-card .kd{
+  position:absolute;left:5px;top:5px;padding:1px 6px;border-radius:3px;
+  font-size:10px;color:#fff
+}
+.ims-card .kd.face{background:var(--primary)}
+.ims-card .kd.body{background:rgba(255,255,255,.24)}
+.ims-card .pick{
+  position:absolute;right:5px;top:5px;width:20px;height:20px;border-radius:50%;
+  background:rgba(0,0,0,.55);border:1px solid rgba(255,255,255,.5);
+  color:#fff;font-size:12px;line-height:1;cursor:pointer;
+  display:flex;align-items:center;justify-content:center
+}
+.ims-card.on .pick{background:var(--primary);border-color:var(--primary)}
+.ims-loading{
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+  padding:48px 0;font-size:12px;color:var(--tx-helper)
+}
+.ims-loading .spin{
+  width:16px;height:16px;border-radius:50%;
+  border:2px solid var(--ln-border);border-top-color:var(--primary);
+  animation:imspin .8s linear infinite
+}
+@keyframes imspin{to{transform:rotate(360deg)}}

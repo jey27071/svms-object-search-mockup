@@ -215,6 +215,8 @@ function accSummary(key) {
   if (key === 'cam') {
     const n = (S.cams || []).length;
     if (!n) return '미선택';
+    /* 와이어프레임 : 고른 카메라 수를 배지로 (해제는 ✕) */
+    return `${n}개 선택`;
     /* 상위 건물 이름으로 줄여 쓴다 (본관 · 외부 …) */
     const sel = new Set(S.cams);
     const tops = CAM_TREE.filter(b => b.groups.some(g => g.cams.some(c => sel.has(c)))).map(b => b.name);
@@ -305,7 +307,7 @@ function buildFilters(mode) {
       </div>
       `, on));
 
-    if (f === 'cam') parts.push(accBlock('cam', '위치', camTreeHTML(), on));
+    if (f === 'cam') parts.push(accBlock('cam', '카메라(위치)', camTreeHTML(), on));
 
     if (f === 'color') parts.push(accBlock('color', '색상', `
       <div class="color-label">상의</div>
@@ -4404,6 +4406,90 @@ const SET_NAV = [
   { k: 'play',   t: '재생' }
 ];
 let setNav = 'path';
+
+
+/* ── 이미지 검색 모달 (와이어프레임 이미지검색/업로드·추출·선택) ──────────
+   업로드한 사진에서 인물을 추출해 고르고, 그 대상으로 검색한다. */
+const IMS = { src: '', kind: '전체', sel: new Set(), items: [] };
+
+function imsBuild() {
+  /* 얼굴/외형 두 종류로 나눠 추출한 것처럼 보인다 */
+  IMS.items = OBJECTS.slice(0, 7).map((o, i) => ({
+    id: 'ims' + i, img: o.img, kind: i < 3 ? '얼굴' : '외형'
+  }));
+}
+
+function openImgSearch(src) {
+  IMS.src = src || (OBJECTS[0] || {}).img || 'assets/img/video.png';
+  IMS.kind = '전체'; IMS.sel = new Set(); IMS.items = [];
+  const img = document.getElementById('imsImg'); if (img) img.src = IMS.src;
+  document.getElementById('imsGrid').innerHTML = '';
+  document.getElementById('imsLoading').hidden = false;
+  document.getElementById('imsCount').textContent = '0';
+  openModal('#mdImgSearch');
+  /* 추출은 잠깐 걸리는 것처럼 */
+  setTimeout(() => { imsBuild(); document.getElementById('imsLoading').hidden = true; renderIms(); }, 900);
+}
+
+function renderIms() {
+  const list = IMS.items.filter(x => IMS.kind === '전체' || x.kind === IMS.kind);
+  document.getElementById('imsCount').textContent = String(IMS.items.length);
+  document.getElementById('imsGrid').innerHTML = list.map(x => `
+    <div class="ims-card${IMS.sel.has(x.id) ? ' on' : ''}" data-ims="${x.id}">
+      <img src="${x.img}" alt="">
+      <span class="kd ${x.kind === '얼굴' ? 'face' : 'body'}">${x.kind}</span>
+      <button class="pick" title="${IMS.sel.has(x.id) ? '선택 해제' : '선택'}">${IMS.sel.has(x.id) ? '✓' : '＋'}</button>
+    </div>`).join('');
+  document.querySelectorAll('#imsGrid [data-ims]').forEach(n => n.onclick = () => {
+    const id = n.dataset.ims;
+    IMS.sel.has(id) ? IMS.sel.delete(id) : IMS.sel.add(id);
+    renderIms();
+  });
+  const all = document.getElementById('imsAll');
+  if (all) all.checked = list.length > 0 && list.every(x => IMS.sel.has(x.id));
+  document.getElementById('imsGo').disabled = IMS.sel.size === 0;
+}
+
+/* 패널의 `이미지` 서브탭에서 사진을 고르면 모달로 이어진다 */
+(function bindImgEntry() {
+  const f = document.getElementById('fileImage');
+  if (f) f.addEventListener('change', e => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    openImgSearch(url);
+  });
+  const pick = document.getElementById('btnPickImage');
+  if (pick) pick.addEventListener('click', ev => {
+    /* 파일 없이도 흐름을 볼 수 있게 시연용 진입 */
+    setTimeout(() => { if (document.getElementById('mdImgSearch').hidden) openImgSearch(); }, 400);
+  });
+})();
+
+(function bindIms() {
+  const md = document.getElementById('mdImgSearch'); if (!md) return;
+  md.querySelectorAll('[data-close-img]').forEach(b => b.onclick = () => closeModal('#mdImgSearch'));
+  md.querySelectorAll('#imsFilters button').forEach(b => b.onclick = () => {
+    IMS.kind = b.dataset.imf;
+    md.querySelectorAll('#imsFilters button').forEach(x => x.classList.toggle('on', x === b));
+    renderIms();
+  });
+  const all = document.getElementById('imsAll');
+  if (all) all.onchange = e => {
+    const list = IMS.items.filter(x => IMS.kind === '전체' || x.kind === IMS.kind);
+    if (e.target.checked) list.forEach(x => IMS.sel.add(x.id));
+    else list.forEach(x => IMS.sel.delete(x.id));
+    renderIms();
+  };
+  const re = document.getElementById('imsRepick');
+  if (re) re.onclick = () => { const f = document.getElementById('fileImage'); if (f) f.click(); };
+  const go = document.getElementById('imsGo');
+  if (go) go.onclick = () => {
+    closeModal('#mdImgSearch');
+    toast(`추출된 인물 ${IMS.sel.size}명으로 검색합니다.`);
+    S.mode = 'person'; runSearch(false);
+  };
+})();
 
 function openSettings() { setNav = 'path'; renderSettings(); openModal('#mdSetting'); }
 

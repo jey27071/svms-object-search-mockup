@@ -5,8 +5,8 @@
 <title>SVMS — 동선 추적 검색 (Working Mockup)</title>
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
-<link rel="stylesheet" href="assets/css/icons.css?v=202609091315">
-<link rel="stylesheet" href="assets/css/style.css?v=202609091315">
+<link rel="stylesheet" href="assets/css/icons.css?v=202609091321">
+<link rel="stylesheet" href="assets/css/style.css?v=202609091321">
 </head>
 <body>
 
@@ -111,13 +111,10 @@
 
           <!-- 3) 등록 인물 검색 -->
           <section class="mode-panel" data-panel="person">
-            <div class="panel-top">
-              <span class="panel-label">인물 검출하여 검색</span>
-            </div>
-            <!-- 이미지로 검출할지, 등록된 인물을 고를지 선택 -->
-            <div class="seg pf-way" id="pfWay">
-              <button data-way="img">이미지로 검색</button>
-              <button class="on" data-way="reg">등록 인물 선택</button>
+            <!-- 와이어프레임(검색/인물) : `인물` / `이미지` 밑줄 서브탭 -->
+            <div class="subtabs pf-way" id="pfWay">
+              <button class="on" data-way="reg">인물</button>
+              <button data-way="img">이미지</button>
             </div>
             <div class="pf-pane" data-way="reg">
               <div class="panel-top" style="margin-top:10px">
@@ -602,6 +599,41 @@
 </div>
 
 <!-- 설정 : 좌측 항목 / 우측 세부 -->
+<!-- ── 이미지 검색 (와이어프레임 이미지검색/업로드·추출·선택) ────────────
+     패널 안 인라인이 아니라 모달로 띄운다. -->
+<div class="modal md-img" id="mdImgSearch" hidden>
+  <div class="md-head">
+    <div>
+      <b>이미지 검색</b>
+      <p class="md-sub">이미지에서 자동 추출된 인물을 검색할 수 있습니다.</p>
+    </div>
+    <button class="btn-icon" data-close-img title="닫기">&#10005;</button>
+  </div>
+  <div class="md-body">
+    <div class="ims-head">
+      <span class="lb">이미지</span>
+      <button class="btn-ghost sm" id="imsRepick">이미지 재선택</button>
+    </div>
+    <div class="ims-pic"><img id="imsImg" alt=""></div>
+
+    <div class="ims-head">
+      <span class="lb">추출된 인물 <em class="rc-badge" id="imsCount">0</em></span>
+    </div>
+    <div class="ims-filters" id="imsFilters">
+      <button class="on" data-imf="전체">전체</button>
+      <button data-imf="얼굴">얼굴</button>
+      <button data-imf="외형">외형</button>
+    </div>
+    <label class="check sm ims-all"><input type="checkbox" id="imsAll"><i></i>전체 선택</label>
+    <div class="ims-grid" id="imsGrid"></div>
+    <div class="ims-loading" id="imsLoading" hidden><i class="spin"></i>인물 추출 중</div>
+  </div>
+  <div class="md-foot">
+    <button class="btn-ghost" data-close-img>취소</button>
+    <button class="btn-primary" id="imsGo" disabled>검색</button>
+  </div>
+</div>
+
 <div class="modal md-setting" id="mdSetting" hidden>
   <div class="md-head">
     <div><h3>설정</h3></div>
@@ -759,7 +791,7 @@
 
 <div class="toast" id="toast" hidden></div>
 
-<script src="assets/js/data.js?v=202609091315"></script>
-<script src="assets/js/app.js?v=202609091315"></script>
+<script src="assets/js/data.js?v=202609091321"></script>
+<script src="assets/js/app.js?v=202609091321"></script>
 </body>
 </html>
