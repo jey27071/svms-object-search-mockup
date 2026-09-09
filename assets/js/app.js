@@ -1034,16 +1034,16 @@ function bindCards(root) {
       }
       if (e.target.closest('[data-more]')) { openCtx(e, id); return; }
       if (e.target.closest('.cmp')) return;
+      /* 사양 : **한 번 클릭은 미리보기**. 더블클릭이 들어올 수 있으니
+         잠깐 기다렸다가 미리보기만 갱신한다. */
       clearTimeout(clickT);
-      /* 목업 시연용 : 결과를 한 번만 눌러도 선별 → 클립 선택 → 상세로 이어진다.
-         우측 미리보기도 함께 갱신한다. */
-      selectCard(id);
-      openReid(id);
+      clickT = setTimeout(() => selectCard(id), 220);
     };
-    /* 사양 : 결과에서 대상을 고르면 RE-ID 편집 팝업을 띄운다 */
+    /* 사양 : **더블클릭은 상세 화면으로**. 클립 선택을 거쳐 상세가 열린다. */
     c.ondblclick = e => {
       if (e.target.closest('.cmp') || e.target.closest('[data-more]')) return;
-      clearTimeout(clickT);
+      clearTimeout(clickT);          /* 앞선 한 번 클릭의 미리보기는 취소 */
+      selectCard(id);
       openReid(id);
     };
   });
