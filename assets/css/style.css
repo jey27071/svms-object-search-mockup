@@ -4026,3 +4026,6 @@ body.dt-b .dt-video.has-multi > #ovCctv{display:none}
 .tab-expand[hidden]{display:none}
 /* 접힘 레일(구 핸들)은 더 쓰지 않는다 */
 .collapsed-rail{display:none}
+
+/* 패널에 붙어 있던 접기 핸들 삭제 — 접기는 머리말 버튼이 맡는다 */
+#btnCollapse{display:none !important}

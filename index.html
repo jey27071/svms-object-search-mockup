@@ -5,8 +5,8 @@
 <title>SVMS — 동선 추적 검색 (Working Mockup)</title>
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
-<link rel="stylesheet" href="assets/css/icons.css?v=202609091118">
-<link rel="stylesheet" href="assets/css/style.css?v=202609091118">
+<link rel="stylesheet" href="assets/css/icons.css?v=202609091226">
+<link rel="stylesheet" href="assets/css/style.css?v=202609091226">
 </head>
 <body>
 
@@ -181,7 +181,9 @@
       </div>
 
       <!-- 접기 핸들 : 지도 서비스처럼 패널 바깥 가운데에 붙인다 -->
-      <button class="side-handle" id="btnCollapse" title="검색 패널 접기" aria-label="검색 패널 접기"></button>
+      <!-- 패널 가장자리 접기 핸들 삭제 (2026-09-09) — 접기는 머리말 버튼이 맡는다.
+           JS 참조가 남아 있어 DOM 은 숨겨서 둔다 -->
+      <button class="side-handle" id="btnCollapse" hidden aria-hidden="true" tabindex="-1"></button>
 
       <!-- 검색 실행 : 패널 하단 고정. 카메라(위치)를 하나 이상 골라야 활성화된다 -->
       <div class="side-foot" id="sideFoot">
@@ -749,7 +751,7 @@
 
 <div class="toast" id="toast" hidden></div>
 
-<script src="assets/js/data.js?v=202609091118"></script>
-<script src="assets/js/app.js?v=202609091118"></script>
+<script src="assets/js/data.js?v=202609091226"></script>
+<script src="assets/js/app.js?v=202609091226"></script>
 </body>
 </html>
