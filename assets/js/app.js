@@ -189,9 +189,34 @@ function filterEnabled() {
   return false;
 }
 
+/* 시안(공통LNB_2~4) : 접힌 섹션은 고른 값을 오른쪽에 파랗게 요약해 보여준다.
+   접어 놓고도 어떤 조건으로 찾고 있는지 알 수 있어야 한다. */
+function accSummary(key) {
+  if (key === 'sim') return `${S.sim}% 이상`;
+  if (key === 'period') return S.period || '당일';
+  if (key === 'cam') {
+    const n = (S.cams || []).length;
+    if (!n) return '미선택';
+    /* 상위 건물 이름으로 줄여 쓴다 (본관 · 외부 …) */
+    const sel = new Set(S.cams);
+    const tops = CAM_TREE.filter(b => b.groups.some(g => g.cams.some(c => sel.has(c)))).map(b => b.name);
+    if (tops.length === 1) return tops[0];
+    if (tops.length > 1) return `${tops[0]} 외 ${tops.length - 1}`;
+    return `${n}곳`;
+  }
+  if (key === 'color') {
+    const t = (S.top || []).length, b = (S.bottom || []).length;
+    if (!t && !b) return '전체';
+    const nm = ks => ks.map(k => (COLORS.find(c => c.k === k) || {}).label).filter(Boolean).join('·');
+    return [t ? `상의 ${nm(S.top)}` : '', b ? `하의 ${nm(S.bottom)}` : ''].filter(Boolean).join(' · ');
+  }
+  if (key === 'cartype') return (S.carType && S.carType.length) ? S.carType.join('·') : '전체';
+  return '';
+}
+
 function accBlock(key, title, bodyHTML, open) {
   return `<div class="acc${open ? ' open' : ''}" data-acc="${key}">
-    <button class="acc-head">${title}${ICON.caret}</button>
+    <button class="acc-head">${title}<em class="acc-sum">${accSummary(key)}</em>${ICON.caret}</button>
     <div class="acc-body">${bodyHTML}</div>
   </div>`;
 }
@@ -1741,6 +1766,8 @@ function setCollapsed(v) {
   $('#aiPanel').hidden = v || !S.aiMode;
 }
 $('#btnCollapse').onclick = () => setCollapsed(true);
+/* 시안 1-1안 : 패널 머리말의 접기 버튼도 같은 동작 */
+if ($('#btnFold')) $('#btnFold').onclick = () => setCollapsed(true);
 $('#btnAiCollapse').onclick = () => setCollapsed(true);
 $('#btnExpand').onclick = () => setCollapsed(false);
 

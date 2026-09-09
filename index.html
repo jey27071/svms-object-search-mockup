@@ -5,8 +5,8 @@
 <title>SVMS — 동선 추적 검색 (Working Mockup)</title>
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
-<link rel="stylesheet" href="assets/css/icons.css?v=202609091047">
-<link rel="stylesheet" href="assets/css/style.css?v=202609091047">
+<link rel="stylesheet" href="assets/css/icons.css?v=202609091106">
+<link rel="stylesheet" href="assets/css/style.css?v=202609091106">
 </head>
 <body>
 
@@ -53,10 +53,19 @@
 
     <!-- ---- 좌: 검색 사이드 패널 ---- -->
     <aside class="side" id="sidePanel">
-      <!-- B타입 개선안 : 패널 타이틀을 없애고 분리 버튼만 우측에 둔다 (접기는 바깥 핸들) -->
-      <div class="side-head slim" id="sideHead">
+      <!-- 시안 1-1안 : 좌측 `검색` 타이틀 + 우측 왼쪽접기 버튼 하나.
+           분리(디테치)는 시안에서 빠졌다 — 버튼만 감추고 동작 코드는 남겨 둔다. -->
+      <div class="side-head" id="sideHead">
+        <b class="side-title">검색</b>
         <span class="side-head-btns">
-          <button class="btn-icon" id="btnDetach" title="분리"><i class="i i-detach"></i></button>
+          <button class="btn-icon" id="btnDetach" title="분리" hidden><i class="i i-detach"></i></button>
+          <button class="btn-icon" id="btnFold" title="검색 패널 접기" aria-label="검색 패널 접기">
+            <svg viewBox="0 0 16 16" class="ic" aria-hidden="true">
+              <rect x="2.2" y="2.8" width="11.6" height="10.4" rx="1.6" stroke="currentColor" stroke-width="1.2" fill="none"/>
+              <path d="M11.4 2.8v10.4" stroke="currentColor" stroke-width="1.2"/>
+              <path d="M8.6 6.2L6.4 8l2.2 1.8" stroke="currentColor" stroke-width="1.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
         </span>
       </div>
 
@@ -740,7 +749,7 @@
 
 <div class="toast" id="toast" hidden></div>
 
-<script src="assets/js/data.js?v=202609091047"></script>
-<script src="assets/js/app.js?v=202609091047"></script>
+<script src="assets/js/data.js?v=202609091106"></script>
+<script src="assets/js/app.js?v=202609091106"></script>
 </body>
 </html>

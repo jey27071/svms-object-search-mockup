@@ -3996,3 +3996,20 @@ body.dt-b .dt-video.has-multi > #ovCctv{display:none}
   grid-template-columns:repeat(5, minmax(0, 1fr)) !important;
   gap:12px
 }
+
+/* ── 검색 패널 머리말 : 시안 1-1안 ──────────────────────────────────────
+   좌측 `검색` 타이틀 + 우측 왼쪽접기 버튼. 분리(디테치)는 시안에서 빠졌다. */
+.side-head{display:flex;align-items:center;justify-content:space-between;padding:0 14px}
+.side-title{font-size:13px;font-weight:600;color:var(--tx-primary)}
+.side-head .side-head-btns{display:flex;align-items:center;gap:4px}
+#btnDetach[hidden]{display:none}
+
+/* 접힌 아코디언의 선택값 요약 (시안 공통LNB_2~4) */
+.acc-head{display:flex;align-items:center;gap:8px}
+.acc-sum{
+  margin-left:auto;font-style:normal;font-size:11.5px;color:var(--primary);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:56%
+}
+/* 펼친 상태에서는 요약이 중복이라 감춘다 */
+.acc.open > .acc-head .acc-sum{display:none}
+.acc.disabled .acc-sum{color:var(--tx-helper)}
