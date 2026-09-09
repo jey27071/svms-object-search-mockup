@@ -3197,11 +3197,7 @@ function renderMap3d(paths) {
   bindMapSeek();
   syncMapToCursor();
   /* 층마다 공간 라벨이 서로·바닥과 겹쳐 묻혔다 — 층별로 실측해 밀어낸다 */
-  requestAnimationFrame(() => {
-    host.querySelectorAll('.m3-floor').forEach(f => spreadMapLabels(f, '.m3-sp'));
-    /* 층이 비스듬히 겹쳐 있어 다른 층 라벨과도 부딪친다 — 맵 전체로 한 번 더 */
-    spreadMapLabels(host, '.m3-sp');
-  });
+  requestAnimationFrame(() => hideOverlappedLabels(host, '.m3-sp'));
 }
 
 let MAP_PATHS_CACHE = null;
@@ -3271,6 +3267,21 @@ function renderMapLayers(paths, camName) {
     : `<span class="lg"><i></i>출현 지점 <em>( ${paths[0].pts.length}개 )</em></span>`)
     + `<span class="lg"><i class="lg-out"></i>외부 이동 경로</span>
        <span class="lg"><i class="lg-sw"></i>공간 전환지점</span>`;
+}
+
+/* 3D 층은 기울어져 있어 라벨을 밀어도 대각선으로 움직여 겹침이 안 풀린다.
+   그래서 3D 에서는 밀지 않고, 겹치는 뒤쪽 라벨을 감춘다.
+   지점 번호는 그대로 남으니 어디인지는 여전히 짚을 수 있다. */
+function hideOverlappedLabels(host, sel) {
+  if (!host) return;
+  const labs = [...host.querySelectorAll(sel)];
+  labs.forEach(l => l.hidden = false);
+  const kept = [];
+  labs.forEach(l => {
+    const a = l.getBoundingClientRect();
+    const hit = kept.some(r => a.left < r.right && r.left < a.right && a.top < r.bottom && r.top < a.bottom);
+    if (hit) l.hidden = true; else kept.push(a);
+  });
 }
 
 /* 공간 이름 라벨이 서로 겹치면 위로 한 칸씩 올려 비킨다 */

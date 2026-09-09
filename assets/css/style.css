@@ -4304,3 +4304,4 @@ body.dt-b .dt-video > .pip-row{display:none}
   background:linear-gradient(0deg,rgba(0,0,0,.8),transparent);
   font-size:9.5px;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap
 }
+.m3-sp[hidden]{display:none}
