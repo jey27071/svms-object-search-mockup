@@ -4094,3 +4094,10 @@ body.dt-b #dtTl .tl-top{display:none}
 body.dt-b #dtTl{display:flex;flex-direction:column;min-height:0}
 body.dt-b #dtTl .tl-scroll{flex:1;min-height:0;overflow-y:auto}
 body.dt-b #dtTl .tl-foot{flex:0 0 auto}
+
+/* 비교 인원에 따른 영상 분할 (기본 1 · 최대 4) */
+.dt-multi[data-n="1"]{grid-template-columns:1fr;grid-template-rows:1fr}
+.dt-multi[data-n="2"]{grid-template-columns:1fr 1fr;grid-template-rows:1fr}
+.dt-multi[data-n="3"]{grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr}
+.dt-multi[data-n="3"] .mv-tile:first-child{grid-column:1 / -1}
+.dt-multi[data-n="4"]{grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr}

@@ -2104,6 +2104,7 @@ function renderTimeline(host, tracks, opt = {}) {
     if (TL.show.size <= 1) { toast('최소 한 명은 표시해야 합니다.'); return; }
     TL.show.delete([...TL.show].sort((a, z) => a - z)[i]);
     renderTimeline(host, allTracks, opt);
+    if (typeof renderMulti === 'function') renderMulti();
   });
   const caseBtn = host.querySelector('#tlCaseAdd');
   if (caseBtn) caseBtn.onclick = () => { if (typeof openCase === 'function') openCase(); else toast('사건 등록'); };
@@ -2115,6 +2116,7 @@ function renderTimeline(host, tracks, opt = {}) {
     if (off === undefined) { toast('더 올릴 대상이 없습니다.'); return; }
     TL.show.add(off);
     renderTimeline(host, allTracks, opt);
+    if (typeof renderMulti === 'function') renderMulti();
   };
   const zr = host.querySelector('.tl-zr');
   if (zr) zr.oninput = e => { TL.zoom = +e.target.value; renderTimeline(host, TL.tracks, opt); };
@@ -2919,7 +2921,12 @@ function renderCctvPins() {
 function renderMulti() {
   const vv = document.getElementById('dtVideo');
   if (vv) vv.classList.toggle('has-multi', DT.tools.includes('multi'));
-  $('#dtMulti').innerHTML = MULTI_TILES.map((t, i) => `
+  /* 사양 : 비교 대상 수(기본 1 · 최대 4)에 따라 영상 분할이 함께 바뀐다.
+     1명이면 단일, 2명이면 좌우 2분할, 3~4명이면 2x2. */
+  const shown = (TL.show && TL.show.size) ? Math.min(TL.show.size, 4) : 1;
+  const host = document.getElementById('dtMulti');
+  if (host) host.dataset.n = shown;
+  $('#dtMulti').innerHTML = MULTI_TILES.slice(0, shown).map((t, i) => `
     <div class="mv-tile" data-mv="${i}" style="border-left-color:${t.boxes[0] ? slotColor(t.boxes[0].slot) : 'transparent'}">
       <img src="${t.img}" alt="">
       <div class="mv-head">
