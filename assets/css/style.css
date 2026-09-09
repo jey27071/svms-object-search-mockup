@@ -4525,3 +4525,15 @@ body.dt-b #dtTl .tl-cursor .tl-cur-t{
   bottom:auto;top:34px;transform:translate(-50%,-100%);
   z-index:61;background:rgba(0,0,0,.82);border-color:transparent;color:#fff
 }
+
+/* 확대 보기 : 카드를 크게 (5열 → 3열) */
+.results-body.zoomed .grid{grid-template-columns:repeat(3, minmax(0,1fr)) !important}
+
+/* 맵 위아래 2분할 */
+.dt-map.split .map-3d{height:50%}
+.dt-map.split::after{
+  content:'';position:absolute;left:0;right:0;top:50%;height:1px;
+  background:var(--ln-border);z-index:5
+}
+/* 영상 ↔ 맵 자리 바꾸기 */
+body.dt-swap .detail{flex-direction:row-reverse}

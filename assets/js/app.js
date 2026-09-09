@@ -564,6 +564,12 @@ function cardHTML(o, opt = {}) {
   </div>`;
 }
 
+/* 확대 보기 : 5열 → 3열 로 줄여 카드를 키운다 */
+function applyResultView(v) {
+  const body = document.getElementById('resultsBody');
+  if (body) body.classList.toggle('zoomed', v === 'raw');
+}
+
 function renderResults() {
   const body = $('#resultsBody');
 
@@ -1184,6 +1190,12 @@ function bindPv() {
   pvClock();
 }
 
+/* 미리보기는 **원본 영상**을 보여준다. 결과 카드 이미지는 인물만 잘라낸
+   것이라 원본으로 쓰면 화면이 확대돼 보인다. */
+const SRC_VIDEO = { '1층 로비': 'video', 'B1 주차장': 'cam2', 'B1 입구': 'cam3',
+  'B1 엘리베이터': 'cam4', '2층 통로': 'cam2', '3층 매장': 'cam3', '외부 CCTV': 'cam4' };
+function srcVideo(cam) { return IMG(SRC_VIDEO[cam] || 'video'); }
+
 function renderPreview() {
   const box = $('#previewList'); box.innerHTML = '';
   /* 검색 전에는 미리 볼 것이 없다 — 패널을 접어 결과 영역에 자리를 내준다 */
@@ -1198,7 +1210,7 @@ function renderPreview() {
       const bm = S.bookmarks.has(p.id);
       const n = el('div', 'pv', `
         <div class="pv-video${PV.playing ? '' : ' paused'}" id="pvVideo">
-          <img src="${p.img}" alt="">
+          <img src="${srcVideo(p.cam)}" alt="">
           <div class="bbox" style="left:32%;top:18%;width:26%;height:56%"></div>
           <div class="pv-hud"><span class="tc" id="pvTime">00:00</span><span class="dur">/ 00:${String(PV.dur).padStart(2, '0')}</span></div>
           <button class="play" id="pvPlay" title="${PV.playing ? '일시정지' : '재생'}">${PV.playing ? ICON.pause : ICON.play}</button>
@@ -1635,7 +1647,7 @@ function renderPM() {
   const ok = $('#pmOk'); if (ok) ok.onclick = () => { closeModal('#mdPerson'); renderPersonGrid(); };
   const q = $('#pmQ'); if (q) q.oninput = e => { pmQuery = e.target.value; renderPM(); $('#pmQ').focus(); };
 }
-const IMG_POOL = ['assets/img/ai01.png?v=202609091711', 'assets/img/ai02.png?v=202609091711', 'assets/img/ai05.png?v=202609091711', 'assets/img/ai06.png?v=202609091711', 'assets/img/ai09.png?v=202609091711'];
+const IMG_POOL = ['assets/img/ai01.png?v=202609091725', 'assets/img/ai02.png?v=202609091725', 'assets/img/ai05.png?v=202609091725', 'assets/img/ai06.png?v=202609091725', 'assets/img/ai09.png?v=202609091725'];
 function pmNew() { pmForm = { name: '', desc: '', imgs: [] }; pmView = 'new'; renderPM(); }
 
 $('#btnTabAdd').onclick = () => { S.activeTab = 'search'; renderTabs(); syncPanels(); toast('검색 홈 탭으로 이동합니다. (새 탭은 카드 더블클릭으로 생성됩니다)'); };
@@ -1675,7 +1687,7 @@ function renderHistory() {
         <div class="hs-main">
           ${it.sub.length ? `<span class="hs-cv">${ICON.caret}</span>` : '<span style="width:10px"></span>'}
           <!-- 와이어프레임(히스토리 팝업) : 썸네일 + 검색어 + 일시 -->
-          <img class="hs-th" src="${(OBJECTS[(di * 3 + i) % OBJECTS.length] || {}).img || 'assets/img/obj01.png?v=202609091711'}" alt="">
+          <img class="hs-th" src="${(OBJECTS[(di * 3 + i) % OBJECTS.length] || {}).img || 'assets/img/obj01.png?v=202609091725'}" alt="">
           <span class="hs-bd"><b class="hs-q">${it.q}</b><em class="hs-t">${d.date} 14:52</em></span>
           ${it.ai ? '<span class="hs-ai">AI</span>' : ''}
           <span class="hs-n">${it.n}건</span>
@@ -1847,6 +1859,7 @@ function render() {
   $('#sortSelect').classList.toggle('disabled', !on);
   S.grouped = false;   /* 유사 대상별 보기 삭제 */
   renderChips(); renderResults(); renderPreview(); renderCompare(); syncResHead();
+  applyResultView(S.view);
 }
 
 $$('[data-close]').forEach(b => b.onclick = () => closeAllModals());
@@ -2018,7 +2031,7 @@ function renderTimeline(host, tracks, opt = {}) {
   const rows = tracks.map((tr, ti) => `
     <div class="tl-row" data-tr="${ti}">
       <div class="tl-obj" style="--slot:${typeof slotColor === 'function' ? slotColor(tr.slot) : 'var(--primary)'}">
-        <img src="${(tr.clips[0] || {}).img || 'assets/img/obj01.png?v=202609091711'}" alt="">
+        <img src="${(tr.clips[0] || {}).img || 'assets/img/obj01.png?v=202609091725'}" alt="">
         <span class="nm">${tr.label}</span>
         ${ti > 0 ? `<button class="rm" data-tlrm="${ti}" title="${tr.label} 제거">${ICON.xs || '×'}</button>` : ''}
       </div>
@@ -2477,7 +2490,7 @@ function paneToolsHTML(kind, i) {
 function paneBody(kind, i) {
   if (kind === 'map') {
     return `<div class="pn-map">
-      <img src="assets/img/floor.png?v=202609091711" alt="맵뷰">
+      <img src="assets/img/floor.png?v=202609091725" alt="맵뷰">
       ${PANE.mapTools.includes('path') ? paneMapPathHTML() : ''}
       ${PANE.mapTools.includes('cctv') ? `<div class="pn-cones">${MAP_CCTV.map(c =>
         `<span class="map-cone" style="left:${c.x}%;top:${c.y}%;rotate:${c.deg}deg"><i></i><b></b></span>`).join('')}</div>` : ''}
@@ -2508,14 +2521,14 @@ function paneBody(kind, i) {
   if ((PANE.vmode[i] || 'multi') === 'multi') {
     return `<div class="pn-vid pn-quad">
       <div class="pq">${[0, 1, 2, 3].map(k =>
-        `<span><img src="${(clips[k] || clips[0] || {}).img || 'assets/img/video.png?v=202609091711'}" alt="">
+        `<span><img src="${(clips[k] || clips[0] || {}).img || 'assets/img/video.png?v=202609091725'}" alt="">
          ${tileHead(k)}</span>`).join('')}</div>
       ${paneToolsHTML('video', i)}
       ${paneNearCamHTML(i)}
     </div>`;
   }
   return `<div class="pn-vid">
-    <img src="${(clips[Math.min(i, 3)] || {}).img || 'assets/img/video.png?v=202609091711'}" alt="">
+    <img src="${(clips[Math.min(i, 3)] || {}).img || 'assets/img/video.png?v=202609091725'}" alt="">
     ${tileHead(Math.min(i, 3))}
     ${paneToolsHTML('video', i)}
     ${paneNearCamHTML(i)}
@@ -2563,7 +2576,7 @@ function renderPanes() {
     if (PANE.kind[0] !== 'map') v.insertAdjacentHTML('beforeend', paneToolsHTML('video', 0));
     if (PANE.kind[0] === 'map') {
       v.insertAdjacentHTML('afterbegin', `<div class="pn-map">
-        <img src="assets/img/floor.png?v=202609091711" alt="맵뷰">
+        <img src="assets/img/floor.png?v=202609091725" alt="맵뷰">
         ${PANE.mapTools.includes('path') ? paneMapPathHTML() : ''}
         ${PANE.mapTools.includes('cctv') ? `<div class="pn-cones">${MAP_CCTV.map(c =>
           `<span class="map-cone" style="left:${c.x}%;top:${c.y}%;rotate:${c.deg}deg"><i></i><b></b></span>`).join('')}</div>` : ''}
@@ -3215,14 +3228,15 @@ function renderMap3d(paths) {
   paths = src;
   host.innerHTML = M3_FLOORS.map((f, fi) => {
     const mine = pts.filter(t => m3FloorOf(t.cam) === f.key);
-    return `<div class="m3-floor" style="--i:${fi}">
-      <img src="assets/img/floor.png?v=202609091711" alt="">
+    /* 위층이 앞(위)에 오도록 쌓는다 — DOM 순서대로면 아래층이 덮는다 */
+    return `<div class="m3-floor" style="--i:${fi};z-index:${M3_FLOORS.length - fi}">
+      <img src="assets/img/floor.png?v=202609091725" alt="">
       ${mine.map(t => `<span class="map-wp" data-hh="${t.hh}" data-x="${t.x}" data-y="${t.y}"
           title="${t.cam} · 이 지점으로 이동"
           style="left:${t.x}%;top:${t.y}%;background:${slotColor(paths[0].slot)}">${t.n}</span>
         <span class="m3-sp" style="left:${t.x}%;top:${t.y}%">${t.cam}</span>`).join('')}
     </div>`;
-  }).join('') + `<span class="m3-riser" title="층간 이동"></span>`;
+  }).join('');   /* 가운데 관통선 제거 — 실제 층 전환 지점과 무관해 의미가 없었다 */
 
   bindMapSeek();
   syncMapToCursor();
@@ -3342,7 +3356,7 @@ function spreadMapLabels(host, sel) {
 $$('#dtMapSeg button').forEach(b => b.onclick = () => {
   $$('#dtMapSeg button').forEach(x => x.classList.toggle('on', x === b));
   DT.map = b.dataset.m;
-  $('#dtMapImg').src = DT.map === 'map' ? 'assets/img/map.png?v=202609091711' : 'assets/img/floor.png?v=202609091711';
+  $('#dtMapImg').src = DT.map === 'map' ? 'assets/img/map.png?v=202609091725' : 'assets/img/floor.png?v=202609091725';
   $('#dtFloor').hidden = true;                 /* 층 배지는 3D 각 층에 붙는다 */
   renderMap3d(MAP_PATHS_CACHE);
 });
@@ -3914,7 +3928,7 @@ function mvwPaths() {
 }
 function renderMapView() {
   const paths = mvwPaths();
-  const mapImg = DT.map === 'map' ? 'assets/img/map.png?v=202609091711' : 'assets/img/floor.png?v=202609091711';
+  const mapImg = DT.map === 'map' ? 'assets/img/map.png?v=202609091725' : 'assets/img/floor.png?v=202609091725';
   const seg = `<div class="seg"><button class="${DT.map === 'map' ? 'on' : ''}" data-mm="map">지도</button><button class="${DT.map === 'map' ? '' : 'on'}" data-mm="floor">층별</button></div>`;
   /* 사양서 Detail_000_4 · 4-4) : 주변 카메라 / 이동 경로 / 전체 보기
      이동 경로는 **단일 대상일 때 비활성** (그룹·경로비교에서만 사용) */
@@ -3976,7 +3990,7 @@ function renderMapView() {
   /* 바인딩 */
   $$('#mvwBody [data-mm]').forEach(b => b.onclick = () => {
     DT.map = b.dataset.mm;
-    $('#dtMapImg').src = DT.map === 'map' ? 'assets/img/map.png?v=202609091711' : 'assets/img/floor.png?v=202609091711';
+    $('#dtMapImg').src = DT.map === 'map' ? 'assets/img/map.png?v=202609091725' : 'assets/img/floor.png?v=202609091725';
     $('#dtFloor').hidden = DT.map === 'map';
     renderMapView();
   });
@@ -4421,7 +4435,7 @@ function applyDemo() {
   }
   if (d === 'personmgr') { switchMode('person'); renderPersonGrid(); openPersonMgr(); }
   if (d === 'history')   { HIST.open.add('0-0'); $('#btnHistory').click(); }
-  if (d === 'imagemodal'){ setMode('person'); setPfWay('img'); loadImage('assets/img/obj01.png?v=202609091711'); }
+  if (d === 'imagemodal'){ setMode('person'); setPfWay('img'); loadImage('assets/img/obj01.png?v=202609091725'); }
   if (d === 'person') { setMode('person'); S.selPersons = ['p1', 'p3']; renderPersonGrid(); buildFilters('person'); runSearch(false); }
   if (d === 'algo')   { setMode('algo'); S.algos = ['침입', '배회']; renderAlgoGrid(); buildFilters('algo'); runSearch(false); }
   if (d === 'image')  { setMode('person'); setPfWay('img'); }
@@ -4504,7 +4518,7 @@ function imsBuild() {
 }
 
 function openImgSearch(src) {
-  IMS.src = src || (OBJECTS[0] || {}).img || 'assets/img/video.png?v=202609091711';
+  IMS.src = src || (OBJECTS[0] || {}).img || 'assets/img/video.png?v=202609091725';
   IMS.kind = '전체'; IMS.sel = new Set(); IMS.items = [];
   const img = document.getElementById('imsImg'); if (img) img.src = IMS.src;
   document.getElementById('imsGrid').innerHTML = '';
@@ -4573,6 +4587,34 @@ function renderIms() {
     toast(`추출된 인물 ${IMS.sel.size}명으로 검색합니다.`);
     S.mode = 'person'; runSearch(false);
   };
+})();
+
+
+/* ── 맵 상단 버튼 동작 연결 (2026-09-09) ────────────────────────────────
+   시안에만 있고 눌러도 아무 일이 없던 것들을 이어준다. */
+(function bindMapHead() {
+  /* 레이아웃 토글 : 한 화면 / 위아래 둘로 */
+  document.querySelectorAll('#mapLay [data-ml]').forEach(b => b.onclick = () => {
+    document.querySelectorAll('#mapLay [data-ml]').forEach(x => x.classList.toggle('on', x === b));
+    const two = b.dataset.ml === '2';
+    document.getElementById('dtMap').classList.toggle('split', two);
+    toast(two ? '맵을 위아래로 나눠 봅니다.' : '맵을 한 화면으로 봅니다.');
+  });
+  /* 자리 바꾸기 : 좌측 영상과 우측 맵을 맞바꾼다 */
+  const swap = document.getElementById('mapSwap');
+  if (swap) swap.onclick = () => {
+    document.body.classList.toggle('dt-swap');
+    toast('영상과 맵의 자리를 바꿨습니다.');
+  };
+  /* 동 선택 */
+  if (typeof bindSelect === 'function' && document.getElementById('dtBldg')) {
+    bindSelect('#dtBldg', v => toast(`${v} 으로 이동합니다.`));
+  }
+  /* 인접 동 칩 */
+  document.addEventListener('click', e => {
+    const b = e.target.closest('.pn-bldg button');
+    if (b) toast(b.innerText.trim() + ' 으로 이동합니다.');
+  });
 })();
 
 function openSettings() { setNav = 'path'; renderSettings(); openModal('#mdSetting'); }
@@ -5042,7 +5084,7 @@ function csDetailHTML(c) {
           <button class="btn-ghost sm" style="margin-left:auto" data-csmap>전체 보기</button>
         </div>
         <div style="position:relative;height:196px;border-radius:6px;overflow:hidden;background:var(--bg-1);border:1px solid var(--ln-subtle)">
-          <img src="assets/img/map.png?v=202609091711" style="width:100%;height:100%;object-fit:cover;opacity:.85" alt="">
+          <img src="assets/img/map.png?v=202609091725" style="width:100%;height:100%;object-fit:cover;opacity:.85" alt="">
           ${c.path.map((p, i) => {
             const x = 16 + (i * 23) % 68, y = 22 + (i * 17) % 54;
             return `<span style="position:absolute;left:${x}%;top:${y}%;width:9px;height:9px;border-radius:50%;
