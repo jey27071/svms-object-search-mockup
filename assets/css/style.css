@@ -4029,3 +4029,68 @@ body.dt-b .dt-video.has-multi > #ovCctv{display:none}
 
 /* 패널에 붙어 있던 접기 핸들 삭제 — 접기는 머리말 버튼이 맡는다 */
 #btnCollapse{display:none !important}
+
+/* ── 타임라인 : 시안 `비교-대상4개` (4978:65095) ─────────────────────────
+   트랙 라벨은 색 점이 아니라 **썸네일 카드 + 이름**. 시안 실측 80x65. */
+.tl-row{display:flex;align-items:stretch}
+.tl-obj{
+  position:absolute;left:6px;top:4px;z-index:4;
+  width:80px;height:calc(var(--tl-row,66px) - 8px);
+  border:1.5px solid var(--slot,var(--primary));border-radius:4px;
+  overflow:hidden;background:#000;pointer-events:auto
+}
+.tl-obj img{width:100%;height:calc(100% - 18px);object-fit:cover;display:block}
+.tl-obj .nm{
+  display:block;height:18px;line-height:18px;padding:0 5px;
+  background:var(--slot,var(--primary));color:#fff;
+  font-size:10px;font-weight:600;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap
+}
+.tl-obj .rm{
+  position:absolute;right:2px;top:2px;width:15px;height:15px;
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(0,0,0,.6);border:0;border-radius:50%;
+  color:#fff;cursor:pointer;opacity:0;transition:opacity .12s
+}
+.tl-obj:hover .rm{opacity:1}
+/* 레인은 라벨 폭만큼 비켜 시작한다 */
+.tl-lane{margin-left:92px}
+
+/* 하단 컨트롤 */
+.tl-foot{
+  display:flex;align-items:center;gap:12px;
+  padding:8px 12px;border-top:1px solid var(--ln-subtle)
+}
+.tl-foot .tf-l{display:flex;align-items:center;gap:4px}
+.tl-foot .tf-zoom{display:flex;align-items:center;gap:8px;margin:0 auto}
+.tl-foot .tf-zoom .zl{font-size:13px;color:var(--tx-tertiary);line-height:1}
+.tl-foot .tf-zoom .tl-zr{
+  width:120px;height:3px;-webkit-appearance:none;appearance:none;
+  background:var(--ln-border);border-radius:2px;outline:none
+}
+.tl-foot .tf-zoom .tl-zr::-webkit-slider-thumb{
+  -webkit-appearance:none;width:11px;height:11px;border-radius:50%;
+  background:var(--tx-primary);border:0;cursor:pointer
+}
+.tl-foot .tf-r{display:flex;align-items:center;gap:8px}
+
+/* ── 우측 패널 : 시안은 **맵 전용** (대상정보 카드 없음) ────────────────
+   대상 정보는 타임라인 트랙 라벨(썸네일+이름)이 대신한다. */
+body.dt-b .dt-side > .dt-sec:nth-of-type(1){display:none}
+body.dt-b .dt-side > .dt-sec:nth-of-type(2){flex:1;min-height:0}
+body.dt-b .dt-side .dt-map{flex:1;min-height:0}
+/* 상단 사건 등록 버튼은 타임라인 하단으로 옮겼다 */
+body.dt-b .dt-side .dt-side-head .btn-primary{display:none}
+
+/* ── 상세 : 시안에 없는 상단 바 정리 ────────────────────────────────────
+   시안은 탭바 → 영상 → 재생바 → 편집줄 → 타임라인 으로 바로 이어진다.
+   대상 요약과 단 수 전환은 트랙 라벨·영상 분할이 대신하므로 감춘다. */
+body.dt-b .dt-objbar{display:none}
+/* 타임라인 상단 탭(전체·인물A~D·인물비교·편집)도 시안에 없다 —
+   트랙 라벨의 ✕ 와 하단 `인물 추가` 가 같은 일을 한다 */
+body.dt-b #dtTl .tl-top{display:none}
+
+/* 트랙이 늘어도 하단 컨트롤을 덮지 않게 세로를 나눈다 */
+body.dt-b #dtTl{display:flex;flex-direction:column;min-height:0}
+body.dt-b #dtTl .tl-scroll{flex:1;min-height:0;overflow-y:auto}
+body.dt-b #dtTl .tl-foot{flex:0 0 auto}

@@ -1980,8 +1980,11 @@ function renderTimeline(host, tracks, opt = {}) {
 
   const rows = tracks.map((tr, ti) => `
     <div class="tl-row" data-tr="${ti}">
-      <span class="tl-name"><i style="background:${typeof slotColor === 'function' ? slotColor(tr.slot) : 'var(--primary)'}"></i>${tr.label}
-        <em>${(tr.clips[0] || {}).from ? String(tr.clips[0].from).slice(11, 16) : ''}</em></span>
+      <div class="tl-obj" style="--slot:${typeof slotColor === 'function' ? slotColor(tr.slot) : 'var(--primary)'}">
+        <img src="${(tr.clips[0] || {}).img || 'assets/img/obj01.png'}" alt="">
+        <span class="nm">${tr.label}</span>
+        ${TL.show && TL.show.size > 1 ? `<button class="rm" data-tlrm="${ti}" title="${tr.label} 제거">${ICON.xs || '×'}</button>` : ''}
+      </div>
       <div class="tl-lane">
         ${tr.clips.map((c, ci) => {
           const l = pct(c.from), w = wid(c);
@@ -2003,19 +2006,11 @@ function renderTimeline(host, tracks, opt = {}) {
 
   host.innerHTML = `
     <div class="tl-top">
-      <div class="tl-zoom">
-        <button data-tlz="out" title="축소" ${TL.zoom <= 1 ? 'disabled' : ''}>${ICON.zoomOut || '−'}</button>
-        <input type="range" class="tl-zr" min="1" max="8" step="1" value="${TL.zoom}" title="타임라인 확대">
-        <button data-tlz="in" title="확대" ${TL.zoom >= 8 ? 'disabled' : ''}>${ICON.zoomIn || '+'}</button>
-        <span class="tl-zv">${TL.zoom}x</span>
-      </div>
+
       ${allTracks.length > 1 ? `<div class="tl-tabs">
         <button class="${TL.show.size === allTracks.length ? 'on' : ''}" data-tlall>전체</button>
         ${allTracks.map((t, i) => `<button class="${TL.show.has(i) ? 'on' : ''}" data-tltoggle="${i}"
           title="${t.label} 표시 켜기/끄기"><i style="background:${slotColor(t.slot)}"></i>${t.label}</button>`).join('')}
-        <button class="tl-add" data-tladdobj
-          ${TL.show.size >= TL_MAX || TL.show.size >= allTracks.length ? 'disabled' : ''}
-          title="${TL.show.size >= TL_MAX ? `한 번에 ${TL_MAX}명까지 비교할 수 있습니다` : '비교할 대상 추가'}">＋ 추가</button>
         <button class="btn-primary sm tl-go" data-tlcmpgo ${TL.show.size >= 2 ? '' : 'disabled'}>인물 비교 (${TL.show.size})</button>
       </div>` : ''}
       ${opt.edit ? `<button class="btn-ghost sm" data-tlreselect style="margin-left:8px">클립 다시 선택</button>
@@ -2028,6 +2023,24 @@ function renderTimeline(host, tracks, opt = {}) {
         <div class="tl-ruler">${ticks}</div>
         <div class="tl-rows">${rows}</div>
         <span class="tl-cursor" style="left:${TL.cursor * 100}%"><span class="tl-cur-pv"></span><b class="tl-cur-t">${tlHMS(new Date(d0 + TL.cursor * span))}</b></span>
+      </div>
+    </div>
+    <!-- 시안(비교-대상4개) : 좌 편집도구 · 중앙 확대 · 우 인물 추가/사건 등록 -->
+    <div class="tl-foot">
+      <div class="tf-l">
+        <button class="btn-icon" title="영역 그리기"><i class="i i-16 i-tool-shape"></i></button>
+        <button class="btn-icon" title="구간 분할"><i class="i i-16 i-tool-multi"></i></button>
+      </div>
+      <label class="tf-zoom" title="타임라인 확대">
+        <b class="zl">−</b>
+        <input type="range" class="tl-zr" min="1" max="8" step="1" value="${TL.zoom}">
+        <b class="zl">＋</b>
+      </label>
+      <div class="tf-r">
+        <button class="btn-ghost sm" data-tladdobj
+          ${TL.show.size >= TL_MAX || TL.show.size >= allTracks.length ? 'disabled' : ''}
+          title="${TL.show.size >= TL_MAX ? `한 번에 ${TL_MAX}명까지 비교할 수 있습니다` : '비교할 대상 추가'}">인물 추가</button>
+        <button class="btn-primary sm" id="tlCaseAdd">사건 등록</button>
       </div>
     </div>`;
 
@@ -2085,6 +2098,15 @@ function renderTimeline(host, tracks, opt = {}) {
   host.querySelectorAll('[data-tlpick]').forEach(b => b.onclick = () => {
     TL.mode = 'one'; TL.pick = +b.dataset.tlpick; renderTimeline(host, allTracks, opt);
   });
+  host.querySelectorAll('[data-tlrm]').forEach(b => b.onclick = e => {
+    e.stopPropagation();
+    const i = +b.dataset.tlrm;
+    if (TL.show.size <= 1) { toast('최소 한 명은 표시해야 합니다.'); return; }
+    TL.show.delete([...TL.show].sort((a, z) => a - z)[i]);
+    renderTimeline(host, allTracks, opt);
+  });
+  const caseBtn = host.querySelector('#tlCaseAdd');
+  if (caseBtn) caseBtn.onclick = () => { if (typeof openCase === 'function') openCase(); else toast('사건 등록'); };
   const addObj = host.querySelector('[data-tladdobj]');
   if (addObj) addObj.onclick = () => {
     /* 아직 켜지 않은 대상을 하나 더 올린다. 한 번에 비교할 수 있는 건 4명까지. */
