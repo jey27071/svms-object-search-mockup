@@ -2962,6 +2962,8 @@ function renderMulti() {
           <button class="tb" title="크게 보기"><i class="i i-14 i-tool-expand"></i></button>
         </span>
       </div>
+      <!-- 시안 : 타일 우하단에 `주변 카메라 (N)` -->
+      <button class="mv-near" data-mvnear="${i}">주변 카메라 (${(typeof MULTI_TILES !== 'undefined' ? MULTI_TILES.length : 3)})<i class="i i-12 i-mv-expand"></i></button>
       ${t.boxes.map(b => `<div class="mv-box" style="left:${b.x}%;top:${b.y}%;width:${b.w}%;height:${b.h}%;border-color:${slotColor(b.slot)};background:${slotColor(b.slot)}14"><i style="background:${slotColor(b.slot)}">${b.label}</i></div>`).join('')}
     </div>`).join('');
   $$('#dtMulti .mv-tile').forEach(n => n.onclick = e => {

@@ -4261,3 +4261,21 @@ body.dt-b .pn-tools,
 body.dt-b .pn-switch{display:none}
 /* 맵 상단 `지도 / 층별` 세그 : 시안은 `A동 (1건)` 동 선택으로 대체 */
 body.dt-b #dtMapSeg{display:none}
+
+/* 타임라인 : 시안 비율(영상 593 / 타임라인 375)에 맞춰 4행이 잘리지 않게 */
+body.dt-b #dtTl{min-height:352px}
+body.dt-b .dt-panes{min-height:0}
+
+/* 타일 우하단 `주변 카메라 (N)` (시안) */
+.mv-near{
+  position:absolute;right:8px;bottom:8px;z-index:4;
+  display:flex;align-items:center;gap:5px;
+  background:rgba(13,14,18,.72);border:0;border-radius:4px;
+  padding:3px 8px;font-size:10.5px;color:rgba(255,255,255,.9);cursor:pointer
+}
+.mv-near:hover{background:rgba(48,112,216,.85)}
+
+/* 맵 상단 : 레이아웃 토글 + 바꾸기 (시안) */
+.dt-sec-head .map-lay{margin-right:6px}
+.dt-sec-head .map-lay button{display:flex;align-items:center;justify-content:center;width:28px;height:24px}
+.dt-sec-head .map-swap{margin-right:auto}

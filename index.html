@@ -5,8 +5,8 @@
 <title>SVMS — 동선 추적 검색 (Working Mockup)</title>
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
-<link rel="stylesheet" href="assets/css/icons.css?v=202609091334">
-<link rel="stylesheet" href="assets/css/style.css?v=202609091334">
+<link rel="stylesheet" href="assets/css/icons.css?v=202609091337">
+<link rel="stylesheet" href="assets/css/style.css?v=202609091337">
 </head>
 <body>
 
@@ -454,6 +454,14 @@
             <div class="seg" id="dtMapSeg" style="margin-left:auto">
               <button data-m="map">지도</button><button class="on" data-m="floor">층별</button>
             </div>
+            <!-- 시안(비교-대상4개) : 좌측 레이아웃 토글 + 우측 바꾸기 -->
+            <div class="seg map-lay" id="mapLay">
+              <button class="on" data-ml="1" title="한 화면"><i class="i i-16 i-tool-single"></i></button>
+              <button data-ml="2" title="위아래 나눠 보기"><i class="i i-16 i-tool-multi"></i></button>
+            </div>
+            <button class="btn-icon map-swap" id="mapSwap" title="영상과 자리 바꾸기">
+              <svg viewBox="0 0 16 16" class="ic"><path d="M3 6h9l-2.4-2.4M13 10H4l2.4 2.4" stroke="currentColor" stroke-width="1.3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
             <!-- 시안(비교-대상4개) : 맵 상단은 동(棟) 선택 -->
             <div class="select sm dt-bldg" id="dtBldg" data-value="A동 (1건)" style="margin-left:auto">
               <button class="select-btn">A동 (1건)<i class="i i-16 i-chevron i-down caret"></i></button>
@@ -800,7 +808,7 @@
 
 <div class="toast" id="toast" hidden></div>
 
-<script src="assets/js/data.js?v=202609091334"></script>
-<script src="assets/js/app.js?v=202609091334"></script>
+<script src="assets/js/data.js?v=202609091337"></script>
+<script src="assets/js/app.js?v=202609091337"></script>
 </body>
 </html>
