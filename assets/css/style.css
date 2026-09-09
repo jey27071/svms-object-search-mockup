@@ -4234,3 +4234,30 @@ body.dt-b #dtTl .tl-foot{flex:0 0 auto}
 .hs-bd .hs-t{font-style:normal;font-family:var(--mono);font-size:10.5px;color:var(--tx-helper)}
 .hs-x{color:var(--tx-helper)}
 .hs-x:hover{color:var(--tx-primary)}
+
+/* ══ 오늘 시안(2026-09-09) 기준 정리 ═══════════════════════════════════
+   1-1안(GUI) · 검색 메인(와이어) · 비교-대상4개(상세) 에 없는 것을 걷어낸다.
+   기능 코드는 남기고 표시만 끈다 — 되살릴 때 이 블록만 지우면 된다. */
+
+/* 상세 재생바 : 시안은 중앙 재생 컨트롤 + 우측 설정(톱니) 뿐이다.
+   히트맵·경로·주변카메라·단일/다중·전체보기는 타일 아이콘과 맵 도구가 맡는다 */
+body.dt-b #dtTools > [data-tool],
+body.dt-b #dtTools > #dtFull,
+body.dt-b #dtViewSel{display:none}
+/* 영역/선 검색은 타임라인 하단 편집도구와 겹친다 */
+body.dt-b #dtAreaTools{display:none}
+/* 재생바 아래 편집줄도 중복 — 시안은 타임라인 하단 한 곳에만 둔다 */
+body.dt-b #dtEditBar{display:none}
+/* 영상/맵뷰 전환 : 좌측은 영상 전용, 맵은 우측 칼럼이라 필요 없다 */
+body.dt-b .dt-video .seg,
+body.dt-b .pn-seg{display:none}
+
+/* 경로 비교 바 : 상세의 `인물 추가` 로 대체됐다 */
+#compareBar{display:none !important}
+
+/* 상단 패널의 분석 도구(pn-tools)와 영상/맵뷰 전환(pn-switch) :
+   시안은 좌측이 영상 전용이고, 분석은 타일 아이콘·맵 도구가 맡는다 */
+body.dt-b .pn-tools,
+body.dt-b .pn-switch{display:none}
+/* 맵 상단 `지도 / 층별` 세그 : 시안은 `A동 (1건)` 동 선택으로 대체 */
+body.dt-b #dtMapSeg{display:none}
