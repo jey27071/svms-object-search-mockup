@@ -4836,3 +4836,13 @@ body.booting::after{
    감싸는 .textarea-wrap 에도 padding-left 12px 가 있어 12+12=24px 이 됐다.
    여백은 입력 한 곳에서만 준다. */
 .mode-panel[data-panel="text"] .textarea-wrap{padding:0}
+
+/* 입력 상자 범위를 시안에 맞춘다 —
+   테두리를 포함해 **40px** 이어야 하는데 42px 이었고(내부 40 + 테두리 2),
+   탭과의 간격도 시안(24px)보다 좁았다. */
+.mode-panel[data-panel="text"] .textarea-wrap{
+  box-sizing:border-box;height:40px;margin-top:8px
+}
+.mode-panel[data-panel="text"] .textarea-wrap textarea{
+  height:38px;line-height:38px
+}
