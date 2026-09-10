@@ -5135,3 +5135,43 @@ body.dt-b #dtViewSel .select-btn:hover{color:var(--tx-primary)}
 
 /* 시안에는 하단 고정 칩(외부/실내 이동) 대신 위 안내만 있다 */
 body.dt-b .dt-map .pn-bldg{display:none}
+
+/* ============================================================
+   타임라인 시안 규격을 **상세·비교 양쪽**에 (#dtTl · #cmpTl)
+   높이 = 눈금 48 + 트랙수 x 행 + 하단 41.
+   34px 기준의 옛 계산식 탓에 비교 4명일 때 마지막 트랙이 잘렸다.
+   ============================================================ */
+body.dt-b .tl-host{height:calc(48px + var(--tl-tracks) * var(--tl-row,65px) + 41px)}
+body.dt-b .tl-host .tl-ruler{height:48px}
+body.dt-b .tl-host .tl-ruler .tl-day{
+  top:2px;font-size:11px;font-weight:400;font-family:inherit;
+  color:var(--tx-secondary);border-left:0;padding-left:0;transform:translateX(-50%)
+}
+body.dt-b .tl-host .tl-ruler .tl-day.first{color:var(--tx-secondary)}
+body.dt-b .tl-host .tl-ruler .tl-lb{top:24px;font-size:11px;font-family:inherit;color:var(--tx-helper)}
+body.dt-b .tl-host .tl-ruler .tk{top:42px;height:6px}
+body.dt-b .tl-host .tl-bar{top:0;height:8px;border-radius:2px 2px 0 0;opacity:1}
+body.dt-b .tl-host .tl-cam{display:none}
+body.dt-b .tl-host .tl-th{overflow:hidden}
+body.dt-b .tl-host .tl-n{
+  left:4px;top:4px;min-width:16px;height:16px;line-height:16px;font-size:10px;border-radius:3px
+}
+body.dt-b .tl-host .tl-more{
+  top:4px;left:78px;right:auto;bottom:auto;height:13px;line-height:13px;font-size:9.5px;
+  padding:0 4px;border-radius:3px;background:rgba(0,0,0,.62);color:#fff
+}
+body.dt-b .tl-host .tl-th.pass{transform:none !important;box-shadow:none}
+body.dt-b .tl-host .tl-cursor .tl-cur-t{
+  top:52px;bottom:auto;transform:translateX(-50%);opacity:0;transition:opacity .12s
+}
+body.dt-b .tl-host .tl-cursor:hover .tl-cur-t,
+body.tl-seeking .tl-host .tl-cursor .tl-cur-t{opacity:1}
+/* 인물 탭 줄까지 포함한 높이 */
+body.dt-b .tl-host{
+  height:calc(var(--tl-toph,0px) + 48px + var(--tl-tracks) * var(--tl-row,65px) + 41px)
+}
+/* 비교 타임라인도 세로로 자르지 않는다 (#dtTl 에만 걸려 있었다) */
+body.dt-b .tl-host .tl-scroll{overflow-x:auto;overflow-y:visible}
+body.dt-b .tl-host{
+  height:calc(var(--tl-toph,0px) + 48px + var(--tl-tracks) * var(--tl-row,65px) + 49px)
+}
