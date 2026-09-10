@@ -4720,13 +4720,13 @@ body.booting::after{
    그 탭 우측 버튼으로 되돌린다. */
 .tab.tab-search{
   display:flex;align-items:center;gap:8px;flex:0 0 auto;
-  padding:0 10px 0 12px;cursor:default
+  padding:0 10px 0 13px;cursor:default   /* 패널 1px 테두리만큼 보정 */
 }
 /* 펼침 상태 머리말(.side-title)과 글자·위치를 같게 맞춘다 —
    접었다 펼 때 라벨이 흔들려 보였다 */
 .tab.tab-search > span{
   color:var(--tx-primary);font-size:13px;font-weight:600;line-height:1;
-  position:relative;top:0          /* 펼침 머리말과 세로를 맞춘다 */
+  position:relative;top:1px        /* 펼침 머리말과 세로를 맞춘다 */
 }
 .tab.tab-search .tx{
   display:flex;align-items:center;justify-content:center;
@@ -4847,15 +4847,20 @@ body.booting::after{
   height:38px;line-height:38px
 }
 
-/* ── 접었다 펼 때 경계가 달라 보이던 문제 ────────────────────────────────
-   검색 패널과 결과 영역에 4px 라운드와 테두리가 있어, 접히며 패널이
-   빠질 때 결과의 둥근 모서리가 LNB 와 맞닿아 위치가 흔들려 보였다.
-   시안은 둘 다 평면이고 얇은 구분선으로만 나뉜다. */
-#sidePanel{border-radius:0;border-top:0;border-bottom:0;border-left:0}
-#results{border-radius:0}
+/* ── 패널 디자인 기준은 **검색결과 패널** ────────────────────────────────
+   앞서 흔들림을 잡느라 검색결과 패널을 목록에 맞춰 평면으로 눌렀는데
+   방향이 반대다. 검색결과 패널의 카드(4px 라운드 + 1px 테두리)가 기준이고
+   검색 목록·미리보기가 여기에 맞춘다. LNB 도 이미 같은 카드다. */
+#sidePanel,
+#results,
+#preview{
+  border:1px solid var(--ln-subtle);border-radius:var(--r);
+  background:var(--bg-2)
+}
 .workspace{padding:0}
-/* 탭바와 결과의 좌측 기준선을 같게 — 탭바에만 좌측 4px 이 있어 어긋났다 */
-.content-col > .tabbar{padding-left:0}
+/* 탭은 시안(4999:38743)에서 카드 **위**에 놓인다 — 탭바는 바탕이 없어야
+   아래 목록 카드의 모서리가 드러난다 */
+.content-col > .tabbar{padding-left:0;background:transparent}
 
 /* ── 이동 경로 미리보기 : 노드에서 바로 빼기 ────────────────────────────
    목록으로 돌아가 체크를 푸는 대신 미리보기에서 바로 제외한다. */
@@ -4879,3 +4884,10 @@ body.booting::after{
 .size-slider i{cursor:pointer;transition:border-bottom-color .12s}
 .size-slider i:hover{border-bottom-color:var(--tx-primary)}
 .size-slider i:active{border-bottom-color:var(--primary)}
+
+/* ── 결과 목록 : 정렬 기준별 묶음 (최신순=날짜 / 위치순=카메라) ──────────
+   유사도순은 연속값이라 묶지 않는다. */
+.res-group + .res-group{margin-top:20px;border-top:1px solid var(--ln-border);padding-top:16px}
+.res-gh{display:flex;align-items:baseline;gap:8px;padding:0 2px 10px}
+.res-gh b{font-size:12.5px;font-weight:600;color:var(--tx-primary);letter-spacing:-.2px}
+.res-gh .n{font-size:11px;color:var(--tx-helper);font-family:var(--mono)}
