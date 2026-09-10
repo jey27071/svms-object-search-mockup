@@ -4725,7 +4725,8 @@ body.booting::after{
 /* 펼침 상태 머리말(.side-title)과 글자·위치를 같게 맞춘다 —
    접었다 펼 때 라벨이 흔들려 보였다 */
 .tab.tab-search > span{
-  color:var(--tx-primary);font-size:13px;font-weight:600;line-height:1
+  color:var(--tx-primary);font-size:13px;font-weight:600;line-height:1;
+  position:relative;top:1px        /* 펼침 머리말과 세로 1px 어긋나 흔들려 보였다 */
 }
 .tab.tab-search .tx{
   display:flex;align-items:center;justify-content:center;
@@ -4815,3 +4816,23 @@ body.booting::after{
 /* 설정은 하단 고정이 아니라 사건관리 바로 아래 (시안) */
 .lnb #lnbSetting{margin-bottom:0}
 .lnb .lnb-foot{margin-top:14px}
+
+/* ── 입력 글자 위치 · 결과 수 정렬 (2026-09-10 5차) ──────────────────────
+   1) 검색어가 안쪽으로 치우치고 위로 붙어 있었다.
+      textarea 라 line-height 로 세로를 잡아야 한다. */
+.mode-panel[data-panel="text"] .textarea-wrap textarea{
+  padding:0 34px 0 12px;line-height:40px;height:40px
+}
+.mode-panel[data-panel="text"] .textarea-wrap textarea::placeholder{line-height:40px}
+
+/* 2) `총 N 건` 의 글자와 배지가 세로로 어긋났다 — 기준선을 맞춘다 */
+.rh-label{display:inline-flex;align-items:center;gap:0}
+.rc-badge{
+  display:inline-flex;align-items:center;justify-content:center;
+  height:20px;padding:0 8px;margin:0 7px;line-height:1;vertical-align:middle
+}
+
+/* 검색어가 안쪽으로 밀려 있던 진짜 원인 —
+   감싸는 .textarea-wrap 에도 padding-left 12px 가 있어 12+12=24px 이 됐다.
+   여백은 입력 한 곳에서만 준다. */
+.mode-panel[data-panel="text"] .textarea-wrap{padding:0}
