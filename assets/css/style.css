@@ -4744,3 +4744,12 @@ body.side-folded #sidePanel{
   align-self:flex-start;height:auto;
   border:1px solid var(--ln-border);border-radius:0 6px 6px 0;border-left:0
 }
+
+
+/* ── 첫 화면 깜빡임 방지 ────────────────────────────────────────────────
+   마크업에 예시 값이 박혀 있어 JS 가 그리기 전 잠깐 스쳐 보였다.
+   준비가 끝나면 booting 클래스를 떼고 드러낸다. */
+body.booting #app{visibility:hidden}
+body.booting::after{
+  content:'';position:fixed;inset:0;background:var(--bg-0);z-index:9999
+}
