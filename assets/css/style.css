@@ -4706,3 +4706,41 @@ body.dt-b .dt-map .pn-bldg{
 }
 .pv.row .nm{max-width:none;font-size:12.5px}
 .pv.row .tm{font-size:10.5px}
+
+/* ── 접힘 상태 : 머리말(탭)만 남는다 ─────────────────────────────────────
+   패널을 통째로 감추지 않고 `검색 결과` 탭 크기로 줄인다.
+   그 탭 오른쪽 버튼을 누르면 다시 펼쳐진다. */
+body.side-folded #sidePanel{
+  width:auto;flex:0 0 auto;min-width:0;
+  border-right:1px solid var(--ln-border);background:var(--bg-1)
+}
+body.side-folded #sidePanel > .side-body,
+body.side-folded #sidePanel > .side-foot,
+body.side-folded #sidePanel > .panel-foot{display:none}
+body.side-folded #sidePanel > .side-head{
+  padding:0 10px;height:100%;
+  display:flex;align-items:flex-start;gap:8px
+}
+body.side-folded .side-head{padding-top:12px}
+/* 접힘에서는 펼침 방향으로 아이콘을 뒤집는다 */
+body.side-folded #btnFold .ic{transform:scaleX(-1)}
+
+/* 접힘 머리말이 비어 보이던 문제 — 타이틀·버튼을 명시적으로 세운다 */
+body.side-folded #sidePanel > .side-head{
+  padding:12px 10px;height:auto;background:var(--bg-1);
+  display:flex;align-items:center;justify-content:space-between;gap:6px
+}
+body.side-folded #sidePanel > .side-head .side-title{
+  display:block;font-size:12.5px;font-weight:600;color:var(--tx-primary);
+  white-space:nowrap;opacity:1;visibility:visible
+}
+body.side-folded #sidePanel > .side-head .side-head-btns{display:flex;opacity:1;visibility:visible}
+body.side-folded #sidePanel > .side-head #btnFold{
+  display:flex;width:20px;height:20px;color:var(--tx-secondary)
+}
+
+/* 접힘에서는 머리말 높이만 차지한다 (아래 빈 상자 제거) */
+body.side-folded #sidePanel{
+  align-self:flex-start;height:auto;
+  border:1px solid var(--ln-border);border-radius:0 6px 6px 0;border-left:0
+}
