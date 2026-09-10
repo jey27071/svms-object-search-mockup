@@ -5175,3 +5175,13 @@ body.dt-b .tl-host .tl-scroll{overflow-x:auto;overflow-y:visible}
 body.dt-b .tl-host{
   height:calc(var(--tl-toph,0px) + 48px + var(--tl-tracks) * var(--tl-row,65px) + 49px)
 }
+
+/* 비교 타일 머리말 — 시안 5126:59281 : ■ 인물 A · 위치 · 일시 … ⋯ */
+.cmp-head .cmp-dot{
+  width:8px;height:8px;border-radius:2px;flex:0 0 8px;display:inline-block
+}
+.cmp-head .who{
+  font-size:12px;font-weight:600;color:#fff;line-height:1.3;white-space:nowrap;flex:0 0 auto
+}
+.cmp-head .more{margin-left:auto;color:rgba(255,255,255,.72)}
+.cmp-head .more:hover{color:#fff}
