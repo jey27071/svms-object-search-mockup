@@ -5059,3 +5059,49 @@ body.dt-b .dt-sec-head.map-ctl [hidden]{display:none}
 /* 라벨을 지점 바로 위에 붙인다 — 190% 나 띄워 두니 어느 점의 이름인지
    알 수 없고 다른 층 라벨과 뭉쳐 보였다 */
 #dtMap3d .m3-sp{transform:translate(-50%,-160%) rotateZ(45deg) rotateX(-60deg)}
+
+/* 층 라벨은 층 위 **평면 레이어**에 — 층 안에 두면 위층 평면에 가려진다 */
+#dtMap3d .m3-labels{position:absolute;inset:0;pointer-events:none;z-index:20}
+#dtMap3d .m3-labels .m3-sp{position:absolute;left:0;top:0;transform:none;white-space:nowrap}
+
+/* 지나지 않은 지점이 0.34 라 거의 보이지 않았다 — 지점은 늘 읽히고
+   지나온 지점만 또렷해지도록 대비를 조정한다 */
+#dtMap3d .map-wp:not(.past){opacity:.62}
+#dtMap3d .map-wp.past{opacity:1}
+#dtMap3d .map-wp:hover{opacity:1}
+
+/* 층 배지 : 쌓인 층이 몇 층인지 알려 준다 (오버레이에 올려 가려지지 않게) */
+#dtMap3d .m3-labels .m3-fl{
+  position:absolute;left:0;top:0;
+  padding:2px 7px;border-radius:3px;
+  background:rgba(20,21,26,.86);color:#fff;
+  font-size:10.5px;font-weight:600;line-height:14px;white-space:nowrap
+}
+
+/* ============================================================
+   상세 재생바 — 최신 시안 5126:58070 (Video Control) 기준 복원
+   좌 : 도형 검색 · 선 검색
+   우 : 히트맵 · 주변카메라 | 단일 영상(활성) · 동시 포착 ∨ | 설정
+   (경로 확인 · 다중 영상 버튼 · 전체보기는 시안에 없다)
+   ============================================================ */
+body.dt-b #dtAreaTools{display:flex}
+body.dt-b #dtTools > [data-tool="heat"],
+body.dt-b #dtTools > [data-tool="cctv"],
+body.dt-b #dtTools > [data-tool="single"],
+body.dt-b #dtTools > .tb-div,
+body.dt-b #dtViewSel{display:flex}
+body.dt-b #dtTools > [data-tool="path"],
+body.dt-b #dtTools > [data-tool="multi"],
+body.dt-b #dtTools > #dtFull{display:none}
+body.dt-b #dtTools > .tb-div{width:1px;height:16px;background:var(--ln-subtle);margin:0 4px;flex:0 0 1px}
+/* 활성 단일 영상 뷰 : 시안은 파란 사각 버튼 */
+body.dt-b #dtTools > [data-tool="single"].on{
+  background:var(--primary);color:#fff;border-radius:var(--r)
+}
+/* 동시 포착 : 아이콘 + 라벨 + 화살표 */
+body.dt-b #dtViewSel{width:auto;flex:0 0 auto}
+body.dt-b #dtViewSel .select-btn{
+  display:flex;align-items:center;gap:3px;height:24px;padding:0 4px;
+  background:none;border:0;color:var(--tx-secondary);font-size:12px;white-space:nowrap
+}
+body.dt-b #dtViewSel .select-btn:hover{color:var(--tx-primary)}

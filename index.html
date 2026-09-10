@@ -9,8 +9,8 @@
 <title>SVMS — 동선 추적 검색 (Working Mockup)</title>
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
-<link rel="stylesheet" href="assets/css/icons.css?v=202609102318">
-<link rel="stylesheet" href="assets/css/style.css?v=202609102318">
+<link rel="stylesheet" href="assets/css/icons.css?v=202609102335">
+<link rel="stylesheet" href="assets/css/style.css?v=202609102335">
 </head>
 <body class="booting">
 
@@ -302,7 +302,7 @@
         <!-- 상단 : 1~3단 패널. 각 칸은 영상 또는 맵뷰로 쓰고 좌우로 폭을 조정한다 -->
         <div class="dt-panes" id="dtPanes" data-panes="1">
         <div class="dt-video" id="dtVideo">
-          <img id="dtVideoImg" src="assets/img/video.png?v=202609102318" alt="">
+          <img id="dtVideoImg" src="assets/img/video.png?v=202609102335" alt="">
           <div class="ov ov-heat" id="ovHeat" hidden></div>
           <div class="ov ov-path" id="ovPath" hidden></div>
           <div class="ov ov-cctv" id="ovCctv" hidden></div>
@@ -338,13 +338,14 @@
               <button class="btn-icon" data-area="line" title="선 검색"><svg viewBox="0 0 16 16" class="ic"><path d="M2 14L14 2M4 11l2 2M7 8l2 2M10 5l2 2" stroke="currentColor" stroke-width="1.3" fill="none"/></svg></button>
             </div>
             <div class="grp c">
+              <!-- 시안 5126:58070 : 이전 · 배속뒤로 · 10초뒤로 · 재생(토글) · 10초앞 · 배속앞 · 다음
+                   별도 일시정지 버튼은 없다 — 재생 버튼이 토글이다 -->
               <button class="btn-icon" id="dtPrevClip" title="이전 영상"><i class="i i-18 i-pc-prev"></i></button>
-              <button class="btn-icon" title="10초 뒤로"><i class="i i-18 i-pc-back10"></i></button>
               <button class="btn-icon" title="배속 뒤로"><i class="i i-18 i-pc-rewind"></i></button>
+              <button class="btn-icon" title="10초 뒤로"><i class="i i-18 i-pc-back10"></i></button>
               <button class="btn-icon play" id="dtPlay" title="재생"><i class="i i-18 i-pc-play"></i></button>
-              <button class="btn-icon" title="일시정지"><svg viewBox="0 0 16 16" class="ic"><path d="M4.5 3h2.5v10H4.5zM9 3h2.5v10H9z" fill="currentColor"/></svg></button>
-              <button class="btn-icon" title="배속 앞으로"><i class="i i-18 i-pc-forward"></i></button>
               <button class="btn-icon" title="10초 앞으로"><i class="i i-18 i-pc-fwd10"></i></button>
+              <button class="btn-icon" title="배속 앞으로"><i class="i i-18 i-pc-forward"></i></button>
               <button class="btn-icon" id="dtNextClip" title="다음 영상"><i class="i i-18 i-pc-next"></i></button>
             </div>
             <div class="grp r" id="dtTools">
@@ -354,12 +355,14 @@
               <button class="btn-icon" data-tool="heat" title="히트맵"><i class="i i-18 i-tool-heatmap"></i></button>
               <button class="btn-icon" data-tool="path" title="경로 확인"><i class="i i-18 i-tool-path"></i></button>
               <button class="btn-icon" data-tool="cctv" title="주변 카메라"><i class="i i-18 i-tool-cctv"></i></button>
+              <span class="tb-div"></span>
               <button class="btn-icon on" data-tool="single" title="단일 영상 view"><i class="i i-18 i-tool-single"></i></button>
               <button class="btn-icon" data-tool="multi" title="다중 영상 view"><i class="i i-18 i-tool-multi"></i></button>
-              <div class="select xs dt-sel" id="dtViewSel" data-value="Multi View">
-                <button class="select-btn">Multi View<i class="i i-16 i-chevron i-down caret"></i></button>
-                <div class="select-menu"><div data-v="Multi View">Multi View</div><div data-v="주변 카메라">주변 카메라</div><div data-v="맵뷰어">맵뷰어</div></div>
+              <div class="select xs dt-sel" id="dtViewSel" data-value="동시 포착">
+                <button class="select-btn">동시 포착<i class="i i-16 i-chevron i-down caret"></i></button>
+                <div class="select-menu"><div data-v="동시 포착">동시 포착</div><div data-v="주변 카메라">주변 카메라</div><div data-v="맵뷰어">맵뷰어</div></div>
               </div>
+              <span class="tb-div"></span>
               <button class="btn-icon" id="dtSet" title="설정"><i class="i i-18 i-tool-setting"></i></button>
               <button class="btn-icon" id="dtFull" title="영상 전체보기"><i class="i i-18 i-tool-expand"></i></button>
             </div>
@@ -428,7 +431,7 @@
           <div class="cmp-tabs" id="cmpTabs" hidden></div>
           <div id="dtObjMulti" hidden></div>
           <div class="dt-obj" id="dtObjSingle">
-            <div class="dt-obj-th"><img id="dtObjImg" src="assets/img/obj01.png?v=202609102318" alt=""></div>
+            <div class="dt-obj-th"><img id="dtObjImg" src="assets/img/obj01.png?v=202609102335" alt=""></div>
             <div class="dt-obj-bd">
               <div class="dt-obj-top">
                 <b id="dtObjName">인물 A</b><span class="badge" id="dtObjSim">94% 유사</span>
@@ -470,7 +473,7 @@
             </div>
           </div>
           <div class="dt-map" id="dtMap">
-            <img id="dtMapImg" src="assets/img/floor.png?v=202609102318" alt="">
+            <img id="dtMapImg" src="assets/img/floor.png?v=202609102335" alt="">
             <!-- 층별 : 참고안(검색상세 시안_260903)처럼 층을 비스듬히 쌓아
                  층간 이동을 관통선으로 보여준다 -->
             <div class="map-3d" id="dtMap3d" hidden></div>
@@ -815,8 +818,8 @@
 
 <div class="toast" id="toast" hidden></div>
 
-<script src="assets/js/data.js?v=202609102318"></script>
-<script src="assets/js/app.js?v=202609102318"></script>
+<script src="assets/js/data.js?v=202609102335"></script>
+<script src="assets/js/app.js?v=202609102335"></script>
 <script id="booting-guard">
   /* 앱 스크립트가 실패해도 화면은 나와야 한다 */
   setTimeout(function(){ document.body.classList.remove('booting'); }, 1500);
