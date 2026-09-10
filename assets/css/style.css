@@ -5105,3 +5105,11 @@ body.dt-b #dtViewSel .select-btn{
   background:none;border:0;color:var(--tx-secondary);font-size:12px;white-space:nowrap
 }
 body.dt-b #dtViewSel .select-btn:hover{color:var(--tx-primary)}
+
+/* 층간 이동선 : 층이 바뀌는 두 지점을 잇는 점선 (시안 비교-대상4개) */
+#dtMap3d .m3-labels .m3-riser{
+  position:absolute;left:0;top:0;pointer-events:none;overflow:visible
+}
+#dtMap3d .m3-labels .m3-riser line{
+  stroke:var(--primary);stroke-width:2;stroke-dasharray:2 4;stroke-linecap:round
+}

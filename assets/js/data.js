@@ -5,7 +5,7 @@
 
 /* 이미지에도 캐시 버스터를 붙인다.
    에셋을 갈아끼워도 브라우저가 옛 그림을 그대로 쓰던 문제(2026-09-09). */
-const IMG_V = '202609102335';
+const IMG_V = '202609102341';
 const IMG = n => `assets/img/${n}.png?v=${IMG_V}`;
 
 /* 카메라 — 사양서 필터 트리 9개소 */
@@ -238,13 +238,15 @@ const MULTI_TILES = [
 
 /* 이동경로 waypoint — 맵뷰어 경로 패널 / 전체보기 팝업 / 비교 화면 공용 */
 const MOVE_PATHS = [
+  /* 층은 **묶어서** 지난다 — 층을 오갈 때마다 관통선이 그어지므로
+     실제 동선처럼 한 층에 머물다 옮기는 순서여야 읽힌다 (시안 비교-대상4개) */
   { slot: 'A', label: '인물 A', pts: [
-      { n: 1, cam: '1F 메인 복도',   t: '00:20', code: 'CAM-B01', x: 31, y: 46, hh: 0.4,  img: IMG('nb1')  },
-      { n: 2, cam: 'B1 창고 앞',     t: '00:20', code: 'CAM-B01', x: 46, y: 33, hh: 2.6,  img: IMG('obj12') },
-      { n: 3, cam: '3층 화장실',     t: '00:20', code: 'CAM-B01', x: 62, y: 26, hh: 9.4,  img: IMG('obj13') },
-      { n: 4, cam: 'B1 엘리베이터',  t: '00:30', code: 'CAM-B02', x: 44, y: 44, hh: 11.6, img: IMG('obj18') },
-      { n: 5, cam: '3F 주차장 출구', t: '00:40', code: 'CAM-B03', x: 33, y: 51, hh: 13.8, img: IMG('obj20') },
-      { n: 6, cam: '외부 CCTV',    t: '00:50', code: 'CAM-EXT1', x: 21, y: 54, hh: 20.2, img: IMG('obj23') }] },
+      { n: 1, cam: '외부 CCTV',      t: '00:14', code: 'CAM-EXT1', x: 21, y: 54, hh: 0.4,  img: IMG('obj23') },
+      { n: 2, cam: '1F 메인 복도',   t: '00:20', code: 'CAM-B01',  x: 31, y: 46, hh: 2.6,  img: IMG('nb1')  },
+      { n: 3, cam: 'B1 엘리베이터',  t: '00:30', code: 'CAM-B02',  x: 44, y: 44, hh: 9.4,  img: IMG('obj18') },
+      { n: 4, cam: 'B1 창고 앞',     t: '00:36', code: 'CAM-B01',  x: 46, y: 33, hh: 11.6, img: IMG('obj12') },
+      { n: 5, cam: '3층 화장실',     t: '00:44', code: 'CAM-B01',  x: 62, y: 26, hh: 13.8, img: IMG('obj13') },
+      { n: 6, cam: '3F 주차장 출구', t: '00:52', code: 'CAM-B03',  x: 33, y: 51, hh: 20.2, img: IMG('obj20') }] },
   { slot: 'B', label: '인물 B', pts: [
       { n: 1, cam: '1F 메인 복도',  t: '00:20', code: 'CAM-B01', x: 34, y: 46, hh: 0.4,  img: IMG('ai09') },
       { n: 2, cam: 'B1 창고 앞',    t: '00:22', code: 'CAM-B01', x: 55, y: 57, hh: 5.6,  img: IMG('ai12') },
