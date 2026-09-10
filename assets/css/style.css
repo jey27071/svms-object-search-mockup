@@ -4939,3 +4939,52 @@ body.booting::after{
 /* 시안에서 구분선은 **비활성 탭이 연달아 놓일 때만** 그린다 —
    활성 탭 왼쪽과 줄 끝에는 없다 */
 .content-col > .tabbar .tab:has(+ .tab.on)::after{display:none}
+
+/* ── 타임라인 이동 시 확대 표시 삭제 (사양 변경) ────────────────────────
+   커서가 지나는 클립이 커지거나 커서 위에 큰 미리보기가 뜨지 않는다.
+   커서가 어느 구간에 있는지는 테두리 강조로만 알린다. */
+.tl-cur-pv{display:none !important}
+.tl-th.pass{transform:none !important}
+body.dt-b #dtTl .tl-th.pass{transform:none !important;box-shadow:none}
+.tl-th:hover,.tl-th.on{transform:none}
+
+/* ============================================================
+   상세 타임라인 — 시안 5126:58116 실측
+   눈금 48 = 날짜 20 + 시각 28 / 트랙 행 65 = 막대 8 + 썸네일 57
+   ============================================================ */
+body.dt-b #dtTl .tl-ruler{height:48px}
+body.dt-b #dtTl .tl-ruler .tl-day{
+  top:2px;font-size:11px;font-weight:400;font-family:inherit;
+  color:var(--tx-secondary);border-left:0;padding-left:0;transform:translateX(-50%)
+}
+body.dt-b #dtTl .tl-ruler .tl-day.first{color:var(--tx-secondary)}
+body.dt-b #dtTl .tl-ruler .tl-lb{top:24px;font-size:11px;font-family:inherit;color:var(--tx-helper)}
+body.dt-b #dtTl .tl-ruler .tk{top:42px;height:6px}
+
+/* 구간 막대 : 썸네일 바로 위 8px (시안 line) */
+body.dt-b #dtTl .tl-bar{top:0;height:8px;border-radius:2px 2px 0 0;opacity:1}
+
+/* 시안에는 썸네일 아래 카메라 캡션이 없다 — 정보는 호버 툴팁이 맡는다 */
+body.dt-b #dtTl .tl-cam{display:none}
+/* 번호 16×16 · 카메라 수 배지는 시안처럼 썸네일 안 오른쪽 위 */
+body.dt-b #dtTl .tl-n{
+  left:4px;top:4px;min-width:16px;height:16px;line-height:16px;font-size:10px;border-radius:3px
+}
+body.dt-b #dtTl .tl-more{
+  top:4px;right:4px;bottom:auto;left:auto;height:13px;line-height:13px;font-size:9.5px;
+  padding:0 4px;border-radius:3px;background:rgba(0,0,0,.62);color:#fff
+}
+
+/* 시각 배지는 시안 눈금에 없다 — 끌거나 커서에 올렸을 때만 눈금 **아래**로 */
+body.dt-b #dtTl .tl-cursor .tl-cur-t{
+  top:52px;bottom:auto;transform:translateX(-50%);
+  opacity:0;transition:opacity .12s
+}
+body.dt-b #dtTl .tl-cursor:hover .tl-cur-t,
+body.tl-seeking #dtTl .tl-cursor .tl-cur-t{opacity:1}
+
+/* 좁은 구간에서 배지가 창 밖으로 삐져나오지 않게 —
+   시안의 8px 조각처럼 잘려 보이는 게 맞다 */
+body.dt-b #dtTl .tl-th{overflow:hidden}
+/* 카메라 수 배지는 시안처럼 **첫 썸네일** 오른쪽 위에 */
+body.dt-b #dtTl .tl-more{left:78px;right:auto}
