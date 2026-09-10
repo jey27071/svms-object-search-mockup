@@ -4645,3 +4645,35 @@ body.dt-b .dt-map .pn-bldg{
 .date-fld{position:relative}
 .date-fld input[type=date]::-webkit-inner-spin-button,
 .date-fld input[type=time]::-webkit-inner-spin-button{display:none}
+
+/* 텍스트 검색 입력창 : 시안은 **한 줄 둥근 필드**(약 40px)
+   56px 사각형이라 여전히 넓어 보였다. */
+.mode-panel[data-panel="text"] .textarea-wrap textarea{
+  height:40px;border-radius:20px;
+  padding:10px 34px 10px 16px;line-height:20px;overflow:hidden
+}
+.mode-panel[data-panel="text"] .textarea-wrap.rc-open textarea{
+  border-radius:20px 20px 0 0
+}
+.mode-panel[data-panel="text"] .textarea-wrap .clear-x{top:12px}
+
+/* 텍스트 검색 입력창 : min-height:52px 가 height:40px 를 눌러
+   높이가 안 줄고 있었다 — 같은 자리에서 함께 낮춘다. */
+.mode-panel[data-panel="text"] .textarea-wrap textarea{
+  min-height:0;height:40px;
+  padding:11px 34px 11px 16px;line-height:18px
+}
+/* 감싸는 상자도 함께 (기존 min-height 가 상자를 벌린다) */
+.mode-panel[data-panel="text"] .textarea-wrap{
+  min-height:0;border-radius:20px
+}
+.mode-panel[data-panel="text"] .textarea-wrap.rc-open{border-radius:20px 20px 0 0}
+
+/* 결과 그리드 : 재렌더로 새로 만들어진 .grid 에도 폭 규칙이 걸리도록
+   (기존엔 첫 렌더에만 걸려 슬라이더가 '먹었다 안 먹었다' 했다) */
+#resultsBody .grid,
+#resultsBody .group-body .grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill, minmax(var(--thumb-w,264px), 1fr));
+  gap:12px;justify-content:stretch
+}
