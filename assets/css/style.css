@@ -5113,3 +5113,25 @@ body.dt-b #dtViewSel .select-btn:hover{color:var(--tx-primary)}
 #dtMap3d .m3-labels .m3-riser line{
   stroke:var(--primary);stroke-width:2;stroke-dasharray:2 4;stroke-linecap:round
 }
+
+/* ── 구역 이동 안내 : 현재 위치에 점선으로 매달린다 (시안 5126:58130) ──── */
+.map-zone{
+  position:absolute;z-index:8;pointer-events:none;
+  display:flex;flex-direction:column;align-items:center;
+  transform:translateX(-50%)
+}
+.map-zone[hidden]{display:none}
+.map-zone .mz-line{
+  display:block;width:0;height:46px;
+  border-left:2px dashed var(--exit)
+}
+.map-zone .mz-box{
+  display:block;padding:5px 10px;border-radius:var(--r);
+  background:var(--bg-2);border:1px solid var(--ln-border);
+  box-shadow:0 4px 14px rgba(0,0,0,.45);white-space:nowrap
+}
+.map-zone .mz-box b{display:block;font-size:11px;font-weight:600;color:var(--tx-primary);line-height:15px}
+.map-zone .mz-box em{display:block;font-size:10.5px;font-style:normal;color:var(--tx-tertiary);line-height:14px}
+
+/* 시안에는 하단 고정 칩(외부/실내 이동) 대신 위 안내만 있다 */
+body.dt-b .dt-map .pn-bldg{display:none}

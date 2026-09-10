@@ -5,7 +5,7 @@
 
 /* 이미지에도 캐시 버스터를 붙인다.
    에셋을 갈아끼워도 브라우저가 옛 그림을 그대로 쓰던 문제(2026-09-09). */
-const IMG_V = '202609102341';
+const IMG_V = '202609102344';
 const IMG = n => `assets/img/${n}.png?v=${IMG_V}`;
 
 /* 카메라 — 사양서 필터 트리 9개소 */
@@ -238,27 +238,25 @@ const MULTI_TILES = [
 
 /* 이동경로 waypoint — 맵뷰어 경로 패널 / 전체보기 팝업 / 비교 화면 공용 */
 const MOVE_PATHS = [
-  /* 층은 **묶어서** 지난다 — 층을 오갈 때마다 관통선이 그어지므로
-     실제 동선처럼 한 층에 머물다 옮기는 순서여야 읽힌다 (시안 비교-대상4개) */
+  /* 지도 경로는 **타임라인 구간(TL_TRACKS)과 같은 여정**이어야 한다.
+     예전에는 카메라도 시각도 달라, 커서를 옮겨도 지도가 다른 이야기를 했다.
+     hh 는 시각(시)이며 각 구간의 시작 시각을 쓴다. */
   { slot: 'A', label: '인물 A', pts: [
-      { n: 1, cam: '외부 CCTV',      t: '00:14', code: 'CAM-EXT1', x: 21, y: 54, hh: 0.4,  img: IMG('obj23') },
-      { n: 2, cam: '1F 메인 복도',   t: '00:20', code: 'CAM-B01',  x: 31, y: 46, hh: 2.6,  img: IMG('nb1')  },
-      { n: 3, cam: 'B1 엘리베이터',  t: '00:30', code: 'CAM-B02',  x: 44, y: 44, hh: 9.4,  img: IMG('obj18') },
-      { n: 4, cam: 'B1 창고 앞',     t: '00:36', code: 'CAM-B01',  x: 46, y: 33, hh: 11.6, img: IMG('obj12') },
-      { n: 5, cam: '3층 화장실',     t: '00:44', code: 'CAM-B01',  x: 62, y: 26, hh: 13.8, img: IMG('obj13') },
-      { n: 6, cam: '3F 주차장 출구', t: '00:52', code: 'CAM-B03',  x: 33, y: 51, hh: 20.2, img: IMG('obj20') }] },
+      { n: 1, cam: '1F 메인 복도',  t: '08:14', code: 'CAM-B01',  x: 31, y: 46, hh: 8.23,  img: IMG('obj01') },
+      { n: 2, cam: 'B1 엘리베이터', t: '11:20', code: 'CAM-B02',  x: 44, y: 44, hh: 11.34, img: IMG('obj13') },
+      { n: 3, cam: 'B1 주차장',     t: '13:10', code: 'CAM-B04',  x: 57, y: 38, hh: 13.18, img: IMG('obj02') },
+      { n: 4, cam: '외부 CCTV',     t: '15:41', code: 'CAM-EXT1', x: 21, y: 54, hh: 15.69, img: IMG('obj20') }] },
   { slot: 'B', label: '인물 B', pts: [
-      { n: 1, cam: '1F 메인 복도',  t: '00:20', code: 'CAM-B01', x: 34, y: 46, hh: 0.4,  img: IMG('ai09') },
-      { n: 2, cam: 'B1 창고 앞',    t: '00:22', code: 'CAM-B01', x: 55, y: 57, hh: 5.6,  img: IMG('ai12') },
-      { n: 3, cam: '3층 화장실',    t: '00:35', code: 'CAM-B01', x: 18, y: 63, hh: 16.2, img: IMG('ai05') },
-      { n: 4, cam: '3층 로비',      t: '00:35', code: 'CAM-B01', x: 12, y: 58, hh: 18.4, img: IMG('ai01') }] },
+      { n: 1, cam: '1F 로비',       t: '08:40', code: 'CAM-B05',  x: 34, y: 52, hh: 8.67,  img: IMG('obj05') },
+      { n: 2, cam: '2층 통로',      t: '11:44', code: 'CAM-C01',  x: 55, y: 41, hh: 11.74, img: IMG('obj08') },
+      { n: 3, cam: 'B1 입구',       t: '14:48', code: 'CAM-B06',  x: 40, y: 33, hh: 14.81, img: IMG('obj11') }] },
   { slot: 'C', label: '인물 C', pts: [
-      { n: 1, cam: 'B1 엘리베이터', t: '00:24', code: 'CAM-B02', x: 40, y: 66, hh: 4.2,  img: IMG('obj07') },
-      { n: 2, cam: 'B1 주차장',     t: '00:41', code: 'CAM-B04', x: 63, y: 64, hh: 8.8,  img: IMG('obj09') }] },
+      { n: 1, cam: '3층 매장',      t: '08:55', code: 'CAM-C02',  x: 62, y: 26, hh: 8.93,  img: IMG('obj16') },
+      { n: 2, cam: '1F 메인 복도',  t: '13:20', code: 'CAM-B01',  x: 31, y: 46, hh: 13.33, img: IMG('obj18') }] },
   { slot: 'D', label: '인물 D', pts: [
-      { n: 1, cam: '2층 통로',      t: '01:02', code: 'CAM-C01', x: 72, y: 34, hh: 13.2, img: IMG('obj05') },
-      { n: 2, cam: '3층 매장',  t: '01:15', code: 'CAM-C02', x: 84, y: 44, hh: 15.4, img: IMG('obj10') },
-      { n: 3, cam: '외부 CCTV',   t: '01:28', code: 'CAM-EXT2', x: 88, y: 56, hh: 17.6, img: IMG('obj16') }] }
+      { n: 1, cam: 'B1 주차장',     t: '09:20', code: 'CAM-B04',  x: 57, y: 38, hh: 9.34,  img: IMG('obj24') },
+      { n: 2, cam: '외부 CCTV',     t: '12:40', code: 'CAM-EXT2', x: 21, y: 54, hh: 12.68, img: IMG('obj27') },
+      { n: 3, cam: '1F 로비',       t: '15:02', code: 'CAM-B05',  x: 34, y: 52, hh: 15.04, img: IMG('obj30') }] }
 ];
 
 /* 그룹 상세 · 비교 화면 탐지 이력 세그먼트 (%) */
