@@ -4730,3 +4730,56 @@ body.booting::after{
 }
 .tab.tab-search .tx:hover{background:rgba(255,255,255,.1);color:var(--tx-primary)}
 .tab.tab-search .ic{width:15px;height:15px}
+
+/* ══ 영상 선택 : 시안 4656:44120 ═══════════════════════════════════════
+   좌 기준 대상 / 우 날짜별 그리드 / 하 선택 미리보기 */
+.modal.md-vsel{
+  width:min(1138px, calc(100vw - 96px));
+  height:min(953px, calc(100vh - 60px));
+  display:flex;flex-direction:column
+}
+.md-vsel .md-head{align-items:flex-start}
+.md-vsel .vs-wrap{flex:1;min-height:0;display:flex;gap:0;padding:0 16px}
+
+/* 좌측 : 기준 대상 */
+.vs-side{
+  flex:0 0 150px;padding:14px 16px 14px 0;border-right:1px solid var(--ln-subtle);
+  display:flex;flex-direction:column;gap:10px
+}
+.vs-obj{position:relative;aspect-ratio:3/4;border-radius:5px;overflow:hidden;background:#000}
+.vs-obj img{width:100%;height:100%;object-fit:cover;display:block}
+.vs-add{
+  position:absolute;right:6px;top:6px;width:20px;height:20px;border-radius:50%;
+  background:rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.5);color:#fff;
+  font-size:13px;line-height:1;cursor:pointer
+}
+.vs-name{display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--tx-secondary)}
+.vs-name .q{
+  display:inline-flex;width:13px;height:13px;border-radius:50%;
+  border:1px solid var(--ln-border);align-items:center;justify-content:center;
+  font-size:9px;font-style:normal;color:var(--tx-helper)
+}
+.vs-name input{
+  flex:1;min-width:0;height:28px;background:var(--bg-2);
+  border:1px solid var(--ln-border);border-radius:4px;padding:0 8px;
+  font-size:12px;color:var(--tx-primary);outline:none
+}
+.vs-hint{margin:0;font-size:10.5px;color:var(--tx-helper);line-height:1.5}
+
+/* 우측 : 도구 + 그리드 */
+.vs-main{flex:1;min-width:0;display:flex;flex-direction:column;padding:14px 0 14px 16px}
+.vs-tools{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.vs-count{
+  padding:2px 8px;border-radius:4px;border:1px solid var(--primary);
+  color:var(--primary);font-family:var(--mono);font-size:11px
+}
+.vs-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.vs-sep{width:1px;height:15px;background:var(--ln-border)}
+.vs-seg button{display:flex;align-items:center;justify-content:center;width:28px;height:24px}
+.vs-body{flex:1;min-height:0;overflow-y:auto;padding-right:4px}
+
+/* 하단 : 선택 미리보기 */
+.vs-preview{
+  flex:0 0 auto;border-top:1px solid var(--ln-border);
+  padding:10px 16px 12px;background:var(--bg-1)
+}
