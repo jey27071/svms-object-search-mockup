@@ -4789,33 +4789,33 @@ body.booting::after{
   padding:10px 16px 12px;background:var(--bg-1)
 }
 
-/* ── GNB : 시안 4999:38312 ─────────────────────────────────────────────
-   활성 항목이 **아이콘+라벨을 함께 감싸는** 파란 라운드 사각형이고,
-   `설정` 위에는 구분선이 있다. */
-.lnb{padding:12px 0;gap:2px}
-.lnb button{padding:0;gap:3px}
+/* ── GNB : 시안 4999:38312 (LNB 노드 4999:38315 실측) ────────────────────
+   컨테이너 padding 20/6 · gap 24, 메뉴 48px · radius 6 · padding 4/2,
+   아이콘 24px, 라벨 12px/1.3. 활성 항목은 아이콘+라벨을 함께 감싼다. */
+.lnb{width:60px;flex:0 0 60px;padding:20px 6px;gap:24px;align-items:center}
 /* 활성 배경을 항목 전체로 (아이콘만 감싸던 것을 라벨까지) */
 .lnb button > .bx{background:none !important;border-radius:0;width:auto;height:auto}
 .lnb button{
-  width:44px;border-radius:10px;padding:8px 0 7px;
+  width:48px;border-radius:6px;padding:4px 2px;gap:0;
+  height:auto;margin-bottom:0;
   transition:background .12s
 }
 .lnb button:hover{background:rgba(255,255,255,.06)}
 .lnb button.on{background:var(--primary);color:#fff}
 .lnb button.on .bx{color:#fff}
 .lnb button.on span{color:#fff}
-.lnb .bx .ic{width:20px;height:20px}
-.lnb span{font-size:10px}
+.lnb .bx .ic,
+.lnb .bx .i{width:24px;height:24px}
+.lnb span{font-size:12px;line-height:1.3;letter-spacing:-.2px}
 
-/* `설정` 위 구분선 (시안) */
-.lnb #lnbSetting{margin-top:14px;position:relative}
+/* `설정` 위 구분선 : 시안은 24px 짜리 가운데 정렬 라인 (gap 24 안에 놓인다) */
+.lnb #lnbSetting{position:relative;margin:0}
 .lnb #lnbSetting::before{
-  content:'';position:absolute;left:8px;right:8px;top:-8px;height:1px;
+  content:'';position:absolute;left:50%;transform:translateX(-50%);
+  width:24px;top:-12.5px;height:1px;
   background:var(--ln-border)
 }
-/* 설정은 하단 고정이 아니라 사건관리 바로 아래 (시안) */
-.lnb #lnbSetting{margin-bottom:0}
-.lnb .lnb-foot{margin-top:14px}
+.lnb .lnb-foot{margin-top:0}
 
 /* ── 입력 글자 위치 · 결과 수 정렬 (2026-09-10 5차) ──────────────────────
    1) 검색어가 안쪽으로 치우치고 위로 붙어 있었다.
