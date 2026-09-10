@@ -4583,3 +4583,10 @@ body.dt-b .dt-map .pn-bldg{
 .pn-bldg em{display:block;font-style:normal;font-size:9.5px;color:#6b7280}
 /* 기존 `외부로 이동` 라벨은 칩으로 대체 */
 .dt-map .map-exit{display:none}
+
+/* ── 2026-09-10 사양 ────────────────────────────────────────────────────
+   초기화 / 검색 버튼 폭을 같게 (기존엔 검색이 더 넓었다) */
+.side-foot,
+.panel-foot{display:flex;gap:8px}
+#btnSearchReset,
+#btnSearchGo{flex:1 1 0;min-width:0}

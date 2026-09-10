@@ -9,8 +9,8 @@
 <title>SVMS — 동선 추적 검색 (Working Mockup)</title>
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
-<link rel="stylesheet" href="assets/css/icons.css?v=202609091743">
-<link rel="stylesheet" href="assets/css/style.css?v=202609091743">
+<link rel="stylesheet" href="assets/css/icons.css?v=202609101304">
+<link rel="stylesheet" href="assets/css/style.css?v=202609101304">
 </head>
 <body>
 
@@ -60,7 +60,7 @@
       <!-- 시안 1-1안 : 좌측 `검색` 타이틀 + 우측 왼쪽접기 버튼 하나.
            분리(디테치)는 시안에서 빠졌다 — 버튼만 감추고 동작 코드는 남겨 둔다. -->
       <div class="side-head" id="sideHead">
-        <b class="side-title">검색</b>
+        <b class="side-title">검색 결과</b>
         <span class="side-head-btns">
           <button class="btn-icon" id="btnDetach" title="분리" hidden><i class="i i-detach"></i></button>
           <button class="btn-icon" id="btnFold" title="검색 패널 접기" aria-label="검색 패널 접기">
@@ -302,7 +302,7 @@
         <!-- 상단 : 1~3단 패널. 각 칸은 영상 또는 맵뷰로 쓰고 좌우로 폭을 조정한다 -->
         <div class="dt-panes" id="dtPanes" data-panes="1">
         <div class="dt-video" id="dtVideo">
-          <img id="dtVideoImg" src="assets/img/video.png?v=202609091743" alt="">
+          <img id="dtVideoImg" src="assets/img/video.png?v=202609101304" alt="">
           <div class="ov ov-heat" id="ovHeat" hidden></div>
           <div class="ov ov-path" id="ovPath" hidden></div>
           <div class="ov ov-cctv" id="ovCctv" hidden></div>
@@ -428,7 +428,7 @@
           <div class="cmp-tabs" id="cmpTabs" hidden></div>
           <div id="dtObjMulti" hidden></div>
           <div class="dt-obj" id="dtObjSingle">
-            <div class="dt-obj-th"><img id="dtObjImg" src="assets/img/obj01.png?v=202609091743" alt=""></div>
+            <div class="dt-obj-th"><img id="dtObjImg" src="assets/img/obj01.png?v=202609101304" alt=""></div>
             <div class="dt-obj-bd">
               <div class="dt-obj-top">
                 <b id="dtObjName">인물 A</b><span class="badge" id="dtObjSim">94% 유사</span>
@@ -471,7 +471,7 @@
             </div>
           </div>
           <div class="dt-map" id="dtMap">
-            <img id="dtMapImg" src="assets/img/floor.png?v=202609091743" alt="">
+            <img id="dtMapImg" src="assets/img/floor.png?v=202609101304" alt="">
             <!-- 층별 : 참고안(검색상세 시안_260903)처럼 층을 비스듬히 쌓아
                  층간 이동을 관통선으로 보여준다 -->
             <div class="map-3d" id="dtMap3d" hidden></div>
@@ -806,7 +806,7 @@
 
 <div class="toast" id="toast" hidden></div>
 
-<script src="assets/js/data.js?v=202609091743"></script>
-<script src="assets/js/app.js?v=202609091743"></script>
+<script src="assets/js/data.js?v=202609101304"></script>
+<script src="assets/js/app.js?v=202609101304"></script>
 </body>
 </html>
