@@ -4856,3 +4856,26 @@ body.booting::after{
 .workspace{padding:0}
 /* 탭바와 결과의 좌측 기준선을 같게 — 탭바에만 좌측 4px 이 있어 어긋났다 */
 .content-col > .tabbar{padding-left:0}
+
+/* ── 이동 경로 미리보기 : 노드에서 바로 빼기 ────────────────────────────
+   목록으로 돌아가 체크를 푸는 대신 미리보기에서 바로 제외한다. */
+/* 항상 보이되 흐리게 — hover 에서만 나오면 지울 수 있는지 알 수 없다 */
+.cp-node{ --cp-rm-op:.6 }
+.cp-node:hover,
+.cp-node:focus-within{ --cp-rm-op:1 }
+.cp-rm{
+  position:absolute;right:-7px;top:-8px;z-index:3;
+  width:18px;height:18px;padding:0;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  border:1px solid var(--ln-border);background:var(--bg-3);color:var(--tx-secondary);
+  cursor:pointer;opacity:var(--cp-rm-op);transition:opacity .12s,background .12s,color .12s
+}
+.cp-rm .i{width:11px;height:11px}
+.cp-rm:hover{background:var(--exit);border-color:var(--exit);color:#fff}
+.cp-rm:focus-visible{opacity:1;outline:2px solid var(--primary);outline-offset:1px}
+/* 터치·좁은 화면에서는 hover 가 없으니 항상 보인다 */
+
+/* 크기 슬라이더 양 끝 아이콘 : 한 단계씩 조절하는 버튼이다 */
+.size-slider i{cursor:pointer;transition:border-bottom-color .12s}
+.size-slider i:hover{border-bottom-color:var(--tx-primary)}
+.size-slider i:active{border-bottom-color:var(--primary)}
