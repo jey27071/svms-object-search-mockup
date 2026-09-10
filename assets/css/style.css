@@ -4677,3 +4677,32 @@ body.dt-b .dt-map .pn-bldg{
   grid-template-columns:repeat(auto-fill, minmax(var(--thumb-w,264px), 1fr));
   gap:12px;justify-content:stretch
 }
+
+/* ── 2026-09-10 4차 ────────────────────────────────────────────────────
+   1) 입력창 라운드를 아래 `카메라 검색`(.input, 4px) 과 같은 수준으로.
+      20px 은 알약 모양이라 다른 필드와 따로 놀았다. */
+.mode-panel[data-panel="text"] .textarea-wrap textarea{border-radius:var(--r6)}
+.mode-panel[data-panel="text"] .textarea-wrap{border-radius:var(--r6)}
+.mode-panel[data-panel="text"] .textarea-wrap.rc-open,
+.mode-panel[data-panel="text"] .textarea-wrap.rc-open textarea{
+  border-radius:var(--r6) var(--r6) 0 0
+}
+
+/* 2) 전체 삭제(✕) : 40px 한 줄 입력창에서 세로 가운데로 */
+.mode-panel[data-panel="text"] .textarea-wrap .clear-x{
+  top:50%;transform:translateY(-50%);right:10px
+}
+
+/* 3) 미리보기 목록 : 항목마다 상자로 나누고 썸네일을 키운다 */
+#previewList{display:flex;flex-direction:column;gap:8px}
+.pv.row{
+  gap:10px;padding:8px;height:auto;
+  background:var(--bg-2);border:1px solid var(--ln-subtle);border-radius:6px
+}
+.pv.row:hover{background:var(--bg-3);border-color:var(--primary)}
+.pv.row.on{background:var(--primary);border-color:var(--primary)}
+.pv.row .rw-th{
+  flex:0 0 92px;width:92px;aspect-ratio:16/9;border-radius:4px
+}
+.pv.row .nm{max-width:none;font-size:12.5px}
+.pv.row .tm{font-size:10.5px}
