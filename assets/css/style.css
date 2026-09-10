@@ -4720,13 +4720,13 @@ body.booting::after{
    그 탭 우측 버튼으로 되돌린다. */
 .tab.tab-search{
   display:flex;align-items:center;gap:8px;flex:0 0 auto;
-  padding:0 10px 0 9px;cursor:default
+  padding:0 10px 0 12px;cursor:default
 }
 /* 펼침 상태 머리말(.side-title)과 글자·위치를 같게 맞춘다 —
    접었다 펼 때 라벨이 흔들려 보였다 */
 .tab.tab-search > span{
   color:var(--tx-primary);font-size:13px;font-weight:600;line-height:1;
-  position:relative;top:1px        /* 펼침 머리말과 세로 1px 어긋나 흔들려 보였다 */
+  position:relative;top:0          /* 펼침 머리말과 세로를 맞춘다 */
 }
 .tab.tab-search .tx{
   display:flex;align-items:center;justify-content:center;
@@ -4846,3 +4846,13 @@ body.booting::after{
 .mode-panel[data-panel="text"] .textarea-wrap textarea{
   height:38px;line-height:38px
 }
+
+/* ── 접었다 펼 때 경계가 달라 보이던 문제 ────────────────────────────────
+   검색 패널과 결과 영역에 4px 라운드와 테두리가 있어, 접히며 패널이
+   빠질 때 결과의 둥근 모서리가 LNB 와 맞닿아 위치가 흔들려 보였다.
+   시안은 둘 다 평면이고 얇은 구분선으로만 나뉜다. */
+#sidePanel{border-radius:0;border-top:0;border-bottom:0;border-left:0}
+#results{border-radius:0}
+.workspace{padding:0}
+/* 탭바와 결과의 좌측 기준선을 같게 — 탭바에만 좌측 4px 이 있어 어긋났다 */
+.content-col > .tabbar{padding-left:0}
