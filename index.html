@@ -9,8 +9,8 @@
 <title>SVMS — 동선 추적 검색 (Working Mockup)</title>
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
-<link rel="stylesheet" href="assets/css/icons.css?v=202609101815">
-<link rel="stylesheet" href="assets/css/style.css?v=202609101815">
+<link rel="stylesheet" href="assets/css/icons.css?v=202609102318">
+<link rel="stylesheet" href="assets/css/style.css?v=202609102318">
 </head>
 <body class="booting">
 
@@ -302,7 +302,7 @@
         <!-- 상단 : 1~3단 패널. 각 칸은 영상 또는 맵뷰로 쓰고 좌우로 폭을 조정한다 -->
         <div class="dt-panes" id="dtPanes" data-panes="1">
         <div class="dt-video" id="dtVideo">
-          <img id="dtVideoImg" src="assets/img/video.png?v=202609101815" alt="">
+          <img id="dtVideoImg" src="assets/img/video.png?v=202609102318" alt="">
           <div class="ov ov-heat" id="ovHeat" hidden></div>
           <div class="ov ov-path" id="ovPath" hidden></div>
           <div class="ov ov-cctv" id="ovCctv" hidden></div>
@@ -428,7 +428,7 @@
           <div class="cmp-tabs" id="cmpTabs" hidden></div>
           <div id="dtObjMulti" hidden></div>
           <div class="dt-obj" id="dtObjSingle">
-            <div class="dt-obj-th"><img id="dtObjImg" src="assets/img/obj01.png?v=202609101815" alt=""></div>
+            <div class="dt-obj-th"><img id="dtObjImg" src="assets/img/obj01.png?v=202609102318" alt=""></div>
             <div class="dt-obj-bd">
               <div class="dt-obj-top">
                 <b id="dtObjName">인물 A</b><span class="badge" id="dtObjSim">94% 유사</span>
@@ -446,22 +446,9 @@
         </section>
 
         <section class="dt-sec">
-          <div class="dt-sec-head">
-            <svg viewBox="0 0 16 16" class="ic"><path d="M8 1.8c2.3 0 4.2 1.9 4.2 4.2 0 3.1-4.2 8.2-4.2 8.2S3.8 9.1 3.8 6c0-2.3 1.9-4.2 4.2-4.2z" stroke="currentColor" stroke-width="1.2" fill="none"/><circle cx="8" cy="6" r="1.5" fill="currentColor"/></svg>
-            맵뷰어
-            <div class="seg" id="dtMapSeg" style="margin-left:auto">
-              <button data-m="map">지도</button><button class="on" data-m="floor">층별</button>
-            </div>
-            <!-- 시안(비교-대상4개) : 좌측 레이아웃 토글 + 우측 바꾸기 -->
-            <div class="seg map-lay" id="mapLay">
-              <button class="on" data-ml="1" title="한 화면"><i class="i i-16 i-tool-single"></i></button>
-              <button data-ml="2" title="위아래 나눠 보기"><i class="i i-16 i-tool-multi"></i></button>
-            </div>
-            <button class="btn-icon map-swap" id="mapSwap" title="영상과 자리 바꾸기">
-              <svg viewBox="0 0 16 16" class="ic"><path d="M3 6h9l-2.4-2.4M13 10H4l2.4 2.4" stroke="currentColor" stroke-width="1.3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            </button>
-            <!-- 시안(비교-대상4개) : 맵 상단은 동(棟) 선택 -->
-            <div class="select sm dt-bldg" id="dtBldg" data-value="A동 (1건)" style="margin-left:auto">
+          <!-- 시안 5126:58131 Map Contorl : 좌 동(棟) 선택 · 우 뷰 전환 + 바꾸기 -->
+          <div class="dt-sec-head map-ctl">
+            <div class="select sm dt-bldg" id="dtBldg" data-value="A동 (1건)">
               <button class="select-btn">A동 (1건)<i class="i i-16 i-chevron i-down caret"></i></button>
               <div class="select-menu">
                 <div data-v="A동 (1건)">A동 (1건)</div>
@@ -469,9 +456,21 @@
                 <div data-v="외부 (1건)">외부 (1건)</div>
               </div>
             </div>
+            <div class="seg" id="dtMapSeg" hidden>
+              <button data-m="map">지도</button><button class="on" data-m="floor">층별</button>
+            </div>
+            <div class="mc-right">
+              <div class="seg map-lay" id="mapLay">
+                <button class="on" data-ml="1" title="한 화면"><i class="i i-16 i-tool-single"></i></button>
+                <button data-ml="2" title="위아래 나눠 보기"><i class="i i-16 i-tool-multi"></i></button>
+              </div>
+              <button class="btn-icon map-swap" id="mapSwap" title="영상과 자리 바꾸기">
+                <svg viewBox="0 0 16 16" class="ic"><path d="M3 6h9l-2.4-2.4M13 10H4l2.4 2.4" stroke="currentColor" stroke-width="1.3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+            </div>
           </div>
           <div class="dt-map" id="dtMap">
-            <img id="dtMapImg" src="assets/img/floor.png?v=202609101815" alt="">
+            <img id="dtMapImg" src="assets/img/floor.png?v=202609102318" alt="">
             <!-- 층별 : 참고안(검색상세 시안_260903)처럼 층을 비스듬히 쌓아
                  층간 이동을 관통선으로 보여준다 -->
             <div class="map-3d" id="dtMap3d" hidden></div>
@@ -816,8 +815,8 @@
 
 <div class="toast" id="toast" hidden></div>
 
-<script src="assets/js/data.js?v=202609101815"></script>
-<script src="assets/js/app.js?v=202609101815"></script>
+<script src="assets/js/data.js?v=202609102318"></script>
+<script src="assets/js/app.js?v=202609102318"></script>
 <script id="booting-guard">
   /* 앱 스크립트가 실패해도 화면은 나와야 한다 */
   setTimeout(function(){ document.body.classList.remove('booting'); }, 1500);
