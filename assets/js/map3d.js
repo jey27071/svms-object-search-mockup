@@ -23,7 +23,8 @@ const M3D = (() => {
   /* 도면 비율(763x801)에 맞춘 층 크기 */
   const W = 6, D = 6 * 801 / 763, GAP = 4.6, SLAB = 0.07;
   /* 기본 시점 : 시안처럼 층이 겹치지 않고 위아래로 나뉘어 보이는 높이·거리 */
-  const HOME = { az: -0.6, el: 0.72, dist: 27 };
+  /* 층 4개와 층 태그가 맵 도구에 가리지 않고 한 화면에 들어오도록 물러선다 (27 → 36) */
+  const HOME = { az: -0.6, el: 0.72, dist: 36 };
   const view = { ...HOME };
 
   let host = null, renderer = null, scene = null, camera = null, root = null, ov = null;
@@ -93,16 +94,16 @@ const M3D = (() => {
   }
 
   function build(paths) {
-    const p = paths && paths[0]; if (!p) return;
-    const k = p.slot + JSON.stringify(p.pts.map(t => [t.n, t.cam, t.x, t.y]));
+    const list = (paths || []).filter(p => p && p.pts && p.pts.length);
+    if (!list.length) return;
+    const k = JSON.stringify(list.map(p => [p.slot, p.pts.map(t => [t.n, t.cam, t.x, t.y])]));
     if (k === key) return;
     key = k;
     if (root) scene.remove(root);
     root = new THREE.Group(); scene.add(root);
 
-    /* 포착된 층만 — 위층이 위로 */
-    const has = new Set(p.pts.map(t => m3FloorOf(t.cam)));
-    const order = M3_FLOORS.filter(f => has.has(f.key));
+    /* 건물 층을 최대 4개까지 모두 쌓는다 — 위층이 위로. 포착되지 않은 층도 판은 보인다 (2026-09-11 구두) */
+    const order = M3_FLOORS.slice(0, 4);
     const yOf = {};
     order.forEach((f, i) => { yOf[f.key] = (order.length - 1 - i) * GAP; });
     center.set(0, (order.length - 1) * GAP / 2, 0);
@@ -131,26 +132,30 @@ const M3D = (() => {
       root.add(rim, topM);
       tops.push(topM);
     });
-    const col = cssColor(slotColor(p.slot));
-    const solidMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(col) });
-    const dashMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(col) });
     const lift = SLAB / 2 + 0.04;
     const pos = t => new THREE.Vector3((t.x / 100 - 0.5) * W, yOf[m3FloorOf(t.cam)] + lift, (t.y / 100 - 0.5) * D);
-    const seq = p.pts.slice().sort((a, b) => a.n - b.n);
-    for (let i = 1; i < seq.length; i++) {
-      const a = seq[i - 1], b = seq[i];
-      const same = m3FloorOf(a.cam) === m3FloorOf(b.cam) && /외부/.test(a.cam) === /외부/.test(b.cam);
-      root.add(...(same ? rod : dashRod)(pos(a), pos(b), same ? 0.055 : 0.045, same ? solidMat : dashMat));
-    }
+    /* 경로 비교 : 인물마다 자기 색으로 경로를 그린다 (같은 층 실선 · 층간 점선) */
+    const seqs = list.map(p => p.pts.slice().sort((a, b) => a.n - b.n));
+    list.forEach((p, pi) => {
+      const mat = new THREE.MeshBasicMaterial({ color: new THREE.Color(cssColor(slotColor(p.slot))) });
+      const seq = seqs[pi];
+      for (let i = 1; i < seq.length; i++) {
+        const a = seq[i - 1], b = seq[i];
+        const same = m3FloorOf(a.cam) === m3FloorOf(b.cam) && /외부/.test(a.cam) === /외부/.test(b.cam);
+        root.add(...(same ? rod : dashRod)(pos(a), pos(b), same ? 0.055 : 0.045, mat));
+      }
+    });
 
+    const all = [];
+    seqs.forEach((seq, pi) => seq.forEach(t => all.push({ t, p: list[pi], pi })));
     ov.innerHTML =
-      seq.map(t => `<span class="map-wp" data-pt="gl-${t.n}" data-cam="${t.cam}" data-hh="${t.hh}"
-          data-x="${t.x}" data-y="${t.y}" title="${t.cam} · 이 지점으로 이동"
+      all.map(({ t, p, pi }) => `<span class="map-wp" data-pt="gl-${pi ? p.slot + '-' : ''}${t.n}" data-slot="${p.slot}" data-cam="${t.cam}" data-hh="${t.hh}"
+          data-x="${t.x}" data-y="${t.y}" title="${p.label || ''} · ${t.cam} · 이 지점으로 이동"
           style="background:${slotColor(p.slot)}">${t.n}</span>`).join('') +
       order.map(f => `<span class="m3g-tag">${f.label}</span>`).join('');
     const kids = [...ov.children];
-    pts = seq.map((t, i) => ({ v: pos(t), el: kids[i], floor: m3FloorOf(t.cam) }));
-    tags = order.map((f, i) => ({ y: yOf[f.key] + SLAB / 2, el: kids[seq.length + i] }));
+    pts = all.map(({ t }, i) => ({ v: pos(t), el: kids[i], floor: m3FloorOf(t.cam) }));
+    tags = order.map((f, i) => ({ y: yOf[f.key] + SLAB / 2, el: kids[all.length + i] }));
     pts.forEach(q => q.el.addEventListener('pointerdown', e => e.stopPropagation()));
     if (typeof bindMapSeek === 'function') bindMapSeek();
   }
