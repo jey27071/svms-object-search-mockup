@@ -5672,3 +5672,58 @@ body.dt-b :is(#dtTl,#cmpTl) .tl-scroll{scrollbar-width:thin}
 body.dt-b :is(#dtTl,#cmpTl) .tl-scroll::-webkit-scrollbar{height:10px}
 body.dt-b :is(#dtTl,#cmpTl) .tl-scroll::-webkit-scrollbar-track{background:transparent}
 body.dt-b :is(#dtTl,#cmpTl) .tl-scroll::-webkit-scrollbar-thumb{background:rgba(255,255,255,.22);border:2px solid transparent;background-clip:padding-box;border-radius:5px}
+
+/* ── 영상 조작 바 : 설정 삭제 후 재배치 — 좌·우 도구가 같은 폭을 나눠 가져
+   재생 조작은 항상 가운데, 오른쪽 도구는 우측 끝에 붙는다 ── */
+body.dt-b :is(#dtCtrl,#cmpCtrl) .grp.l,
+body.dt-b :is(#dtCtrl,#cmpCtrl) .grp.r{flex:1 1 0;min-width:0}
+body.dt-b :is(#dtCtrl,#cmpCtrl) .grp.r{justify-content:flex-end;gap:8px}
+body.dt-b :is(#dtCtrl,#cmpCtrl) .grp.c{flex:0 0 auto}
+
+/* ── 영상 전체 보기 팝업 (시안 5223:57487) : 헤더 36 · 16:9 영상 · 재생 막대 6 · 조작 42 ── */
+#mdVideo.modal.md-full{
+  width:min(1440px,calc(100vw - 96px));height:auto;max-height:calc(100vh - 48px);
+  border-radius:8px;overflow:hidden;padding:0;background:#1c1d23
+}
+#mdVideo .md-head{
+  height:36px;box-sizing:border-box;padding:0 12px;align-items:center;
+  background:var(--bg-2);border-bottom:1px solid var(--ln-subtle)
+}
+#mdVideo .md-head .hd-ic > .ic{display:none}
+#mdVideo .md-head h3{font-size:14px;font-weight:500;letter-spacing:-.28px;line-height:1.3}
+#mdVideo .md-head .md-x{width:20px;height:20px;padding:0}
+#mdVideo .md-body,#mdVideo #vwBody{padding:0;overflow:hidden}
+#mdVideo .vw{height:auto;background:#1c1d23}
+#mdVideo .vw-stage{flex:0 0 auto;aspect-ratio:16/9;max-height:calc(100vh - 48px - 36px - 48px);background:#000}
+#mdVideo .vw-stage > img{object-fit:contain}
+#mdVideo .vw-head{
+  position:absolute;left:0;right:0;top:0;height:80px;box-sizing:border-box;
+  display:flex;align-items:flex-start;gap:8px;padding:16px 16px 0;
+  background:linear-gradient(180deg,rgba(0,0,0,.6),rgba(0,0,0,0))
+}
+#mdVideo .vw-head .nm{font-size:12px;font-weight:500;line-height:16px;color:var(--tx-primary)}
+#mdVideo .vw-head .tm{font-family:inherit;font-size:12px;line-height:16px;color:var(--tx-secondary)}
+#mdVideo .vw-head .vh-ic{gap:16px}
+#mdVideo .vw-head .vh-ic .tb{width:24px;height:24px}
+#mdVideo .vw-head .vh-ic .ic{width:20px;height:20px}
+#mdVideo .vw-prog{position:relative;flex:0 0 6px;height:6px;background:var(--bg-2);cursor:pointer}
+#mdVideo .vw-prog i{position:absolute;left:0;top:0;bottom:0}
+#mdVideo .vw-prog .buf{background:var(--ln-subtle)}
+#mdVideo .vw-prog .cur{background:var(--primary)}
+#mdVideo .vw-ctrl{position:static;height:42px;box-sizing:border-box;padding:0 10px;display:flex;align-items:center;background:var(--bg-1)}
+#mdVideo .vw-ctrl .grp.l,#mdVideo .vw-ctrl .grp.r{flex:1 1 0}
+#mdVideo .vw-ctrl .grp.c{flex:0 0 auto}
+
+/* 재생 시점 커서는 모든 트랙(썸네일·배지·호버된 클립)보다 위 */
+body.dt-b :is(#dtTl,#cmpTl) .tl-cursor{z-index:30}
+body.dt-b :is(#dtTl,#cmpTl) .tl-th,
+body.dt-b :is(#dtTl,#cmpTl) .tl-th:hover,
+body.dt-b :is(#dtTl,#cmpTl) .tl-th.on,
+body.dt-b :is(#dtTl,#cmpTl) .tl-th.pass{z-index:auto}
+/* 인물 칩 툴팁의 `인물등록 ›` */
+.tl-tip .tt-reg{
+  display:inline-flex;align-items:center;gap:2px;align-self:flex-start;margin-top:4px;padding:0;
+  border:0;background:none;color:var(--tx-secondary);font-size:12px;font-weight:500;cursor:pointer
+}
+.tl-tip .tt-reg svg{width:14px;height:14px}
+.tl-tip .tt-reg:hover{color:var(--tx-primary)}
