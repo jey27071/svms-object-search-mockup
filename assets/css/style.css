@@ -5321,3 +5321,77 @@ body.dt-b .dt-vhead{display:flex;align-items:center;gap:8px}
 .v-more-menu button.on{color:var(--primary)}
 /* 다중 뷰일 때 `동시 포착` 활성 (시안 멀티뷰) */
 body.dt-b #dtViewSel.on .select-btn{color:var(--primary)}
+
+/* 비교 타일 : 우상단 도구 · 동시 포착 칩/팝오버 (시안 경로비교 2명 / 4명) */
+.cmp-head .vh-ic,.vw-head .vh-ic{margin-left:auto;display:flex;align-items:center;gap:2px}
+.cmp-head .vh-ic .tb,.vw-head .vh-ic .tb{
+  width:26px;height:26px;display:flex;align-items:center;justify-content:center;padding:0;border:0;border-radius:4px;
+  background:none;color:rgba(255,255,255,.86);cursor:pointer
+}
+.cmp-head .vh-ic .tb:hover,.vw-head .vh-ic .tb:hover{background:rgba(255,255,255,.14);color:#fff}
+.cmp-head .vh-ic .tb.on,.vw-head .vh-ic .tb.on{color:var(--primary)}
+.cmp-head .vh-ic .ic,.vw-head .vh-ic .ic{width:16px;height:16px}
+.cmp-tile{position:relative}
+.cmp-sim{
+  position:absolute;right:8px;bottom:8px;z-index:6;display:flex;align-items:center;gap:4px;
+  height:24px;padding:0 8px;border:0;border-radius:4px;background:rgba(0,0,0,.66);color:#fff;font-size:11px;cursor:pointer
+}
+.cmp-sim svg{width:11px;height:11px}
+.cmp-sim-pop{
+  position:absolute;right:8px;bottom:38px;z-index:8;width:min(340px,calc(100% - 16px));
+  border-radius:6px;background:rgba(24,25,31,.94);border:1px solid var(--ln-border);box-shadow:0 8px 24px rgba(0,0,0,.45)
+}
+.cmp-sim-pop .cs-head{display:flex;align-items:center;justify-content:space-between;padding:7px 10px;font-size:11.5px;color:#fff}
+.cmp-sim-pop .cs-x{border:0;background:none;color:rgba(255,255,255,.7);cursor:pointer}
+.cmp-sim-pop .cs-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;padding:0 6px 6px}
+.cmp-sim-pop .cs-grid button{position:relative;padding:0;border:0;background:#000;border-radius:3px;overflow:hidden;cursor:pointer;aspect-ratio:16/9}
+.cmp-sim-pop .cs-grid img{width:100%;height:100%;object-fit:cover;display:block}
+.cmp-sim-pop .cs-grid em{position:absolute;left:4px;bottom:2px;font-style:normal;font-size:10px;color:#fff;text-shadow:0 1px 2px #000}
+.cmp-tile .v-more-menu{top:36px}
+
+/* 이동 경로 리스트 (사양 4) */
+#pnlMovePath .mpl-list{display:flex;flex-direction:column;gap:4px;max-height:320px;overflow-y:auto;padding-right:2px}
+#pnlMovePath .mvw-wp{display:flex;align-items:center;gap:8px;width:100%;padding:6px 8px;border:1px solid transparent;border-radius:5px;
+  background:rgba(255,255,255,.03);color:inherit;text-align:left;cursor:pointer}
+#pnlMovePath .mvw-wp:hover{background:rgba(255,255,255,.07)}
+#pnlMovePath .mvw-wp.on{border-color:var(--primary);background:rgba(48,112,216,.12)}
+#pnlMovePath .mvw-wp .n{flex:0 0 18px;width:18px;height:18px;border-radius:50%;color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center}
+#pnlMovePath .mvw-wp .bd{display:flex;flex-direction:column;min-width:0}
+#pnlMovePath .mvw-wp .nm{font-size:12px;color:var(--tx-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#pnlMovePath .mvw-wp .mt{font-size:10.5px;color:var(--tx-helper);font-family:var(--mono);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#pnlMovePath .mpl-sep{display:flex;align-items:center;gap:6px;padding:2px 4px;font-size:10.5px;color:var(--exit)}
+#pnlMovePath .mpl-sep::before,#pnlMovePath .mpl-sep::after{content:'';flex:1;height:1px;border-top:1px dashed currentColor;opacity:.6}
+/* 인물 선택 팝업 (시안 5184:99800) */
+.md-person-pick{width:400px}
+.md-person-pick .pp-list{display:flex;flex-direction:column;gap:8px;padding:14px 18px}
+.md-person-pick .pp-row{display:flex;align-items:center;gap:10px;height:58px;padding:0 6px 0 12px;border:1px solid var(--ln-border);border-radius:6px;cursor:pointer}
+.md-person-pick .pp-row.on{border-color:var(--primary)}
+.md-person-pick .pp-row input{position:absolute;opacity:0;pointer-events:none}
+.md-person-pick .pp-row .rd{width:16px;height:16px;border-radius:50%;border:1.5px solid var(--tx-helper);flex:0 0 16px;position:relative}
+.md-person-pick .pp-row.on .rd{border-color:var(--primary)}
+.md-person-pick .pp-row.on .rd::after{content:'';position:absolute;inset:3px;border-radius:50%;background:var(--primary)}
+.md-person-pick .pp-row .nm{flex:1;font-size:13px;color:var(--tx-primary)}
+.md-person-pick .pp-row img{width:46px;height:46px;border-radius:4px;object-fit:cover}
+
+/* 영역 검색 · 가상펜스 검색 팝업 */
+.md-area{width:560px;max-width:calc(100vw - 40px)}
+.md-area.fence{width:760px}
+.md-area .md-body{padding:14px 16px;display:flex;flex-direction:column;gap:12px;max-height:calc(100vh - 220px);overflow-y:auto}
+.md-area .as-pic{position:relative;border-radius:4px;overflow:hidden;background:#000}
+.md-area .as-pic img{display:block;width:100%;aspect-ratio:16/9;object-fit:cover}
+.md-area .as-box{position:absolute;border:1.5px solid var(--primary);background:rgba(48,112,216,.08)}
+.md-area .as-filters{display:flex;gap:6px}
+.md-area .as-filters button{height:26px;padding:0 12px;border-radius:13px;border:1px solid var(--ln-border);background:none;color:var(--tx-secondary);font-size:11.5px;cursor:pointer}
+.md-area .as-filters button.on{border-color:var(--primary);color:var(--primary)}
+.md-area .as-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.md-area.fence .as-grid{grid-template-columns:repeat(6,1fr)}
+.md-area .as-card{display:flex;flex-direction:column;padding:0;border:1px solid var(--ln-border);border-radius:5px;overflow:hidden;background:var(--bg-2);cursor:pointer;text-align:left}
+.md-area .as-card.on{border-color:var(--primary);box-shadow:0 0 0 1px var(--primary)}
+.md-area .as-card img{width:100%;aspect-ratio:1/1;object-fit:cover;display:block}
+.md-area .as-card span{padding:5px 8px;font-size:11px;color:var(--tx-helper)}
+.md-area .as-card span b{color:var(--tx-primary);font-weight:500}
+.md-area .as-empty{min-height:200px;display:flex;align-items:center;justify-content:center;font-size:12.5px;color:var(--tx-tertiary)}
+
+/* 상세화면 진입 시 LNB 미노출 (사양 · 새 시안) */
+body.in-detail .shell > .lnb{display:none}
+body.in-detail .shell > .shell-main{margin-left:0}
