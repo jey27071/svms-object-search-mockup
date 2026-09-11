@@ -5838,3 +5838,15 @@ body.dt-b .dt-ctrl .vm4 .vm4-menu > div:hover{background:rgba(255,255,255,.08)}
 /* 멀티 뷰 칸 머리말 : ⋯ 하나 (시안 57527) */
 body.dt-b #dtMulti .mv-head .mv-ic .mv-more{width:24px;height:20px}
 body.dt-b #dtMulti .mv-tile .v-more-menu{top:34px;right:8px}
+/* View Mode 아이콘 : 선택 = 채움 · 미선택 = 윤곽 (시안 1Viewer / 4Viewer) */
+body.dt-b .dt-ctrl .vmi{width:24px;height:24px;display:block;flex:0 0 24px}
+body.dt-b .dt-ctrl .vmi .f{display:none}
+body.dt-b .dt-ctrl .vm1.on .vmi .f,
+body.dt-b .dt-ctrl .vm4.on .vmi .f{display:inline}
+body.dt-b .dt-ctrl .vm1.on .vmi .o,
+body.dt-b .dt-ctrl .vm4.on .vmi .o{display:none}
+body.dt-b .dt-ctrl .vmi .cut{fill:var(--bg-1)}
+body.dt-b .dt-ctrl .vm1.on .vmi .cut,
+body.dt-b .dt-ctrl .vm4.on .vmi .cut{fill:var(--bg-3)}
+body.dt-b .dt-ctrl .vm1.on .vmi text,
+body.dt-b .dt-ctrl .vm4.on .vmi text{fill:currentColor}
