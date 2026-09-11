@@ -5,7 +5,7 @@
 
 /* 이미지에도 캐시 버스터를 붙인다.
    에셋을 갈아끼워도 브라우저가 옛 그림을 그대로 쓰던 문제(2026-09-09). */
-const IMG_V = '202609111028';
+const IMG_V = '202609111046';
 const IMG = n => `assets/img/${n}.png?v=${IMG_V}`;
 
 /* 카메라 — 사양서 필터 트리 9개소 */
@@ -245,7 +245,11 @@ const MOVE_PATHS = [
       { n: 1, cam: '1F 메인 복도',  t: '08:14', code: 'CAM-B01',  x: 31, y: 46, hh: 8.23,  img: IMG('obj01') },
       { n: 2, cam: 'B1 엘리베이터', t: '11:20', code: 'CAM-B02',  x: 44, y: 44, hh: 11.34, img: IMG('obj13') },
       { n: 3, cam: 'B1 주차장',     t: '13:10', code: 'CAM-B04',  x: 57, y: 38, hh: 13.18, img: IMG('obj02') },
-      { n: 4, cam: '외부 CCTV',     t: '15:41', code: 'CAM-EXT1', x: 21, y: 54, hh: 15.69, img: IMG('obj20') }] },
+      /* 외부 지점의 x·y 는 외곽 지도(map.png) 기준 % */
+      { n: 4, cam: '외부 CCTV',        t: '15:41', code: 'CAM-EXT1', x: 44, y: 61, hh: 15.69, img: IMG('obj20') },
+      { n: 5, cam: '외부 본관 별동',    t: '16:24', code: 'CAM-EXT2', x: 39, y: 64, hh: 16.40, img: IMG('obj22') },
+      { n: 6, cam: '외부 주차장 1구역', t: '17:05', code: 'CAM-EXT3', x: 60, y: 44, hh: 17.08, img: IMG('obj25') },
+      { n: 7, cam: '외부 사업장 정문',  t: '18:02', code: 'CAM-EXT4', x: 80, y: 70, hh: 18.04, img: IMG('obj28') }] },
   { slot: 'B', label: '인물 B', pts: [
       { n: 1, cam: '1F 로비',       t: '08:40', code: 'CAM-B05',  x: 34, y: 52, hh: 8.67,  img: IMG('obj05') },
       { n: 2, cam: '2층 통로',      t: '11:44', code: 'CAM-C01',  x: 55, y: 41, hh: 11.74, img: IMG('obj08') },
@@ -665,7 +669,10 @@ const TL_TRACKS = [
     { n: 2, cam: 'B1 엘리베이터', img: IMG('obj13'), from: '2026-06-29 11:20:11', to: '2026-06-29 12:05:02' },
     { n: 3, cam: 'B1 주차장',     img: IMG('obj02'), from: '2026-06-29 13:10:47', to: '2026-06-29 13:22:19',
       extra: [{ cam: 'B1 주차장(램프)', img: IMG('cam4') }] },
-    { n: 4, cam: '외부 CCTV',     img: IMG('obj20'), from: '2026-06-29 15:41:08', to: '2026-06-29 18:28:52' }
+    { n: 4, cam: '외부 CCTV',        img: IMG('obj20'), from: '2026-06-29 15:41:08', to: '2026-06-29 16:12:40' },
+    { n: 5, cam: '외부 본관 별동',    img: IMG('obj22'), from: '2026-06-29 16:24:10', to: '2026-06-29 16:51:30' },
+    { n: 6, cam: '외부 주차장 1구역', img: IMG('obj25'), from: '2026-06-29 17:05:02', to: '2026-06-29 17:48:44' },
+    { n: 7, cam: '외부 사업장 정문',  img: IMG('obj28'), from: '2026-06-29 18:02:15', to: '2026-06-29 18:28:52' }
   ] },
   { slot: 'B', label: '인물 B', clips: [
     { n: 1, cam: '1F 로비',       img: IMG('obj05'), from: '2026-06-29 08:40:00', to: '2026-06-29 10:12:30' },
