@@ -5185,3 +5185,59 @@ body.dt-b .tl-host{
 }
 .cmp-head .more{margin-left:auto;color:rgba(255,255,255,.72)}
 .cmp-head .more:hover{color:#fff}
+
+/* ============================================================
+   다층 뷰(3D) — three.js (시안 5184:100653 · 사양 PTS_DTL_MAP_000_1)
+   ============================================================ */
+.dt-map .map-gl{position:absolute;inset:0;z-index:1;overflow:hidden;background:#e8e9ec;user-select:none;touch-action:none}
+.dt-map .map-gl[hidden]{display:none}
+.dt-map .map-gl .m3g-cv{display:block}
+.dt-map .map-gl.can-rotate{cursor:grab}
+.dt-map .map-gl.can-rotate.grabbing{cursor:grabbing}
+.dt-map .map-gl .m3g-ov{position:absolute;inset:0;pointer-events:none;z-index:3}
+.dt-map .map-gl .map-wp{
+  position:absolute;transform:translate(-50%,-50%);pointer-events:auto;
+  width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  color:#fff;font-size:11px;font-weight:600;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.35)
+}
+.dt-map .map-gl .map-wp:not(.past){opacity:.62}
+.dt-map .map-gl .map-wp.past,.dt-map .map-gl .map-wp:hover{opacity:1}
+.dt-map .map-gl .map-wp.now{transform:translate(-50%,-50%) scale(1.18)}
+/* 층 태그 : 각 층의 우측 (사양 1) */
+.dt-map .map-gl .m3g-tag{
+  position:absolute;transform:translate(-100%,-50%);
+  padding:2px 7px;border-radius:3px;background:rgba(20,21,26,.86);color:#fff;
+  font-size:10.5px;font-weight:600;line-height:14px;white-space:nowrap
+}
+/* 공간 라벨·층간 선 레이어 (hideOverlappedLabels 가 만든다) */
+.dt-map .map-gl .m3-labels{position:absolute;inset:0;pointer-events:none;z-index:4}
+.dt-map .map-gl .m3-labels .m3-sp{position:absolute;left:0;top:0;transform:none;white-space:nowrap}
+/* 안내 1 : 호버 툴팁 (3초 후 사라짐) */
+.dt-map .map-gl .m3g-tip{
+  position:absolute;z-index:6;width:162px;box-sizing:border-box;padding:9px 11px;border-radius:6px;
+  background:rgba(24,25,31,.94);color:#fff;font-size:11.5px;line-height:16px;pointer-events:none;
+  box-shadow:0 4px 14px rgba(0,0,0,.35);transition:opacity .2s
+}
+.dt-map .map-gl .m3g-tip.out{opacity:0}
+.dt-map .map-gl .m3g-tip[hidden]{display:none}
+/* 안내 2 : 중앙 하단 상시 */
+.dt-map .map-gl .m3g-hint{
+  position:absolute;z-index:6;left:50%;bottom:16px;transform:translateX(-50%);
+  padding:8px 16px;border-radius:18px;background:rgba(24,25,31,.9);color:#fff;
+  font-size:12px;line-height:16px;white-space:nowrap;pointer-events:none
+}
+.dt-map .map-gl .m3g-hint[hidden]{display:none}
+/* 안내 3 : 우측 하단 3D 조작 버튼 — 켜면 grab 포인터로 회전 */
+.dt-map .map-gl .m3g-3d{
+  position:absolute;z-index:6;right:14px;bottom:14px;width:44px;height:44px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;border:1px solid rgba(0,0,0,.1);
+  background:#fff;color:#2b2f36;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.18)
+}
+.dt-map .map-gl .m3g-3d svg{width:22px;height:22px}
+.dt-map .map-gl .m3g-3d.on{background:var(--primary);color:#fff;border-color:var(--primary)}
+.dt-map .map-gl .m3g-3d[hidden]{display:none}
+/* 도구·확대축소는 3D 위에 */
+body.dt-b .dt-map .dt-map-tools,body.dt-b .dt-map .dt-zoom{z-index:30}
+body.dt-b .dt-map .dt-map-tools .btn-icon .ic{width:16px;height:16px}
+/* 위층 판에 가려진 지점 */
+.dt-map .map-gl .map-wp.occ{opacity:.28 !important}
