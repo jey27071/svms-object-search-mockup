@@ -5802,3 +5802,39 @@ body.dt-b #dtMulti .mv-near,body.dt-b #dtMulti .mv-pop{display:none}
 #mdVideo .vg-tile{position:relative;overflow:hidden;background:#000}
 #mdVideo .vg-tile.empty{background:var(--bg-2)}
 #mdVideo .vg-tile > img{width:100%;height:100%;object-fit:cover;display:block}
+
+/* ── View Mode (시안 5223:57284 · 57527) : [1Viewer] [4Viewer = 아이콘 · 영상 유형 · ▾] ──
+   선택된 쪽 = 살짝 떠 있는 어두운 바탕 + 파란 아이콘(·글자). 안 고른 쪽은 회색 */
+body.dt-b .dt-ctrl .vm1{width:28px;height:28px;padding:2px;border-radius:4px;background:none;color:var(--tx-secondary)}
+body.dt-b .dt-ctrl .vm1.on,
+body.dt-b #dtTools > [data-tool="single"].on{background:var(--bg-3);color:var(--primary);border-radius:4px}
+body.dt-b #dtTools > [data-tool="single"]:not(.on){background:none;color:var(--tx-secondary)}
+body.dt-b .dt-ctrl .vm4{position:relative;display:flex;align-items:center;gap:2px;height:28px;padding:0 4px;border-radius:4px;flex:0 0 auto;width:auto}
+body.dt-b .dt-ctrl .vm4.on{background:var(--bg-3)}
+body.dt-b .dt-ctrl .vm4 .vm4-go{
+  display:flex;align-items:center;gap:2px;height:28px;padding:0;border:0;background:none;
+  color:var(--tx-secondary);font-size:12px;line-height:1.3;white-space:nowrap;cursor:pointer
+}
+body.dt-b .dt-ctrl .vm4 .vm4-go:hover{color:var(--tx-primary)}
+body.dt-b .dt-ctrl .vm4.on .vm4-go,
+body.dt-b .dt-ctrl .vm4 .vm4-go.on{color:var(--primary)}
+body.dt-b .dt-ctrl .vm4 .vm4-dd{
+  display:flex;align-items:center;justify-content:center;width:16px;height:28px;padding:0;border:0;background:none;
+  color:var(--tx-secondary);cursor:pointer
+}
+body.dt-b .dt-ctrl .vm4 .vm4-dd:hover{color:var(--tx-primary)}
+body.dt-b .dt-ctrl .vm4 .vm4-menu{
+  position:absolute;right:0;bottom:calc(100% + 6px);z-index:60;min-width:124px;padding:4px 0;
+  background:var(--bg-2);border:1px solid var(--ln-border);border-radius:4px;box-shadow:0 8px 20px rgba(0,0,0,.45)
+}
+body.dt-b .dt-ctrl .vm4 .vm4-menu[hidden]{display:none}
+body.dt-b .dt-ctrl .vm4 .vm4-menu > div{
+  display:flex;align-items:center;height:30px;padding:0 12px 0 8px;font-size:12px;color:var(--tx-secondary);cursor:pointer;white-space:nowrap
+}
+body.dt-b .dt-ctrl .vm4 .vm4-menu > div::before{content:'';display:inline-block;width:18px}
+body.dt-b .dt-ctrl .vm4 .vm4-menu > div.on{color:var(--tx-primary);background:rgba(255,255,255,.05)}
+body.dt-b .dt-ctrl .vm4 .vm4-menu > div.on::before{content:'✓'}
+body.dt-b .dt-ctrl .vm4 .vm4-menu > div:hover{background:rgba(255,255,255,.08)}
+/* 멀티 뷰 칸 머리말 : ⋯ 하나 (시안 57527) */
+body.dt-b #dtMulti .mv-head .mv-ic .mv-more{width:24px;height:20px}
+body.dt-b #dtMulti .mv-tile .v-more-menu{top:34px;right:8px}
