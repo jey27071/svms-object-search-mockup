@@ -5478,3 +5478,33 @@ body.dt-swap .dt-side > #dtVideo .dt-box{display:none}
 #resultsBody.view-raw .card .thumb{height:auto;aspect-ratio:215/176}
 #resultsBody .card .thumb img{object-fit:cover}
 #resultsBody.view-raw .card .thumb img{object-fit:contain;background:#000}
+
+/* 타임라인 트랙 : 컬러바 4px (전 8px 로 두꺼웠다) */
+body.dt-b .tl-host .tl-bar,
+body.dt-b #dtTl .tl-bar{height:4px;border-radius:2px}
+/* 평면 도면 확대 판 */
+#dtMap > .flat-stage{position:absolute;inset:0;transform-origin:center center;z-index:0}
+#dtMap > .flat-stage.zoomed{cursor:grab}
+#dtMap > .flat-stage.grabbing{cursor:grabbing}
+#dtMap > .flat-stage > img{width:100%;height:100%;object-fit:cover;display:block}
+/* ± 버튼을 위 도구 아이콘과 같은 세로선에 (3px 어긋났다) */
+body.dt-b .dt-map .dt-zoom{right:13px}
+
+/* 경로 비교 추가 팝업 */
+.md-cmp-add{width:380px;max-width:calc(100vw - 40px)}
+.md-cmp-add .ca-list{max-height:420px;overflow-y:auto;padding:8px 16px 12px;display:flex;flex-direction:column;gap:4px}
+.md-cmp-add .ca-date{font-size:11.5px;color:var(--tx-helper);padding:8px 2px 4px;font-family:var(--mono)}
+.md-cmp-add .ca-row{display:flex;align-items:center;gap:10px;padding:6px 8px;border-radius:5px;cursor:pointer;position:relative}
+.md-cmp-add .ca-row:hover{background:rgba(255,255,255,.04)}
+.md-cmp-add .ca-row input{position:absolute;opacity:0;pointer-events:none}
+.md-cmp-add .ca-row .ck{width:16px;height:16px;flex:0 0 16px;border-radius:3px;border:1.5px solid var(--tx-helper);position:relative}
+.md-cmp-add .ca-row.on .ck{background:var(--primary);border-color:var(--primary)}
+.md-cmp-add .ca-row.on .ck::after{content:'';position:absolute;left:4px;top:1px;width:4px;height:8px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg)}
+.md-cmp-add .ca-row.locked{cursor:default}
+.md-cmp-add .ca-row.locked .ck{opacity:.55}
+.md-cmp-add .ca-row.dis{opacity:.4;cursor:not-allowed}
+.md-cmp-add .ca-row img{width:34px;height:34px;border-radius:4px;object-fit:cover;flex:0 0 34px}
+.md-cmp-add .ca-row .bd{display:flex;flex-direction:column;min-width:0}
+.md-cmp-add .ca-row .nm{font-size:12.5px;color:var(--tx-primary);display:flex;align-items:center;gap:6px}
+.md-cmp-add .ca-row .cnt{font-style:normal;font-size:10px;padding:0 5px;border-radius:3px;background:rgba(48,112,216,.18);color:var(--primary)}
+.md-cmp-add .ca-row .sub{font-size:10.5px;color:var(--tx-helper);font-family:var(--mono);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
