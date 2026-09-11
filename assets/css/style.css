@@ -5464,3 +5464,17 @@ body.dt-swap .dt-side > #dtVideo .dt-box{display:none}
 #clipsPreview .cp-zoom .btn-icon{width:24px;height:24px}
 #clipsPreview .cp-zoom .ic{width:16px;height:16px}
 #clipsPreview .cp-zr{width:120px;accent-color:var(--primary)}
+
+/* ============================================================
+   결과 카드 크기 = 슬라이더 값 그대로
+   - 우측 미리보기 패널이 생겨도 카드 크기는 그대로, **한 줄 개수만** 바뀐다
+     (minmax(…,1fr) 로 남는 폭만큼 늘어나 284 → 345px 로 커지던 문제)
+   - 기본·원본 보기의 이미지 칸을 같게 — 원본은 그 칸 안에 원본 비율로 (시안 Object Card 215×176)
+   ============================================================ */
+#resultsBody .grid,
+#resultsBody .group-body .grid{grid-template-columns:repeat(auto-fill, var(--thumb-w,264px));justify-content:start}
+#resultsBody .card{width:var(--thumb-w,264px);min-width:0}
+#resultsBody .card .thumb,
+#resultsBody.view-raw .card .thumb{height:auto;aspect-ratio:215/176}
+#resultsBody .card .thumb img{object-fit:cover}
+#resultsBody.view-raw .card .thumb img{object-fit:contain;background:#000}
