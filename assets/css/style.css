@@ -5395,3 +5395,7 @@ body.dt-b #dtViewSel.on .select-btn{color:var(--primary)}
 /* 상세화면 진입 시 LNB 미노출 (사양 · 새 시안) */
 body.in-detail .shell > .lnb{display:none}
 body.in-detail .shell > .shell-main{margin-left:0}
+
+/* 상세 : 영상·타임라인이 탭바와 같은 왼쪽 기준선(8px)에서 시작 — 시안 5184:98960.
+   LNB 가 사라진 뒤 #dtMain 의 왼쪽 여백 20px 이 남아 영상만 28px 에서 시작했다. */
+body.dt-b .dt-main{padding-left:0}
