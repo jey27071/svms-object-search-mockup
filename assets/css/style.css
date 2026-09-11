@@ -5727,3 +5727,6 @@ body.dt-b :is(#dtTl,#cmpTl) .tl-th.pass{z-index:auto}
 }
 .tl-tip .tt-reg svg{width:14px;height:14px}
 .tl-tip .tt-reg:hover{color:var(--tx-primary)}
+/* 인물 칩 툴팁 글자 : 시안 12M 이름 · 12R 구간 (고정폭 글꼴 아님) */
+.tl-tip .tt-i b{font-size:12px;font-weight:500;line-height:1.3}
+.tl-tip .tt-i em{font-family:inherit;font-size:12px;line-height:1.3;color:var(--tx-tertiary)}
