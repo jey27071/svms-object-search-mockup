@@ -1024,6 +1024,12 @@ function renderClipPreview() {
             <span class="cp-t">${fmt(o)}</span>
           </div>`).join('')}
       </div>
+    </div>
+    <!-- 시안 경로 편집(5184:99829) : 미리보기 아래 확대/축소 -->
+    <div class="cp-zoom">
+      <button type="button" class="btn-icon" data-cpz="-1" title="축소"><svg viewBox="0 0 16 16" class="ic" aria-hidden="true"><circle cx="7" cy="7" r="4.6" fill="none" stroke="currentColor" stroke-width="1.2"/><path d="M10.4 10.4L14 14M5 7h4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></button>
+      <input type="range" class="cp-zr" min="1" max="4" step="1" value="${CP_ZOOM}" aria-label="미리보기 확대">
+      <button type="button" class="btn-icon" data-cpz="1" title="확대"><svg viewBox="0 0 16 16" class="ic" aria-hidden="true"><circle cx="7" cy="7" r="4.6" fill="none" stroke="currentColor" stroke-width="1.2"/><path d="M10.4 10.4L14 14M5 7h4M7 5v4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></button>
     </div>`;
 
   /* 미리보기에서 바로 빼기 — 목록의 체크와 선택 수도 함께 갱신된다 */
@@ -1036,11 +1042,18 @@ function renderClipPreview() {
     if (REID.clipAll) renderClips(REID.clipAll); else renderClipPreview();
   });
 
+  /* 확대하면 가상 폭이 넓어져 간격이 벌어지고 가로 스크롤로 넘겨 본다 */
+  const zr = host.querySelector('.cp-zr');
+  const setZ = v => { CP_ZOOM = Math.max(1, Math.min(4, v)); if (zr) zr.value = CP_ZOOM; fitClipPreview(); };
+  if (zr) zr.oninput = e => setZ(+e.target.value);
+  host.querySelectorAll('[data-cpz]').forEach(b => b.onclick = e => { e.preventDefault(); setZ(CP_ZOOM + +b.dataset.cpz); });
+
   CP_TIMES = picked.map(o => +tlTime(o.t));
   fitClipPreview();
 }
 
 let CP_TIMES = [];
+let CP_ZOOM = 1;
 
 /* 클립을 시간 순서대로 놓되, 긴 공백은 눌러서 **모두 한 화면에** 담는다.
    엄격한 시간 비례를 지키면 12개가 3800px 로 퍼져 두 개만 보였다.
@@ -1051,7 +1064,9 @@ function fitClipPreview() {
   if (!sc || !inner || CP_TIMES.length === 0) return;
 
   const n = CP_TIMES.length, SLOT = 84, PAD = 46, HALF = 40;
-  const avail = Math.max(sc.clientWidth, 420);
+  const view = Math.max(sc.clientWidth, 420), avail = view * CP_ZOOM;
+  /* 확대해도 보던 가운데가 그대로 보이도록 */
+  const mid = inner.scrollWidth ? (sc.scrollLeft + sc.clientWidth / 2) / inner.scrollWidth : 0;
   const gaps = [];
   for (let i = 1; i < n; i++) gaps.push(Math.max(CP_TIMES[i] - CP_TIMES[i - 1], 0));
   const gmax = Math.max(...gaps, 1);
@@ -1070,6 +1085,7 @@ function fitClipPreview() {
   inner.querySelectorAll('.cp-node').forEach((el, i) => { el.style.left = Math.round(xs[i]) + 'px'; });
   const ax = inner.querySelector('.cp-axis');
   if (ax) { ax.style.left = (PAD - HALF) + 'px'; ax.style.right = Math.max(inner.clientWidth - xs[n - 1] - HALF, 0) + 'px'; }
+  if (mid) sc.scrollLeft = Math.max(0, mid * inner.scrollWidth - sc.clientWidth / 2);
 }
 addEventListener('resize', fitClipPreview);
 
@@ -1791,7 +1807,7 @@ function renderPM() {
   const ok = $('#pmOk'); if (ok) ok.onclick = () => { closeModal('#mdPerson'); renderPersonGrid(); };
   const q = $('#pmQ'); if (q) q.oninput = e => { pmQuery = e.target.value; renderPM(); $('#pmQ').focus(); };
 }
-const IMG_POOL = ['assets/img/ai01.png?v=202609111046', 'assets/img/ai02.png?v=202609111046', 'assets/img/ai05.png?v=202609111046', 'assets/img/ai06.png?v=202609111046', 'assets/img/ai09.png?v=202609111046'];
+const IMG_POOL = ['assets/img/ai01.png?v=202609111048', 'assets/img/ai02.png?v=202609111048', 'assets/img/ai05.png?v=202609111048', 'assets/img/ai06.png?v=202609111048', 'assets/img/ai09.png?v=202609111048'];
 function pmNew() { pmForm = { name: '', desc: '', imgs: [] }; pmView = 'new'; renderPM(); }
 
 $('#btnTabAdd').onclick = () => { S.activeTab = 'search'; renderTabs(); syncPanels(); toast('검색 홈 탭으로 이동합니다. (새 탭은 카드 더블클릭으로 생성됩니다)'); };
@@ -1831,7 +1847,7 @@ function renderHistory() {
         <div class="hs-main">
           ${it.sub.length ? `<span class="hs-cv">${ICON.caret}</span>` : '<span style="width:10px"></span>'}
           <!-- 와이어프레임(히스토리 팝업) : 썸네일 + 검색어 + 일시 -->
-          <img class="hs-th" src="${(OBJECTS[(di * 3 + i) % OBJECTS.length] || {}).img || 'assets/img/obj01.png?v=202609111046'}" alt="">
+          <img class="hs-th" src="${(OBJECTS[(di * 3 + i) % OBJECTS.length] || {}).img || 'assets/img/obj01.png?v=202609111048'}" alt="">
           <span class="hs-bd"><b class="hs-q">${it.q}</b><em class="hs-t">${d.date} 14:52</em></span>
           ${it.ai ? '<span class="hs-ai">AI</span>' : ''}
           <span class="hs-n">${it.n}건</span>
@@ -2178,7 +2194,7 @@ function renderTimeline(host, tracks, opt = {}) {
   const rows = tracks.map((tr, ti) => `
     <div class="tl-row" data-tr="${ti}">
       <div class="tl-obj" style="--slot:${typeof slotColor === 'function' ? slotColor(tr.slot) : 'var(--primary)'}">
-        <img src="${(tr.clips[0] || {}).img || 'assets/img/obj01.png?v=202609111046'}" alt="">
+        <img src="${(tr.clips[0] || {}).img || 'assets/img/obj01.png?v=202609111048'}" alt="">
         <span class="nm">${tr.label}</span>
         ${ti > 0 ? `<button class="rm" data-tlrm="${ti}" title="${tr.label} 제거">${ICON.xs || '×'}</button>` : ''}
       </div>
@@ -2677,7 +2693,7 @@ function paneToolsHTML(kind, i) {
 function paneBody(kind, i) {
   if (kind === 'map') {
     return `<div class="pn-map">
-      <img src="assets/img/floor.png?v=202609111046" alt="맵뷰">
+      <img src="assets/img/floor.png?v=202609111048" alt="맵뷰">
       ${PANE.mapTools.includes('path') ? paneMapPathHTML() : ''}
       ${PANE.mapTools.includes('cctv') ? `<div class="pn-cones">${MAP_CCTV.map(c =>
         `<span class="map-cone" style="left:${c.x}%;top:${c.y}%;rotate:${c.deg}deg"><i></i><b></b></span>`).join('')}</div>` : ''}
@@ -2704,14 +2720,14 @@ function paneBody(kind, i) {
   if ((PANE.vmode[i] || 'multi') === 'multi') {
     return `<div class="pn-vid pn-quad">
       <div class="pq">${[0, 1, 2, 3].map(k =>
-        `<span><img src="${(clips[k] || clips[0] || {}).img || 'assets/img/video.png?v=202609111046'}" alt="">
+        `<span><img src="${(clips[k] || clips[0] || {}).img || 'assets/img/video.png?v=202609111048'}" alt="">
          ${tileHead(k)}</span>`).join('')}</div>
       ${paneToolsHTML('video', i)}
       ${paneNearCamHTML(i)}
     </div>`;
   }
   return `<div class="pn-vid">
-    <img src="${(clips[Math.min(i, 3)] || {}).img || 'assets/img/video.png?v=202609111046'}" alt="">
+    <img src="${(clips[Math.min(i, 3)] || {}).img || 'assets/img/video.png?v=202609111048'}" alt="">
     ${tileHead(Math.min(i, 3))}
     ${paneToolsHTML('video', i)}
     ${paneNearCamHTML(i)}
@@ -2759,7 +2775,7 @@ function renderPanes() {
     if (PANE.kind[0] !== 'map') v.insertAdjacentHTML('beforeend', paneToolsHTML('video', 0));
     if (PANE.kind[0] === 'map') {
       v.insertAdjacentHTML('afterbegin', `<div class="pn-map">
-        <img src="assets/img/floor.png?v=202609111046" alt="맵뷰">
+        <img src="assets/img/floor.png?v=202609111048" alt="맵뷰">
         ${PANE.mapTools.includes('path') ? paneMapPathHTML() : ''}
         ${PANE.mapTools.includes('cctv') ? `<div class="pn-cones">${MAP_CCTV.map(c =>
           `<span class="map-cone" style="left:${c.x}%;top:${c.y}%;rotate:${c.deg}deg"><i></i><b></b></span>`).join('')}</div>` : ''}
@@ -3509,7 +3525,7 @@ function renderMap3d(paths) {
          </svg>` : '';
     /* 위층이 앞(위)에 오도록 쌓는다 — DOM 순서대로면 아래층이 덮는다 */
     return `<div class="m3-floor" data-fl="${f.label}" style="--i:${fi};z-index:${M3_FLOORS.length - fi}">
-      <img src="assets/img/floor.png?v=202609111046" alt="">
+      <img src="assets/img/floor.png?v=202609111048" alt="">
       ${poly}
       ${mine.map(t => `<span class="map-wp" data-pt="${f.key}-${t.n}" data-cam="${t.cam}"
           data-hh="${t.hh}" data-x="${t.x}" data-y="${t.y}"
@@ -3748,7 +3764,7 @@ function spreadMapLabels(host, sel) {
 $$('#dtMapSeg button').forEach(b => b.onclick = () => {
   $$('#dtMapSeg button').forEach(x => x.classList.toggle('on', x === b));
   DT.map = b.dataset.m;
-  $('#dtMapImg').src = DT.map === 'map' ? 'assets/img/map.png?v=202609111046' : 'assets/img/floor.png?v=202609111046';
+  $('#dtMapImg').src = DT.map === 'map' ? 'assets/img/map.png?v=202609111048' : 'assets/img/floor.png?v=202609111048';
   $('#dtFloor').hidden = true;                 /* 층 배지는 3D 각 층에 붙는다 */
   renderMap3d(MAP_PATHS_CACHE);
 });
@@ -4378,7 +4394,7 @@ function mvwPaths() {
 }
 function renderMapView() {
   const paths = mvwPaths();
-  const mapImg = DT.map === 'map' ? 'assets/img/map.png?v=202609111046' : 'assets/img/floor.png?v=202609111046';
+  const mapImg = DT.map === 'map' ? 'assets/img/map.png?v=202609111048' : 'assets/img/floor.png?v=202609111048';
   const seg = `<div class="seg"><button class="${DT.map === 'map' ? 'on' : ''}" data-mm="map">지도</button><button class="${DT.map === 'map' ? '' : 'on'}" data-mm="floor">층별</button></div>`;
   /* 사양서 Detail_000_4 · 4-4) : 주변 카메라 / 이동 경로 / 전체 보기
      이동 경로는 **단일 대상일 때 비활성** (그룹·경로비교에서만 사용) */
@@ -4440,7 +4456,7 @@ function renderMapView() {
   /* 바인딩 */
   $$('#mvwBody [data-mm]').forEach(b => b.onclick = () => {
     DT.map = b.dataset.mm;
-    $('#dtMapImg').src = DT.map === 'map' ? 'assets/img/map.png?v=202609111046' : 'assets/img/floor.png?v=202609111046';
+    $('#dtMapImg').src = DT.map === 'map' ? 'assets/img/map.png?v=202609111048' : 'assets/img/floor.png?v=202609111048';
     $('#dtFloor').hidden = DT.map === 'map';
     renderMapView();
   });
@@ -4895,7 +4911,7 @@ function applyDemo() {
   }
   if (d === 'personmgr') { switchMode('person'); renderPersonGrid(); openPersonMgr(); }
   if (d === 'history')   { HIST.open.add('0-0'); $('#btnHistory').click(); }
-  if (d === 'imagemodal'){ setMode('person'); setPfWay('img'); loadImage('assets/img/obj01.png?v=202609111046'); }
+  if (d === 'imagemodal'){ setMode('person'); setPfWay('img'); loadImage('assets/img/obj01.png?v=202609111048'); }
   if (d === 'person') { setMode('person'); S.selPersons = ['p1', 'p3']; renderPersonGrid(); buildFilters('person'); runSearch(false); }
   if (d === 'algo')   { setMode('algo'); S.algos = ['침입', '배회']; renderAlgoGrid(); buildFilters('algo'); runSearch(false); }
   if (d === 'image')  { setMode('person'); setPfWay('img'); }
@@ -4978,7 +4994,7 @@ function imsBuild() {
 }
 
 function openImgSearch(src) {
-  IMS.src = src || (OBJECTS[0] || {}).img || 'assets/img/video.png?v=202609111046';
+  IMS.src = src || (OBJECTS[0] || {}).img || 'assets/img/video.png?v=202609111048';
   IMS.kind = '전체'; IMS.sel = new Set(); IMS.items = [];
   const img = document.getElementById('imsImg'); if (img) img.src = IMS.src;
   document.getElementById('imsGrid').innerHTML = '';
@@ -5548,7 +5564,7 @@ function csDetailHTML(c) {
           <button class="btn-ghost sm" style="margin-left:auto" data-csmap>전체 보기</button>
         </div>
         <div style="position:relative;height:196px;border-radius:6px;overflow:hidden;background:var(--bg-1);border:1px solid var(--ln-subtle)">
-          <img src="assets/img/map.png?v=202609111046" style="width:100%;height:100%;object-fit:cover;opacity:.85" alt="">
+          <img src="assets/img/map.png?v=202609111048" style="width:100%;height:100%;object-fit:cover;opacity:.85" alt="">
           ${c.path.map((p, i) => {
             const x = 16 + (i * 23) % 68, y = 22 + (i * 17) % 54;
             return `<span style="position:absolute;left:${x}%;top:${y}%;width:9px;height:9px;border-radius:50%;
@@ -7246,7 +7262,7 @@ function renderZoneMap(host, pts, color) {
   }
   zm.hidden = false;
   const seq = pts.slice().sort((a, b) => a.n - b.n);
-  zm.innerHTML = `<div class="zm-stage"><img src="assets/img/map.png?v=202609111046" alt="외부 지도" draggable="false">
+  zm.innerHTML = `<div class="zm-stage"><img src="assets/img/map.png?v=202609111048" alt="외부 지도" draggable="false">
       <svg class="zm-path" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${seq.length > 1
         ? `<polyline points="${seq.map(t => `${t.x},${t.y}`).join(' ')}" fill="none" stroke="${color}" stroke-width="2.5"
             stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>` : ''}</svg>
@@ -7319,7 +7335,7 @@ function renderFloorPane(host, pts, color) {
   const fl = last ? m3FloorOf(last.cam) : '1F';
   const mine = pts.filter(t => m3FloorOf(t.cam) === fl).sort((a, b) => a.n - b.n);
   const flb = (M3_FLOORS.find(f => f.key === fl) || {}).label || fl;
-  fp.innerHTML = `<img src="assets/img/floor.png?v=202609111046" alt=""><span class="dt-floor">${flb}</span>
+  fp.innerHTML = `<img src="assets/img/floor.png?v=202609111048" alt=""><span class="dt-floor">${flb}</span>
     <svg class="zp-path" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${mine.length > 1
       ? `<polyline points="${mine.map(t => `${t.x},${t.y}`).join(' ')}" fill="none" stroke="${color}" stroke-width="2" vector-effect="non-scaling-stroke"/>` : ''}</svg>
     ${mine.map(t => `<span class="map-wp" data-cam="${t.cam}" data-hh="${t.hh}" data-x="${t.x}" data-y="${t.y}"
