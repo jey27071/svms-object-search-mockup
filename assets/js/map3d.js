@@ -262,7 +262,8 @@ const M3D = (() => {
   }
 
   function zoom(d) {
-    view.dist = Math.max(9, Math.min(44, view.dist * (d > 0 ? 1.12 : 1 / 1.12)));
+    /* 축소 한도 : 기본(27)보다 멀리 72 까지 — 층판 전체가 작게 보이는 정도 */
+    view.dist = Math.max(9, Math.min(72, view.dist * (d > 0 ? 1.12 : 1 / 1.12)));
     request();
   }
   function reset() { Object.assign(view, HOME); request(); }

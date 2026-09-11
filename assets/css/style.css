@@ -5667,3 +5667,8 @@ body.dt-b :is(#dtTl,#cmpTl) .tl-foot .tf-l,
 body.dt-b :is(#dtTl,#cmpTl) .tl-foot .tf-r{flex:1 1 0;width:auto;min-width:142px}
 body.dt-b :is(#dtTl,#cmpTl) .tl-foot .tf-zoom{flex:0 0 auto}
 body.dt-b :is(#dtTl,#cmpTl) .tl-foot .tf-r button{white-space:nowrap;flex:0 0 auto}
+/* 타임라인 확대 시 가로 스크롤바 : 트랙 아래 10px 자리에 (트랙을 가리지 않게) */
+body.dt-b :is(#dtTl,#cmpTl) .tl-scroll{scrollbar-width:thin}
+body.dt-b :is(#dtTl,#cmpTl) .tl-scroll::-webkit-scrollbar{height:10px}
+body.dt-b :is(#dtTl,#cmpTl) .tl-scroll::-webkit-scrollbar-track{background:transparent}
+body.dt-b :is(#dtTl,#cmpTl) .tl-scroll::-webkit-scrollbar-thumb{background:rgba(255,255,255,.22);border:2px solid transparent;background-clip:padding-box;border-radius:5px}
