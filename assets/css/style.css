@@ -5241,3 +5241,83 @@ body.dt-b .dt-map .dt-map-tools,body.dt-b .dt-map .dt-zoom{z-index:30}
 body.dt-b .dt-map .dt-map-tools .btn-icon .ic{width:16px;height:16px}
 /* 위층 판에 가려진 지점 */
 .dt-map .map-gl .map-wp.occ{opacity:.28 !important}
+
+/* ============================================================
+   2단계 — 영상 영역 · 타임라인 하단 (시안 5184:98960 · 사양 2·3)
+   ============================================================ */
+/* 영상 머리말 : 위치명 · 일시 (인물 칩 없음 — 시안) */
+body.dt-b #dtVhObj{display:none}
+/* 설정 팝오버 : 값은 파랑, 음소거 아이콘 버튼 */
+.set-menu .sm-row .v.on{color:var(--primary)}
+.set-menu .sm-mute{display:flex;align-items:center;justify-content:center;width:18px;height:18px;padding:0;border:0;background:none;color:inherit;cursor:pointer}
+.set-menu .sm-mute .ic{width:16px;height:16px}
+.set-menu #setVol{accent-color:var(--primary)}
+/* 동시 포착 PIP : 카메라명은 썸네일 안 좌하단 (시안) */
+.dt-pip .pip-i{position:relative}
+.dt-pip .pip-i span{
+  position:absolute;left:6px;bottom:4px;right:6px;
+  color:#fff;font-size:11px;font-weight:600;text-shadow:0 1px 2px rgba(0,0,0,.8);
+  text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background:none;padding:0
+}
+/* 배속 배지 */
+.dt-ctrl .btn-icon[data-rate]::after{
+  content:attr(data-rate);position:absolute;right:-7px;top:-6px;
+  padding:0 3px;border-radius:6px;background:var(--primary);color:#fff;
+  font-size:9px;font-weight:700;line-height:12px
+}
+.dt-ctrl .btn-icon:disabled{opacity:.35;pointer-events:none}
+/* 타임라인 하단 : − 슬라이더 + · 경로 비교(외곽선 파랑) */
+.tl-foot .tf-zoom{display:flex;align-items:center;gap:6px;margin:0 auto}
+.tl-foot .tf-zoom .zb{width:24px;height:24px}
+.tl-foot .tf-zoom .zb .ic{width:16px;height:16px}
+.tl-foot .tf-l .btn-icon .ic{width:16px;height:16px}
+.tl-foot .tf-l .btn-icon.on{background:var(--primary);color:#fff}
+.tl-foot .tf-cmp{border:1px solid var(--primary);color:var(--primary);background:transparent}
+.tl-foot .tf-cmp:hover:not(:disabled){background:rgba(48,112,216,.12)}
+/* 탐지 구간 호버 미리보기 (시안 Hover) */
+.tl-tip{
+  position:fixed;z-index:120;display:flex;gap:12px;align-items:center;
+  padding:11px;border-radius:8px;background:var(--bg-3);border:1px solid var(--ln-border);
+  box-shadow:0 8px 24px rgba(0,0,0,.45);pointer-events:none;max-width:280px
+}
+.tl-tip[hidden]{display:none}
+.tl-tip img{width:80px;height:80px;border-radius:50%;object-fit:cover;flex:0 0 80px}
+.tl-tip .tt-i{display:flex;flex-direction:column;gap:4px;min-width:0}
+.tl-tip .tt-i b{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--tx-primary)}
+.tl-tip .tt-i b i{width:8px;height:8px;border-radius:2px;display:inline-block}
+.tl-tip .tt-i em{font-style:normal;font-size:11px;line-height:14px;color:var(--tx-tertiary);font-family:var(--mono)}
+.tl-tip .tt-cam{font-size:11px;color:var(--tx-secondary)}
+
+/* 영상 비율 설정 팝오버 (시안 팝오버-영상비율설정) */
+.v-ratio-pop{
+  position:fixed;z-index:130;display:flex;flex-direction:column;min-width:140px;padding:4px 0;
+  border-radius:6px;background:var(--bg-3);border:1px solid var(--ln-border);box-shadow:0 8px 24px rgba(0,0,0,.45)
+}
+.v-ratio-pop[hidden]{display:none}
+.v-ratio-pop button{height:28px;padding:0 12px;text-align:left;border:0;background:none;color:var(--tx-secondary);font-size:12px;cursor:pointer}
+.v-ratio-pop button:hover{background:rgba(255,255,255,.06);color:var(--tx-primary)}
+.v-ratio-pop button.on{color:var(--primary)}
+img.v-zoomed{transition:transform .08s linear;user-select:none;-webkit-user-drag:none}
+[data-vbm].on{color:var(--primary)}
+
+/* 단일 영상 머리말 : 위치명 · 일시 … 우측 북마크 · 비율 · 전체보기 */
+body.dt-b .dt-vhead{display:flex;align-items:center;gap:8px}
+.dt-vhead .vh-ic{margin-left:auto;display:flex;align-items:center;gap:4px;pointer-events:auto}
+.dt-vhead .vh-ic .tb,.mv-head .mv-more,.pv-head .mv-more{
+  width:26px;height:26px;display:flex;align-items:center;justify-content:center;padding:0;
+  border:0;border-radius:4px;background:none;color:rgba(255,255,255,.86);cursor:pointer
+}
+.dt-vhead .vh-ic .tb:hover,.mv-head .mv-more:hover{background:rgba(255,255,255,.14);color:#fff}
+.dt-vhead .vh-ic .tb.on{color:var(--primary)}
+.dt-vhead .vh-ic .ic,.mv-head .mv-more .ic{width:16px;height:16px}
+.mv-head .mv-ic{margin-left:auto}
+/* ⋯ 메뉴 */
+.v-more-menu{
+  position:absolute;right:8px;top:34px;z-index:40;display:flex;flex-direction:column;min-width:120px;padding:4px 0;
+  border-radius:6px;background:var(--bg-3);border:1px solid var(--ln-border);box-shadow:0 8px 24px rgba(0,0,0,.45)
+}
+.v-more-menu button{height:28px;padding:0 12px;text-align:left;border:0;background:none;color:var(--tx-secondary);font-size:12px;cursor:pointer}
+.v-more-menu button:hover{background:rgba(255,255,255,.06);color:var(--tx-primary)}
+.v-more-menu button.on{color:var(--primary)}
+/* 다중 뷰일 때 `동시 포착` 활성 (시안 멀티뷰) */
+body.dt-b #dtViewSel.on .select-btn{color:var(--primary)}
