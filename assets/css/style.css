@@ -6340,3 +6340,37 @@ body.dt-b #dtMulti .mv-head .mv-ic .mv-more .i{width:24px;height:24px}
 #mdVideo .md-head.tight h3{font-size:14px;font-weight:500;letter-spacing:-.28px;line-height:1.3}
 #mdVideo .md-head .md-x{width:20px;height:20px;padding:0}
 #mdVideo .md-head .md-x .i{width:20px;height:20px}
+
+/* ── GUI 260914 반영 3 : 맵 뷰 (5254:69839) ── */
+/* 어두운 바탕 + 도면은 원본 비율로 가운데(흰 판) — 레터박스 */
+body.dt-b #dtMap{background:#25262d}
+body.dt-b #dtMap > .flat-stage{inset:auto;overflow:visible}
+body.dt-b #dtMap > .flat-stage::before{content:'';position:absolute;inset:-2.7% -11.4%;background:#fff;z-index:-1}
+body.dt-b #dtMap > .flat-stage > img{object-fit:fill}
+body.dt-b.in-detail #dtLegend{display:none}
+/* 맵 제어 도구 : 우상단 10 · 폭 34 · [다층 뷰] 8 [카메라 · 동선] 8 [+ −] */
+body.dt-b .dt-map .dt-map-tools{top:10px;right:10px;flex-direction:column;align-items:stretch;gap:0;padding:0;background:none;border:0;box-shadow:none;width:34px}
+body.dt-b .dt-map .dt-map-tools .btn-icon{width:34px;height:34px;padding:0;display:flex;align-items:center;justify-content:center;
+  background:#1c1d23;border:1px solid #3e4049;color:#b8babf;border-radius:0;box-shadow:0 2px 8px rgba(0,0,0,.25);box-sizing:border-box}
+body.dt-b .dt-map .dt-map-tools .btn-icon .i{width:20px;height:20px}
+body.dt-b .dt-map .dt-map-tools [data-map="layers"]{border-radius:4px}
+body.dt-b .dt-map .dt-map-tools [data-map="layers"].on{background:#1d6ceb;border-color:#1d6ceb;color:#fff}
+body.dt-b .dt-map .dt-map-tools .sepv{display:block;width:34px;height:8px;margin:0;background:none}
+body.dt-b .dt-map .dt-map-tools [data-map="cctv"]{border-radius:4px 4px 0 0;border-bottom:0}
+body.dt-b .dt-map .dt-map-tools [data-map="path"]{border-radius:0 0 4px 4px}
+body.dt-b .dt-map .dt-map-tools [data-map="cctv"].on,body.dt-b .dt-map .dt-map-tools [data-map="path"].on{color:#4285e8}
+body.dt-b .dt-map .dt-zoom{top:128px;bottom:auto;right:10px;width:34px;border-radius:4px;background:#1c1d23;border:1px solid #3e4049;box-shadow:0 2px 8px rgba(0,0,0,.25);overflow:hidden}
+body.dt-b .dt-map .dt-zoom button{width:32px;height:32px;display:flex;align-items:center;justify-content:center;background:none;color:#b8babf}
+body.dt-b .dt-map .dt-zoom button + button{border-top:1px solid #3e4049}
+body.dt-b .dt-map .dt-zoom button .i{width:20px;height:20px}
+/* 경로 지점 : 핀 16(흰 테 1) · 번호 10M / 이름표 반투명 검정 12M 흰 글씨, 핀 위 4px */
+body.dt-b #dtMap .map-wp{width:16px;height:16px;min-width:16px;border:1px solid #fff;border-radius:50%;font-size:10px;font-weight:500;line-height:14px;
+  box-shadow:0 4px 5px rgba(0,0,0,.25);box-sizing:border-box}
+body.dt-b #dtMap .map-sp,body.dt-b #dtMap .map-sp.below,body.dt-b #dtMap .map-sp.lft{
+  transform:translate(-50%,calc(-100% - 12px));padding:2px 4px;border-radius:4px;background:rgba(0,0,0,.5);color:#fff;font-size:12px;font-weight:500;line-height:1.3;white-space:nowrap}
+/* 이동경로 리스트 : 인물 칸 160 + 좌우 9 → 178 (공용 떠 있는 패널 최소 폭 해제) — 동선 버튼을 덮지 않게 */
+#pnlMovePath{min-width:0 !important}
+body.dt-b #dtMap > .flat-stage > .dt-floor{left:8px;top:8px}
+/* fixed + width:auto 는 남은 화면 폭만큼 늘어난다 → 내용(인물 칸) 폭으로 */
+#pnlMovePath{width:min-content !important}
+#pnlMovePath .mpl-cols{width:max-content;max-width:calc(100vw - 80px)}
