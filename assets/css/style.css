@@ -6529,3 +6529,98 @@ body.dt-b .ov-heat{mix-blend-mode:normal;opacity:.78;filter:blur(6px);
     radial-gradient(ellipse 18% 6% at 50% 82%, #ff9900 0%, #ffe000 45%, rgba(120,220,20,.4) 80%, transparent 100%)}
 /* 기존 버그 : 상세(dt-b) 오버레이 규칙(.dt-video > .ov pointer-events:none)이 인접 카메라 핀까지 막아 호버 · 선택이 안 됐다 — 핀만 살린다 */
 body.dt-b .dt-video > #ovCctv .cctv-pin{pointer-events:auto}
+
+/* ── GUI 260914 반영 7 : 경로 편집 · 영상 클립 편집 (5254:70521 · 70671 · 70699) ── */
+/* 영상 선택(경로 편집) 팝업 : 1282 · 왼쪽 233 · 카드 5열 194×228 · 아래 띠 201 */
+#mdClips.pe{width:1282px;max-width:calc(100vw - 40px)}
+#mdClips.pe .md-head{padding:12px 16px;border-bottom:1px solid #2e2f38}
+#mdClips.pe .md-head b{font-size:16px;font-weight:700;color:#ecedf0}
+#mdClips.pe .md-head .md-sub{font-size:12px;color:#8a8c96;margin-top:2px}
+#mdClips.pe .vs-wrap{height:554px;display:grid;grid-template-columns:233px 1fr}
+#mdClips.pe .vs-side{padding:16px 17px 0 16px;border-right:1px solid #2e2f38;display:flex;flex-direction:column;gap:10px;width:auto}
+#mdClips.pe .pe-obj{position:relative;width:200px;height:200px;border:1px solid #2e2f38;border-radius:4px;overflow:hidden;background:#000}
+#mdClips.pe .pe-obj img{width:100%;height:100%;object-fit:cover;display:block}
+#mdClips.pe .pe-obj::before{content:'';position:absolute;left:0;right:0;top:0;height:40px;background:linear-gradient(to bottom,rgba(0,0,0,.5),transparent)}
+#mdClips.pe .pe-obj .i-g-info{position:absolute;right:10px;top:10px;width:24px;height:24px;color:#fff}
+#mdClips.pe .pe-name{width:200px;height:34px;box-sizing:border-box;padding:0 8px 0 12px;border:1px solid #3e4049;border-radius:4px;background:#1c1d23;color:#b8babf;font-size:14px;letter-spacing:-.28px}
+#mdClips.pe .vs-main{display:flex;flex-direction:column;min-width:0;min-height:0}
+#mdClips.pe .vs-tools{display:flex;align-items:center;justify-content:space-between;height:34px;padding:16px 16px 0;box-sizing:content-box}
+#mdClips.pe .pe-total{font-size:14px;font-weight:500;color:#ecedf0}
+#mdClips.pe .pe-right{display:flex;align-items:center;gap:20px}
+#mdClips.pe .pe-size{display:flex;align-items:center;gap:2px;color:#b8babf}
+#mdClips.pe .pe-size input{width:64px;accent-color:#b8babf}
+#mdClips.pe .pe-sort .select-btn{height:34px;padding:0 8px 0 16px;gap:12px;border:1px solid #3e4049;border-radius:4px;background:#1c1d23;color:#b8babf;font-size:14px}
+#mdClips.pe .pe-view{display:flex}
+#mdClips.pe .pe-view button{height:34px;padding:0 8px;font-size:14px;font-weight:500;border:1px solid #3e4049;background:#1c1d23;color:#b8babf}
+#mdClips.pe .pe-view button:first-child{border-radius:4px 0 0 4px}
+#mdClips.pe .pe-view button:last-child{border-radius:0 4px 4px 0;border-left:0}
+#mdClips.pe .pe-view button.on{background:#3070d8;border-color:#3070d8;color:#fff}
+#mdClips.pe .vs-body{flex:1;min-height:0;overflow-y:auto;padding:20px 16px}
+#mdClips.pe .pe-grid{display:grid;grid-template-columns:repeat(var(--pe-cols,5),minmax(0,1fr));gap:8px}
+#mdClips.pe .pe-card{padding:0;border:1px solid #3e4049;border-radius:6px;overflow:hidden;background:#1c1d23;display:flex;flex-direction:column;text-align:left;cursor:pointer}
+#mdClips.pe .pe-card.on{border:2px solid #3070d8}
+#mdClips.pe .pe-img{position:relative;display:block;height:176px;background:#000}
+#mdClips.pe .pe-img img{width:100%;height:100%;object-fit:cover;display:block}
+#mdClips.pe.orig .pe-img img{object-fit:contain}
+#mdClips.pe .pe-img .sim{position:absolute;right:8px;top:8px;padding:2px 4px;border-radius:4px;background:rgba(0,0,0,.75);font-size:12px;font-weight:500}
+#mdClips.pe .pe-wrap{display:flex;flex-direction:column;padding:8px 4px 8px 10px;background:#24252c}
+#mdClips.pe .pe-wrap b{font-size:14px;font-weight:500;line-height:20px;color:#b8babf}
+#mdClips.pe .pe-wrap i{font-style:normal;font-size:12px;color:#55575f}
+#mdClips.pe .vs-preview{height:201px;padding:0;border-top:1px solid #2e2f38;margin:0}
+#mdClips.pe .pe-strip{position:relative;height:201px;display:flex;flex-direction:column}
+#mdClips.pe .pe-strip.empty{align-items:center;justify-content:center;font-size:12px;color:#55575f}
+#mdClips.pe .pe-dates{position:relative;height:20px;flex:0 0 20px}
+#mdClips.pe .pe-dates span{position:absolute;top:2px;font-size:12px;color:#8a8c96}
+#mdClips.pe .pe-track{position:relative;flex:0 0 148px;overflow-x:auto;overflow-y:hidden}
+#mdClips.pe .pe-track::after{content:'';position:absolute;left:0;top:0;width:var(--pe-w,1280px);height:1px}
+#mdClips.pe .pe-axis{position:absolute;left:0;top:20px;width:var(--pe-w,1280px);height:2px;background:#1d6ceb}
+#mdClips.pe .pe-day{position:absolute;top:0;width:1px;height:148px;background:#2e2f38}
+#mdClips.pe .pe-clip{position:absolute;top:10px;width:160px;display:flex;flex-direction:column;align-items:center;gap:2px}
+#mdClips.pe .pe-th{position:relative;display:block;width:160px;height:90px;border:2px solid #1d6ceb;border-radius:4px;overflow:hidden;box-sizing:border-box;background:#000}
+#mdClips.pe .pe-th img{width:100%;height:100%;object-fit:cover;display:block}
+#mdClips.pe .pe-info{position:absolute;left:0;right:0;top:0;height:30px;padding:4px;display:flex;align-items:flex-start;justify-content:space-between;background:linear-gradient(to bottom,rgba(0,0,0,.5),transparent);box-sizing:border-box}
+#mdClips.pe .pe-n{font-style:normal;width:16px;height:16px;border-radius:50%;border:1px solid #fff;background:#1d6ceb;color:#fff;font-size:10px;font-weight:500;display:flex;align-items:center;justify-content:center;box-sizing:border-box}
+#mdClips.pe .pe-rm{width:24px;height:24px;padding:0;border:0;background:none;color:#fff;cursor:pointer;margin:-4px -4px 0 0}
+#mdClips.pe .pe-rm .i{width:24px;height:24px}
+#mdClips.pe .pe-clip > b{font-size:12px;font-weight:400;color:#ecedf0;white-space:nowrap}
+#mdClips.pe .pe-clip > i{font-style:normal;font-size:10px;letter-spacing:.2px;color:#8a8c96}
+#mdClips.pe .pe-zoom{flex:0 0 33px;display:flex;align-items:center;justify-content:center;gap:2px;color:#b8babf;border-top:1px solid #2e2f38}
+#mdClips.pe .pe-zoom input{width:96px;accent-color:#b8babf}
+#mdClips.pe .md-foot{padding:10px 16px;border-top:1px solid #2e2f38}
+
+/* 영상 클립 편집 : 인물 색 2px 테두리 · 양 끝 안쪽 흰 손잡이 · 삭제는 호버 때만 */
+body.dt-b .tl-th.edit{border:2px solid var(--bc,#1d6ceb) !important;box-shadow:none !important;border-radius:2px}
+body.dt-b .tl-th.edit .tl-grip{width:10px;background:transparent;opacity:1}
+body.dt-b .tl-th.edit .tl-grip::before{width:3px;height:60%;border-radius:2px;background:#fff;box-shadow:0 0 2px rgba(0,0,0,.45)}
+body.dt-b .tl-th.edit .tl-del{opacity:0;transition:opacity .12s}
+body.dt-b .tl-th.edit:hover .tl-del{opacity:1}
+
+/* 인물 선택 팝업 (5254:70492) : 400 · 행 58 · 모서리 4 · 고른 행 파란 테두리 · 사진 48 */
+.md-person-pick{width:400px;background:#1c1d23;border:1px solid #2e2f38;border-radius:6px}
+.md-person-pick .md-head{display:flex;align-items:flex-start;justify-content:space-between;padding:12px 12px 12px 16px;border-bottom:1px solid #2e2f38}
+.md-person-pick .md-head b{font-size:16px;font-weight:700;color:#ecedf0}
+.md-person-pick .md-head .md-sub{margin-top:2px;font-size:12px;color:#8a8c96}
+.md-person-pick .md-x{width:24px;height:24px;padding:0;border:0;background:none;color:#b8babf}
+.md-person-pick .md-x .i{width:20px;height:20px}
+.md-person-pick .pp-list{gap:10px;padding:16px}
+.md-person-pick .pp-row{height:58px;padding:0 4px 0 12px;border:1px solid #3e4049;border-radius:4px;background:#1c1d23}
+.md-person-pick .pp-row.on{border-color:#3070d8}
+.md-person-pick .pp-row .rd{width:16px;height:16px;flex:0 0 16px;border:1px solid #55575f}
+.md-person-pick .pp-row.on .rd{border-color:#3070d8;background:#3070d8}
+.md-person-pick .pp-row.on .rd::after{inset:4px;background:#fff}
+.md-person-pick .pp-row .nm{font-size:14px;color:#ecedf0}
+.md-person-pick .pp-row img{width:48px;height:48px;border-radius:2px}
+.md-person-pick .md-foot{display:flex;justify-content:flex-end;gap:8px;padding:10px 16px;border-top:1px solid #2e2f38}
+
+/* 알림 토스트 (5254:70699 저장되었습니다) : 연녹색 바탕 · 녹색 체크 · 어두운 글자 · 닫기 */
+.toast{background:#c5f0d8 !important;border:0 !important;border-radius:4px;color:#1c1d23;min-width:0;width:396px;max-width:calc(100vw - 32px);box-sizing:border-box;padding:8px 12px;font-size:14px;box-shadow:0 4px 12px rgba(0,0,0,.35)}
+.toast .tt-ok{color:#30a868}
+.toast .tt-x{color:#55575f;font-size:14px}
+.toast .tt-x:hover{color:#1c1d23}
+/* 경로 편집 팝업 높이 : 머리 64 + 본문 554 + 띠 201 + 버튼 54 = 873 (화면이 작으면 본문이 줄어든다) */
+#mdClips.pe.modal.md-vsel{height:auto;max-height:calc(100vh - 40px)}
+#mdClips.pe .vs-wrap{flex:0 1 554px;padding:0}
+#mdClips.pe .vs-preview{flex:0 0 201px}
+/* 폭이 좁은 구간은 흰 손잡이 막대를 숨긴다(끌기는 그대로) — 붙은 구간끼리 막대가 뭉쳐 보이지 않게 */
+body.dt-b .tl-th.edit{container-type:inline-size}
+@container (max-width: 28px){ body.dt-b .tl-th.edit .tl-grip::before{display:none} }
