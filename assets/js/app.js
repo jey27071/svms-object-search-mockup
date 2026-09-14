@@ -1605,14 +1605,15 @@ function openPersonFromFrame(o) {
   loadImage(srcVideo(o.cam) || o.img);
 }
 function setImgModalCopy() {
-  const fromAlgo = S._imgFrom === 'algo';
+  const fromAlgo = S._imgFrom === 'algo' || S._imgFrom === 'fence';
   const h = $('#mdImage .md-head h3'), d = $('#mdImage .md-head p');
   if (h) h.textContent = fromAlgo ? '인물 선택' : '이미지 검색';
   if (d) d.textContent = fromAlgo ? '영상에서 검출된 인물을 검색할 수 있습니다.' : '이미지에서 자동 추출된 얼굴과 대상을 검색할 수 있습니다. (복수 선택 가능)';
   $('#btnRepick').hidden = fromAlgo;
+  $('#imgCancel').textContent = S._imgFrom === 'fence' ? '이전' : '취소';
 }
 function loadImage(url) {
-  if (S._imgFrom !== 'algo') S._imgFrom = null;
+  if (S._imgFrom !== 'algo' && S._imgFrom !== 'fence') S._imgFrom = null;
   setImgModalCopy();
   S.uploaded = url;
   $('#mdImagePreview').src = url;
@@ -1639,7 +1640,7 @@ function finishExtract() {
 function renderExtractGrid(t) {
   const list = S.extracted.filter(x => t === 'all' || x.type === t);
   $('#ieCount').textContent = S.extracted.length;
-  if (!list.length) { $('#ieGrid').innerHTML = `<div class="ie-loading" style="color:#6b7785">이미지에서 추출된 대상이 없습니다.<br>다시 추출하거나 다른 이미지를 선택해 주세요.</div>`; return; }
+  if (!list.length) { $('#ieGrid').innerHTML = `<div class="ie-loading" style="color:#6b7785">${S._imgFrom ? '검출된 인물이 없습니다.' : '이미지에서 추출된 대상이 없습니다.<br>다시 추출하거나 다른 이미지를 선택해 주세요.'}</div>`; return; }
   $('#ieGrid').innerHTML = list.map(x =>
     `<div class="ext-item${S.extSel.includes(x.id) ? ' on' : ''}" data-x="${x.id}"><img src="${x.img}"><span class="tag">${x.type === 'face' ? '얼굴' : '외형'}</span></div>`).join('');
   $$('#ieGrid .ext-item').forEach(n => n.onclick = () => {
@@ -1654,10 +1655,27 @@ $$('#ieFilter button').forEach(b => b.onclick = () => {
 });
 $('#btnReextract').onclick = () => { $('#ieGrid').innerHTML = '<div class="ie-loading">대상 추출 중</div>'; $('#bboxLayer').innerHTML = ''; setTimeout(finishExtract, 1200); };
 $('#btnRepick').onclick = () => $('#fileImage').click();
-$('#imgCancel').onclick = () => { closeModal('#mdImage'); S._imgFrom = null; };
+$('#imgCancel').onclick = () => {
+  closeModal('#mdImage');
+  /* 가상펜스 : `이전` = 직전 가상펜스 검색 팝업으로(선택 유지) */
+  if (S._imgFrom === 'fence' && S._fence) { S._imgFrom = null; openAreaSearch(S._fence.a); return; }
+  S._imgFrom = null;
+};
 $('#imgSearch').onclick = () => {
   closeModal('#mdImage');
   /* 지능형 결과에서 왔으면 인물 검색 > 이미지 탭으로 옮겨 재검색 */
+  if (S._imgFrom === 'fence') {
+    /* 가상펜스 : 검색 결과 탭(검색 홈)의 `인물` 검색으로 이동해 이미지 검색과 같은 과정 수행 */
+    S._imgFrom = null; S._fence = null; DT.area = null;
+    S.activeTab = 'search'; renderTabs(); syncPanels();
+    switchMode('person');
+    const tb = document.querySelector('#pfWay [data-way="img"]'); if (tb) tb.click();
+    $('#dropzone').hidden = true; $('#uploadedWrap').hidden = false; $('#uploadedImg').src = S.uploaded;
+    const acc = $('#extractedAcc'); acc.classList.add('open'); $('.acc-head', acc).disabled = false;
+    renderSideExtract(); buildFilters('person'); runSearch(false);
+    toast('인물 검색으로 이동해 선택한 인물을 검색합니다.');
+    return;
+  }
   if (S._imgFrom === 'algo') {
     S._imgFrom = null;
     switchMode('person');
@@ -1947,7 +1965,7 @@ function renderPM() {
   const ok = $('#pmOk'); if (ok) ok.onclick = () => { closeModal('#mdPerson'); renderPersonGrid(); };
   const q = $('#pmQ'); if (q) q.oninput = e => { pmQuery = e.target.value; renderPM(); $('#pmQ').focus(); };
 }
-const IMG_POOL = ['assets/img/ai01.png?v=202609141718', 'assets/img/ai02.png?v=202609141718', 'assets/img/ai05.png?v=202609141718', 'assets/img/ai06.png?v=202609141718', 'assets/img/ai09.png?v=202609141718'];
+const IMG_POOL = ['assets/img/ai01.png?v=202609141721', 'assets/img/ai02.png?v=202609141721', 'assets/img/ai05.png?v=202609141721', 'assets/img/ai06.png?v=202609141721', 'assets/img/ai09.png?v=202609141721'];
 function pmNew() { pmForm = { name: '', desc: '', imgs: [] }; pmView = 'new'; renderPM(); }
 
 $('#btnTabAdd').onclick = () => { S.activeTab = 'search'; renderTabs(); syncPanels(); toast('검색 홈 탭으로 이동합니다. (새 탭은 카드 더블클릭으로 생성됩니다)'); };
@@ -2336,7 +2354,7 @@ function renderTimeline(host, tracks, opt = {}) {
   const rows = tracks.map((tr, ti) => `
     <div class="tl-row${TL.off.has(tr.slot) ? ' off' : ''}" data-tr="${ti}">
       <div class="tl-obj" style="--slot:${typeof slotColor === 'function' ? slotColor(tr.slot) : 'var(--primary)'}">
-        <img src="${(tr.clips[0] || {}).img || 'assets/img/obj01.png?v=202609141718'}" alt="">
+        <img src="${(tr.clips[0] || {}).img || 'assets/img/obj01.png?v=202609141721'}" alt="">
         <span class="nm"><i></i><em>${tr.label}</em>${ti > 0 ? `<button class="rm" data-tlrm="${ti}" title="${tr.label} 삭제">${ICON.xs || '×'}</button>` : ''}</span>
       </div>
       <div class="tl-lane">
@@ -2965,7 +2983,7 @@ function paneToolsHTML(kind, i) {
 function paneBody(kind, i) {
   if (kind === 'map') {
     return `<div class="pn-map">
-      <img src="assets/img/floor.png?v=202609141718" alt="맵뷰">
+      <img src="assets/img/floor.png?v=202609141721" alt="맵뷰">
       ${PANE.mapTools.includes('path') ? paneMapPathHTML() : ''}
       ${PANE.mapTools.includes('cctv') ? `<div class="pn-cones">${MAP_CCTV.map(c =>
         `<span class="map-cone" style="left:${c.x}%;top:${c.y}%;rotate:${c.deg}deg"><i></i><b></b></span>`).join('')}</div>` : ''}
@@ -2992,14 +3010,14 @@ function paneBody(kind, i) {
   if ((PANE.vmode[i] || 'multi') === 'multi') {
     return `<div class="pn-vid pn-quad">
       <div class="pq">${[0, 1, 2, 3].map(k =>
-        `<span><img src="${(clips[k] || clips[0] || {}).img || 'assets/img/video.png?v=202609141718'}" alt="">
+        `<span><img src="${(clips[k] || clips[0] || {}).img || 'assets/img/video.png?v=202609141721'}" alt="">
          ${tileHead(k)}</span>`).join('')}</div>
       ${paneToolsHTML('video', i)}
       ${paneNearCamHTML(i)}
     </div>`;
   }
   return `<div class="pn-vid">
-    <img src="${(clips[Math.min(i, 3)] || {}).img || 'assets/img/video.png?v=202609141718'}" alt="">
+    <img src="${(clips[Math.min(i, 3)] || {}).img || 'assets/img/video.png?v=202609141721'}" alt="">
     ${tileHead(Math.min(i, 3))}
     ${paneToolsHTML('video', i)}
     ${paneNearCamHTML(i)}
@@ -3047,7 +3065,7 @@ function renderPanes() {
     if (PANE.kind[0] !== 'map') v.insertAdjacentHTML('beforeend', paneToolsHTML('video', 0));
     if (PANE.kind[0] === 'map') {
       v.insertAdjacentHTML('afterbegin', `<div class="pn-map">
-        <img src="assets/img/floor.png?v=202609141718" alt="맵뷰">
+        <img src="assets/img/floor.png?v=202609141721" alt="맵뷰">
         ${PANE.mapTools.includes('path') ? paneMapPathHTML() : ''}
         ${PANE.mapTools.includes('cctv') ? `<div class="pn-cones">${MAP_CCTV.map(c =>
           `<span class="map-cone" style="left:${c.x}%;top:${c.y}%;rotate:${c.deg}deg"><i></i><b></b></span>`).join('')}</div>` : ''}
@@ -3587,18 +3605,24 @@ function openCamPicker(e, tile, idx) {
 /* ---- 영역 검색 (도형 · 선) ---- */
 function setAreaTool(mode) {
   if (DT.area && DT.area.mode === mode) { DT.area = null; }
-  else DT.area = { mode, done: false, rect: null, line: null };
+  else {
+    DT.area = { mode, done: false, rect: null, line: null };
+    /* v0.8 : 검색 모드 진입 시 영상 자동 정지 */
+    const pl = document.getElementById('dtPlay'); if (pl && pl.classList.contains('playing')) pl.click();
+  }
   renderArea(); applyTools(); renderNear(DT._tab);
 }
 /* 사양 §7-3 : 영역/선을 그린 뒤 컨트롤 바.
    선 검색에는 `방향 지정`(Default `In`)이 붙고, 검색 전에는 `재실행`·`검색`,
    검색 뒤에는 `재실행`·`종료` 가 된다. */
 function areaBar(left, top, a) {
+  /* v0.8 : 단일 객체 검출 = 취소 · 확인 / 그 외 = (방향 지정) · 재실행 · 검색 */
+  if (a.single) return `<div class="area-bar" style="left:${left}%;top:${top}">
+    <button data-abcancel>취소</button><button data-abok class="ab-go">확인</button></div>`;
   return `<div class="area-bar" style="left:${left}%;top:${top}">
-    ${a.mode === 'line' ? `<button data-abdir class="ab-dir" title="방향 지정">방향 ${a.dir || 'In'}</button>` : ''}
+    ${a.mode === 'line' ? `<button data-abdir class="ab-dir${a.dirOn ? ' on' : ''}" title="진행 방향 화살표 표시">방향 지정</button>` : ''}
     <button data-abreset>${ICON2.reset}재실행</button>
-    ${a.searched ? `<button data-abend>종료</button>`
-                 : `<button data-abgo class="ab-go">검색</button>`}
+    <button data-abgo class="ab-go">검색</button>
   </div>`;
 }
 
@@ -3613,6 +3637,8 @@ function renderArea() {
     h += `<div class="area-shape" style="left:${x}%;top:${y}%;width:${w}%;height:${hh}%">
       <span style="left:-5px;top:-5px"></span><span style="right:-5px;top:-5px"></span>
       <span style="left:-5px;bottom:-5px"></span><span style="right:-5px;bottom:-5px"></span></div>`;
+    /* 영역 안 객체가 1개면 그 객체에 바운딩 박스 */
+    if (a.done && a.single) h += `<div class="area-obj" style="left:${x + w * 0.3}%;top:${y + hh * 0.12}%;width:${w * 0.4}%;height:${hh * 0.76}%"></div>`;
     if (a.done) h += areaBar(x + w - 20, `calc(${y + hh}% + 8px)`, a);
   }
   if (a.mode === 'line' && a.line) {
@@ -3620,22 +3646,29 @@ function renderArea() {
     h += `<div class="area-line"><svg viewBox="0 0 100 100" preserveAspectRatio="none">
       <defs><marker id="lah" markerWidth="5" markerHeight="5" refX="3" refY="2.5" orient="auto"><path d="M0,0 L5,2.5 L0,5 z" fill="#0099ff"/></marker></defs>
       <path d="M${x1},${y1} L${x2},${y2}" stroke="#0099ff" stroke-width="2.4" stroke-dasharray="5 4" fill="none" marker-end="url(#lah)" vector-effect="non-scaling-stroke"/></svg>
-      <span style="position:absolute;left:${x1}%;top:${y1}%;transform:translate(-50%,-50%);width:13px;height:13px;border-radius:50%;background:#0099ff;border:2px solid #fff"></span>
-      <span style="position:absolute;left:${x2}%;top:${y2}%;transform:translate(-50%,-50%);width:13px;height:13px;border-radius:50%;background:#0099ff;border:2px solid #fff"></span></div>`;
+      <span style="position:absolute;left:${x1}%;top:${y1}%;transform:translate(-50%,-50%);width:13px;height:13px;border-radius:50%;background:#0099ff;border:2px solid #fff" class="fence-pt">1</span>
+      <span style="position:absolute;left:${x2}%;top:${y2}%;transform:translate(-50%,-50%);width:13px;height:13px;border-radius:50%;background:#0099ff;border:2px solid #fff" class="fence-pt">2</span></div>`;
+    if (a.done && a.dirOn) {
+      /* 방향 화살표 : 선 중앙, 선에 수직. 누르면 반대 방향 */
+      const vb = $('#dtVideo').getBoundingClientRect();
+      const ang = Math.atan2((y2 - y1) * vb.height, (x2 - x1) * vb.width) * 180 / Math.PI + 90 * (a.dir || 1);
+      h += `<button class="area-arrow" data-abarrow title="눌러서 방향 바꾸기" style="left:${(x1 + x2) / 2}%;top:${(y1 + y2) / 2}%;transform:translate(-50%,-50%) rotate(${ang}deg)"><svg viewBox="0 0 24 12" aria-hidden="true"><path d="M1 6h19M15 1.5L21 6l-6 4.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>`;
+    }
     if (a.done) h += areaBar((x1 + x2) / 2 - 4, `${(y1 + y2) / 2 + 4}%`, a);
   }
-  if (!a.rect && !a.line) h += `<div style="position:absolute;left:50%;top:14px;transform:translateX(-50%);padding:4px 11px;border-radius:12px;background:rgba(10,16,26,.86);border:1px solid rgba(255,255,255,.16);font-size:11px">영상 위에 ${a.mode === 'shape' ? '드래그해 영역을' : '두 번 클릭해 기준선을'} 그려주세요</div>`;
+  if (!a.rect && !a.line) h += `<div style="position:absolute;left:50%;top:14px;transform:translateX(-50%);padding:4px 11px;border-radius:12px;background:rgba(10,16,26,.86);border:1px solid rgba(255,255,255,.16);font-size:11px">영상 위에 ${a.mode === 'shape' ? '드래그해 영역을' : '시작점과 종료점을 클릭해 기준선을'} 그려 주세요 (ESC 로 종료)</div>`;
   box.innerHTML = h;
   const redraw = () => { renderArea(); renderNear(DT._tab); };
   const dir = $('[data-abdir]', box);
-  if (dir) dir.onclick = () => { a.dir = a.dir === 'Out' ? 'In' : 'Out'; redraw(); };
-  const rs = $('[data-abreset]', box);
-  if (rs) rs.onclick = () => { DT.area = { mode: a.mode, done: false, rect: null, line: null, dir: a.dir }; redraw(); };
-  const go = $('[data-abgo]', box);
-  /* 사양 영역 검색 팝업 / 가상펜스 검색 팝업 — 추출된 인물을 골라 재검색 */
-  if (go) go.onclick = () => openAreaSearch(a, () => { a.searched = true; redraw(); });
-  const en = $('[data-abend]', box);
-  if (en) en.onclick = () => { DT.area = null; redraw(); };
+  if (dir) dir.onclick = () => { a.dirOn = !a.dirOn; a.dir = a.dir || 1; redraw(); };
+  const arr = $('[data-abarrow]', box);
+  if (arr) arr.onclick = e => { e.stopPropagation(); a.dir = -(a.dir || 1); redraw(); };
+  const reset = () => { DT.area = { mode: a.mode, done: false, rect: null, line: null, dir: a.dir, dirOn: false }; redraw(); };
+  const rs = $('[data-abreset]', box); if (rs) rs.onclick = reset;
+  const cc = $('[data-abcancel]', box); if (cc) cc.onclick = reset;
+  /* 사양 v0.8 영역 검색 팝업 / 가상펜스 검색 팝업 */
+  const go = $('[data-abgo]', box); if (go) go.onclick = () => openAreaSearch(a);
+  const ok = $('[data-abok]', box); if (ok) ok.onclick = () => openAreaSearch(a);
 }
 /* 영상 위 드로잉 */
 (function bindAreaDraw() {
@@ -3648,7 +3681,7 @@ function renderArea() {
     const move = ev => { const [x, y] = pct(ev); DT.area.rect = [Math.min(sx, x), Math.min(sy, y), Math.abs(x - sx), Math.abs(y - sy)]; renderArea(); };
     const up = () => {
       document.removeEventListener('mousemove', move); document.removeEventListener('mouseup', up);
-      if (DT.area && DT.area.rect && DT.area.rect[2] > 3 && DT.area.rect[3] > 3) { DT.area.done = true; renderArea(); renderNear(DT._tab); toast('지정한 영역을 통과한 대상을 조회했습니다.'); }
+      if (DT.area && DT.area.rect && DT.area.rect[2] > 3 && DT.area.rect[3] > 3) { DT.area.done = true; DT.area.single = DT.area.rect[2] * DT.area.rect[3] < 220; renderArea(); renderNear(DT._tab); }
       else if (DT.area) { DT.area.rect = null; renderArea(); }
     };
     document.addEventListener('mousemove', move); document.addEventListener('mouseup', up);
@@ -3659,7 +3692,7 @@ function renderArea() {
     if (!DT.area.line) { DT.area.line = [x, y, x, y]; renderArea(); }
     else {
       DT.area.line = [DT.area.line[0], DT.area.line[1], x, y];
-      DT.area.done = true; renderArea(); renderNear(DT._tab); toast('기준선을 통과한 대상을 조회했습니다.');
+      DT.area.done = true; renderArea(); renderNear(DT._tab);
     }
   });
   v.addEventListener('mousemove', e => {
@@ -3854,7 +3887,7 @@ function renderMap3d(paths) {
     const poly = polys ? `<svg class="m3-path" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${polys}</svg>` : '';
     /* 위층이 앞(위)에 오도록 쌓는다 — DOM 순서대로면 아래층이 덮는다 */
     return `<div class="m3-floor${pl.some(({ pts }) => onFl(pts).length) ? '' : ' dim'}" data-fl="${f.label}" style="--i:${fi};z-index:${M3_FLOORS.length - fi}">
-      <img src="assets/img/floor.png?v=202609141718" alt="">
+      <img src="assets/img/floor.png?v=202609141721" alt="">
       ${poly}
       ${pl.map(({ p, pts }) => onFl(pts).map(t => `<span class="map-wp" data-pt="${f.key}-${p.slot}-${t.n}" data-cam="${t.cam}"
           data-hh="${t.hh}" data-x="${t.x}" data-y="${t.y}"
@@ -4093,7 +4126,7 @@ function spreadMapLabels(host, sel) {
 $$('#dtMapSeg button').forEach(b => b.onclick = () => {
   $$('#dtMapSeg button').forEach(x => x.classList.toggle('on', x === b));
   DT.map = b.dataset.m;
-  $('#dtMapImg').src = DT.map === 'map' ? 'assets/img/map.png?v=202609141718' : 'assets/img/floor.png?v=202609141718';
+  $('#dtMapImg').src = DT.map === 'map' ? 'assets/img/map.png?v=202609141721' : 'assets/img/floor.png?v=202609141721';
   $('#dtFloor').hidden = true;                 /* 층 배지는 3D 각 층에 붙는다 */
   renderMap3d(MAP_PATHS_CACHE);
 });
@@ -4772,7 +4805,7 @@ function mvwPaths() {
 }
 function renderMapView() {
   const paths = mvwPaths();
-  const mapImg = DT.map === 'map' ? 'assets/img/map.png?v=202609141718' : 'assets/img/floor.png?v=202609141718';
+  const mapImg = DT.map === 'map' ? 'assets/img/map.png?v=202609141721' : 'assets/img/floor.png?v=202609141721';
   const seg = `<div class="seg"><button class="${DT.map === 'map' ? 'on' : ''}" data-mm="map">지도</button><button class="${DT.map === 'map' ? '' : 'on'}" data-mm="floor">층별</button></div>`;
   /* 사양서 Detail_000_4 · 4-4) : 주변 카메라 / 이동 경로 / 전체 보기
      이동 경로는 **단일 대상일 때 비활성** (그룹·경로비교에서만 사용) */
@@ -4834,7 +4867,7 @@ function renderMapView() {
   /* 바인딩 */
   $$('#mvwBody [data-mm]').forEach(b => b.onclick = () => {
     DT.map = b.dataset.mm;
-    $('#dtMapImg').src = DT.map === 'map' ? 'assets/img/map.png?v=202609141718' : 'assets/img/floor.png?v=202609141718';
+    $('#dtMapImg').src = DT.map === 'map' ? 'assets/img/map.png?v=202609141721' : 'assets/img/floor.png?v=202609141721';
     $('#dtFloor').hidden = DT.map === 'map';
     renderMapView();
   });
@@ -5301,7 +5334,7 @@ function applyDemo() {
   }
   if (d === 'personmgr') { switchMode('person'); renderPersonGrid(); openPersonMgr(); }
   if (d === 'history')   { HIST.open.add('0-0'); $('#btnHistory').click(); }
-  if (d === 'imagemodal'){ setMode('person'); setPfWay('img'); loadImage('assets/img/obj01.png?v=202609141718'); }
+  if (d === 'imagemodal'){ setMode('person'); setPfWay('img'); loadImage('assets/img/obj01.png?v=202609141721'); }
   if (d === 'person') { setMode('person'); S.selPersons = ['p1', 'p3']; renderPersonGrid(); buildFilters('person'); runSearch(false); }
   if (d === 'algo')   { setMode('algo'); S.algos = ['침입', '배회']; renderAlgoGrid(); buildFilters('algo'); runSearch(false); }
   if (d === 'image')  { setMode('person'); setPfWay('img'); }
@@ -5384,7 +5417,7 @@ function imsBuild() {
 }
 
 function openImgSearch(src) {
-  IMS.src = src || (OBJECTS[0] || {}).img || 'assets/img/video.png?v=202609141718';
+  IMS.src = src || (OBJECTS[0] || {}).img || 'assets/img/video.png?v=202609141721';
   IMS.kind = '전체'; IMS.sel = new Set(); IMS.items = [];
   const img = document.getElementById('imsImg'); if (img) img.src = IMS.src;
   document.getElementById('imsGrid').innerHTML = '';
@@ -5957,7 +5990,7 @@ function csDetailHTML(c) {
           <button class="btn-ghost sm" style="margin-left:auto" data-csmap>전체 보기</button>
         </div>
         <div style="position:relative;height:196px;border-radius:6px;overflow:hidden;background:var(--bg-1);border:1px solid var(--ln-subtle)">
-          <img src="assets/img/map.png?v=202609141718" style="width:100%;height:100%;object-fit:cover;opacity:.85" alt="">
+          <img src="assets/img/map.png?v=202609141721" style="width:100%;height:100%;object-fit:cover;opacity:.85" alt="">
           ${c.path.map((p, i) => {
             const x = 16 + (i * 23) % 68, y = 22 + (i * 17) % 54;
             return `<span style="position:absolute;left:${x}%;top:${y}%;width:9px;height:9px;border-radius:50%;
@@ -7566,42 +7599,75 @@ function openPersonPick(tracks, onPick) {
 /* 영역 검색 · 가상펜스 검색 팝업 (시안 5184:99734 · 5184:99673)
    영역은 캡처 화면과 지정 영역을 함께 보이고, 가상펜스는 추출 목록만.
    지정한 영역·선이 너무 작으면 추출 결과 없음 상태를 보인다(시연). */
-function openAreaSearch(a, onSearch) {
+function openAreaSearch(a) {
   const line = a.mode === 'line';
   let md = document.getElementById('mdAreaSearch');
   if (!md) { md = el('div', 'modal md-area'); md.id = 'mdAreaSearch'; md.hidden = true; document.body.appendChild(md); }
   md.classList.toggle('fence', line);
-  const size = line ? Math.hypot(a.line[2] - a.line[0], a.line[3] - a.line[1]) : a.rect[2] * a.rect[3];
-  const empty = line ? size < 6 : size < 60;
-  const items = empty ? [] : OBJECTS.slice(0, line ? 10 : 5).map((o, i) => ({
-    id: 'as' + i, img: o.img, kind: i < 3 ? '얼굴' : '외형', t: '04:00:00' }));
-  let kind = '전체', sel = items[0] ? items[0].id : null;
-  const src = (document.getElementById('dtVideoImg') || {}).src || '';
-  const label = k => (line && k === '외형') ? '객체' : k;
+  const src = (document.getElementById('dtVideoImg') || {}).getAttribute ? document.getElementById('dtVideoImg').getAttribute('src') : '';
+  const close = () => closeModal('#mdAreaSearch');   /* 취소·닫기 : 기존 드로잉 화면으로 복귀 */
+  if (!line) {
+    /* v0.8 PTS_DTL_SRC_000_2 : 영역(ROI)에서 자동 검출된 인물 → 선택 → 검색 → 영상 선택 팝업 */
+    const empty = !a.single && a.rect[2] * a.rect[3] < 40;
+    const items = empty ? [] : (a.single ? OBJECTS.slice(0, 1) : OBJECTS.slice(0, 5)).map((o, i) => ({ id: 'as' + i, img: o.img, kind: i % 2 ? '외형' : '얼굴', t: String(o.t).slice(11, 19), o }));
+    let kind = '전체', sel = a.single && items[0] ? items[0].id : null;
+    const render = () => {
+      const list = items.filter(x => kind === '전체' || x.kind === kind);
+      md.innerHTML = `
+        <div class="md-head"><div><h3>영역 검색</h3><p>영역에서 자동 검출된 인물을 검색할 수 있습니다.</p></div>
+          <button class="btn-icon" data-asclose title="닫기">&#10005;</button></div>
+        <div class="md-body">
+          <div class="as-pic"><img src="${src}" alt="">${items.map((x, i) => `<i class="as-box" style="left:${a.rect[0] + a.rect[2] * (0.15 + i * 0.16)}%;top:${a.rect[1] + a.rect[3] * 0.18}%;width:${a.rect[2] * 0.12}%;height:${a.rect[3] * 0.6}%"></i>`).join('')}</div>
+          <div class="as-filters">${['전체', '얼굴', '외형'].map(k => `<button class="${k === kind ? 'on' : ''}" data-ask="${k}">${k}</button>`).join('')}</div>
+          ${list.length ? `<div class="as-grid">${list.map(x => `
+            <button class="as-card${x.id === sel ? ' on' : ''}" data-asid="${x.id}"><img src="${x.img}" alt=""><em class="as-tag">${x.kind}</em>
+              <span>${x.t}</span></button>`).join('')}</div>`
+            : `<div class="as-empty">검출된 인물이 없습니다.</div>`}
+        </div>
+        <div class="md-foot"><button class="btn-ghost" data-asclose>취소</button>
+          <button class="btn-primary" id="asGo" ${sel && list.some(x => x.id === sel) ? '' : 'disabled'}>검색</button></div>`;
+      md.querySelectorAll('[data-asclose]').forEach(b => b.onclick = close);
+      md.querySelectorAll('[data-ask]').forEach(b => b.onclick = () => { kind = b.dataset.ask; render(); });
+      md.querySelectorAll('[data-asid]').forEach(b => b.onclick = () => { sel = sel === b.dataset.asid ? null : b.dataset.asid; render(); });
+      const go = md.querySelector('#asGo');
+      if (go) go.onclick = () => {
+        const it = items.find(x => x.id === sel); close();
+        DT.area = null; renderArea(); applyTools();
+        openReid((it && it.o.id) || OBJECTS[0].id);   /* 선택 인물로 전체 영상·타임라인 재검색 → 영상 선택 */
+      };
+    };
+    render(); openModal('#mdAreaSearch'); return;
+  }
+  /* v0.8 PTS_DTL_SRC_0001_2 : 기준선을 통과한 이벤트 영상(시간순) → 1개 선택 → 다음 → 인물 선택 */
+  const len = Math.hypot(a.line[2] - a.line[0], a.line[3] - a.line[1]);
+  const clips = len < 6 ? [] : OBJECTS.slice(0, 6).slice().sort((x, y) => x.t.localeCompare(y.t));
+  let sel = (S._fence && S._fence.a === a) ? S._fence.sel : null;
   const render = () => {
-    const list = items.filter(x => kind === '전체' || x.kind === kind);
     md.innerHTML = `
-      <div class="md-head"><div><b>${line ? '가상펜스 검색' : '영역 검색'}</b>
-        <p class="md-sub">${line ? '가상 선을 통과하는 인물을 검색할 수 있습니다.' : '영역에서 자동 추출된 인물을 검색할 수 있습니다.'}</p></div>
+      <div class="md-head"><div><h3>가상펜스 검색</h3><p>가상 선을 통과하는 인물을 검색할 수 있습니다.</p></div>
         <button class="btn-icon" data-asclose title="닫기">&#10005;</button></div>
       <div class="md-body">
-        ${line ? '' : `<div class="as-pic"><img src="${src}" alt=""><i class="as-box" style="left:${a.rect[0]}%;top:${a.rect[1]}%;width:${a.rect[2]}%;height:${a.rect[3]}%"></i></div>`}
-        <div class="as-filters">${['전체', '얼굴', '외형'].map(k => `<button class="${k === kind ? 'on' : ''}" data-ask="${k}">${k}</button>`).join('')}</div>
-        ${list.length ? `<div class="as-grid">${list.map(x => `
-          <button class="as-card${x.id === sel ? ' on' : ''}" data-asid="${x.id}"><img src="${x.img}" alt="">
-            <span><b>${label(x.kind)}</b> · ${x.t}</span></button>`).join('')}</div>`
-          : `<div class="as-empty">추출된 인물이 없습니다.</div>`}
+        <div class="fs-tools"><span class="rc">총 <em class="rc-badge">${clips.length}</em> 건</span><span class="fs-dir">방향 ${a.dirOn ? ((a.dir || 1) > 0 ? '→ 정방향' : '← 역방향') : '양방향'}</span></div>
+        ${clips.length ? `<div class="fs-grid">${clips.map(o => `
+          <button class="fs-card${o.id === sel ? ' on' : ''}" data-fsid="${o.id}"><img src="${srcVideo(o.cam) || o.img}" alt="">
+            <span class="sim ${simCls(o.sim)}">${o.sim}%</span>
+            <span class="fs-meta"><b>가상펜스</b><em>${o.cam}</em><i>${String(o.t).slice(0, 16)}</i></span></button>`).join('')}</div>`
+          : `<div class="as-empty">해당 기준선을 통과한 이벤트 영상이 없습니다.</div>`}
       </div>
       <div class="md-foot"><button class="btn-ghost" data-asclose>취소</button>
-        <button class="btn-primary" id="asGo" ${sel && list.some(x => x.id === sel) ? '' : 'disabled'}>검색</button></div>`;
-    md.querySelectorAll('[data-asclose]').forEach(b => b.onclick = () => closeModal('#mdAreaSearch'));
-    md.querySelectorAll('[data-ask]').forEach(b => b.onclick = () => { kind = b.dataset.ask; render(); });
-    md.querySelectorAll('[data-asid]').forEach(b => b.onclick = () => { sel = b.dataset.asid; render(); });
-    const go = md.querySelector('#asGo');
-    if (go) go.onclick = () => { closeModal('#mdAreaSearch'); onSearch && onSearch(); toast('선택한 인물로 다시 검색합니다.'); };
+        <button class="btn-primary" id="fsNext" ${sel ? '' : 'disabled'}>다음</button></div>`;
+    md.querySelectorAll('[data-asclose]').forEach(b => b.onclick = close);
+    md.querySelectorAll('[data-fsid]').forEach(b => b.onclick = () => { sel = sel === b.dataset.fsid ? null : b.dataset.fsid; render(); });
+    const nx = md.querySelector('#fsNext');
+    if (nx) nx.onclick = () => {
+      const o = findObj(sel); if (!o) return;
+      S._fence = { a, sel };
+      close();
+      S._imgFrom = 'fence';
+      loadImage(srcVideo(o.cam) || o.img);   /* 인물 선택 팝업 (이미지 검색과 같은 흐름) */
+    };
   };
-  render();
-  openModal('#mdAreaSearch');
+  render(); openModal('#mdAreaSearch');
 }
 
 /* ============================================================
@@ -7703,7 +7769,7 @@ function renderZoneMap(host, pts, color) {
   }
   zm.hidden = false;
   const seq = pts.slice().sort((a, b) => a.n - b.n);
-  zm.innerHTML = `<div class="zm-stage"><img src="assets/img/map.png?v=202609141718" alt="외부 지도" draggable="false">
+  zm.innerHTML = `<div class="zm-stage"><img src="assets/img/map.png?v=202609141721" alt="외부 지도" draggable="false">
       <svg class="zm-path" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${seq.length > 1
         ? `<polyline points="${seq.map(t => `${t.x},${t.y}`).join(' ')}" fill="none" stroke="${color}" stroke-width="2.5"
             stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>` : ''}</svg>
@@ -7781,7 +7847,7 @@ function renderFloorPane(host, pts, color) {
   const fl = last ? m3FloorOf(last.cam) : '1F';
   const mine = pts.filter(t => m3FloorOf(t.cam) === fl).sort((a, b) => a.n - b.n);
   const flb = (M3_FLOORS.find(f => f.key === fl) || {}).label || fl;
-  fp.innerHTML = `<img src="assets/img/floor.png?v=202609141718" alt=""><span class="dt-floor">${flb}</span>
+  fp.innerHTML = `<img src="assets/img/floor.png?v=202609141721" alt=""><span class="dt-floor">${flb}</span>
     <svg class="zp-path" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${mine.length > 1
       ? `<polyline points="${mine.map(t => `${t.x},${t.y}`).join(' ')}" fill="none" stroke="${color}" stroke-width="2" vector-effect="non-scaling-stroke"/>` : ''}</svg>
     ${mine.map(t => `<span class="map-wp" data-cam="${t.cam}" data-hh="${t.hh}" data-x="${t.x}" data-y="${t.y}"
@@ -8235,3 +8301,10 @@ function coneType(cam) {
   const hit = (MAP_PATHS_CACHE || []).some(p => p.pts.some(t => t.cam === cam));
   return hit ? 'hit' : 'miss';
 }
+
+/* v0.8 : 영역 검색 · 가상펜스 드로잉 모드는 ESC 로 해제 */
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Escape' || !DT.area) return;
+  if ([...document.querySelectorAll('.modal')].some(m => !m.hidden)) return;
+  DT.area = null; renderArea(); applyTools(); renderNear(DT._tab);
+});
