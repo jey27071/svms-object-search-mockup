@@ -6129,3 +6129,9 @@ body.dt-b :is(#dtTl,#cmpTl) .tl-obj:hover .nm .rm{
 body.dt-b :is(#dtTl,#cmpTl) .tl-obj .nm:hover .rm{opacity:1}
 body.dt-b :is(#dtTl,#cmpTl) .tl-obj .nm:hover em{padding-right:14px}
 body.dt-b :is(#dtTl,#cmpTl) .tl-foot .tf-r button:disabled{opacity:.4;cursor:default}
+
+/* ── 사양 v0.8 청크 D : 경로 비교 칸 — 현재 시점에 영상이 없는 인물 ── */
+.cmp-tile.noclip{background:#000}
+.cmp-tile.noclip > .cmp-vid > img,.cmp-tile.noclip > .cmp-vid > .cmp-box,.cmp-tile.noclip .pipc{visibility:hidden}
+/* 멀티 뷰 칸 기본 = 원본 비율(레터박스) — 자르기(cover)로 들어가던 문제 */
+body.dt-b #dtMulti .mv-tile > img{object-fit:contain;background:#000}
