@@ -5862,3 +5862,37 @@ body.dt-b :is(#dtTl,#cmpTl) .tl-row.off .tl-th{opacity:.25}
 body.dt-b :is(#dtTl,#cmpTl) .tl-row.off .tl-grip,
 body.dt-b :is(#dtTl,#cmpTl) .tl-row.off .tl-del{display:none}
 .cmp-tile.off::after{content:'';position:absolute;inset:0;background:rgba(0,0,0,.62);z-index:6;pointer-events:none}
+
+/* ── 동시 포착 PIP (시안 5223:57285 · 58374 · 57679) ── */
+#dtPipc{position:absolute;left:0;right:0;top:0;bottom:44px;pointer-events:none;z-index:7}
+body.dt-b .dt-video.has-multi > #dtPipc{display:none}
+.pipc{position:absolute;right:0;bottom:4px;z-index:5;pointer-events:auto;display:flex;flex-direction:column;align-items:flex-end}
+.pipc .pip-box{display:flex;flex-direction:column;gap:4px;padding:6px 10px;border:1px solid transparent;border-radius:4px;transition:background .15s,border-color .15s}
+.pipc .pip-hd{display:flex;align-items:center;justify-content:space-between;gap:8px;height:16px;opacity:0;transition:opacity .15s}
+.pipc .pip-hd b{font-size:12px;font-weight:500;line-height:16px;color:#b8babf;white-space:nowrap}
+.pipc .pip-x{display:flex;align-items:center;justify-content:center;width:16px;height:16px;padding:0;border:0;background:none;color:#b8babf;cursor:pointer}
+.pipc .pip-x:hover{color:#fff}
+.pipc .pip-x svg{width:12px;height:12px}
+.pipc:hover .pip-box,.pipc.hov .pip-box{background:rgba(0,0,0,.75);border-color:rgba(255,255,255,.16)}
+.pipc:hover .pip-hd,.pipc.hov .pip-hd{opacity:1}
+.pipc .pip-cams{display:flex;gap:8px}
+.pipc .pip-cam{
+  position:relative;flex:0 0 auto;width:128px;height:72px;box-sizing:content-box;padding:0;cursor:pointer;
+  border:1px solid var(--ln-subtle);border-radius:4px;overflow:hidden;background:#000;box-shadow:0 4px 8px rgba(0,0,0,.25)
+}
+.pipc .pip-cam:hover{border-color:var(--primary)}
+.pipc .pip-cam img{width:100%;height:100%;object-fit:cover;display:block}
+.pipc .pip-cam em{
+  position:absolute;left:0;right:0;bottom:0;height:20px;box-sizing:border-box;padding:4px 4px 0;
+  background:linear-gradient(0deg,#000 72.5%,transparent);color:#fff;font-style:normal;text-align:left;
+  font-size:10px;font-weight:500;letter-spacing:.2px;line-height:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis
+}
+.pipc .pip-open{display:none}
+.pipc.col{bottom:0}
+.pipc.col .pip-box{display:none}
+.pipc.col .pip-open{
+  display:flex;align-items:center;gap:8px;padding:6px 8px;border:0;border-radius:4px 0 0 0;cursor:pointer;
+  background:rgba(0,0,0,.5);color:#b8babf;font-size:12px;font-weight:500;line-height:1.3;white-space:nowrap
+}
+.pipc.col .pip-open:hover{color:#fff;background:rgba(0,0,0,.7)}
+.pipc.col .pip-open svg{width:12px;height:12px}
