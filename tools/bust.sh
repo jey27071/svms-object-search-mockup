@@ -16,7 +16,7 @@ if t2 != t: d.write_text(t2, encoding='utf-8')
 
 # 마크업에 직접 박힌 이미지 경로도
 h = pathlib.Path('index.html'); u = h.read_text(encoding='utf-8')
-u2 = re.sub(r'(assets/img/[\w.-]+\.(?:png|jpg|svg))(\?v=\d+)?', lambda m: f'{m.group(1)}?v={v}', u)
+u2 = re.sub(r'(assets/(?:img|video)/[\w.-]+\.(?:png|jpg|svg))(\?v=\d+)?', lambda m: f'{m.group(1)}?v={v}', u)
 if u2 != u: h.write_text(u2, encoding='utf-8')
 # app.js 안에 직접 박힌 이미지 경로도
 a = pathlib.Path('assets/js/app.js'); j = a.read_text(encoding='utf-8')

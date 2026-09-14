@@ -5,8 +5,12 @@
 
 /* 이미지에도 캐시 버스터를 붙인다.
    에셋을 갈아끼워도 브라우저가 옛 그림을 그대로 쓰던 문제(2026-09-09). */
-const IMG_V = '202609141722';
-const IMG = n => `assets/img/${n}.png?v=${IMG_V}`;
+const IMG_V = '202609141730';
+/* 영상 샘플(2026-09-14) : 카메라 프레임 이미지는 실제 영상의 대표 프레임(vNN.jpg)으로.
+   재생 영역에서는 같은 이름의 vNN.mp4 가 그 위에 겹쳐 재생된다 (app.js 영상 레이어) */
+const FRAME_V = { video: 'v01', cam2: 'v06', cam3: 'v07', cam4: 'v03', nb1: 'v04', nb2: 'v09',
+  v01: 'v01', v02: 'v02', v03: 'v03', v04: 'v04', v05: 'v05', v06: 'v06', v07: 'v07', v08: 'v08', v09: 'v09' };
+const IMG = n => FRAME_V[n] ? `assets/video/${FRAME_V[n]}.jpg?v=${IMG_V}` : `assets/img/${n}.png?v=${IMG_V}`;
 
 /* 카메라 — 사양서 필터 트리 9개소 */
 const CAMERAS = [

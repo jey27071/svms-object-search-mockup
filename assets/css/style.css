@@ -6183,3 +6183,8 @@ body.dt-b .dt-sec-head .dt-bldg{margin:0}
 .md-area.fence .fs-card .fs-meta{display:flex;flex-direction:column;gap:1px;padding:5px 7px;font-size:11px}
 .md-area.fence .fs-card .fs-meta b{font-weight:500;color:var(--tx-primary)}
 .md-area.fence .fs-card .fs-meta em,.md-area.fence .fs-card .fs-meta i{font-style:normal;color:var(--tx-helper);font-size:10.5px}
+
+/* ── 영상 레이어 (2026-09-14) ── */
+img.has-vid{opacity:0 !important}
+video.vid-layer{position:absolute;display:block;pointer-events:none;background:#000;margin:0;padding:0}
+#dtVideo > video.vid-layer{z-index:0}
