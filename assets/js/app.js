@@ -1965,7 +1965,7 @@ function renderPM() {
   const ok = $('#pmOk'); if (ok) ok.onclick = () => { closeModal('#mdPerson'); renderPersonGrid(); };
   const q = $('#pmQ'); if (q) q.oninput = e => { pmQuery = e.target.value; renderPM(); $('#pmQ').focus(); };
 }
-const IMG_POOL = ['assets/img/ai01.png?v=202609141735', 'assets/img/ai02.png?v=202609141735', 'assets/img/ai05.png?v=202609141735', 'assets/img/ai06.png?v=202609141735', 'assets/img/ai09.png?v=202609141735'];
+const IMG_POOL = [PIMG('v01', 0), PIMG('v02', 4), PIMG('v03', 0), PIMG('v06', 2), PIMG('v09', 5)];
 function pmNew() { pmForm = { name: '', desc: '', imgs: [] }; pmView = 'new'; renderPM(); }
 
 $('#btnTabAdd').onclick = () => { S.activeTab = 'search'; renderTabs(); syncPanels(); toast('검색 홈 탭으로 이동합니다. (새 탭은 카드 더블클릭으로 생성됩니다)'); };
@@ -2354,7 +2354,7 @@ function renderTimeline(host, tracks, opt = {}) {
   const rows = tracks.map((tr, ti) => `
     <div class="tl-row${TL.off.has(tr.slot) ? ' off' : ''}" data-tr="${ti}">
       <div class="tl-obj" style="--slot:${typeof slotColor === 'function' ? slotColor(tr.slot) : 'var(--primary)'}">
-        <img src="${(tr.clips[0] || {}).img || 'assets/img/obj01.png?v=202609141735'}" alt="">
+        <img src="${(tr.clips[0] || {}).img || PIMG('v01', 0)}" alt="">
         <span class="nm"><i></i><em>${tr.label}</em>${ti > 0 ? `<button class="rm" data-tlrm="${ti}" title="${tr.label} 삭제">${ICON.xs || '×'}</button>` : ''}</span>
       </div>
       <div class="tl-lane">
@@ -2984,7 +2984,7 @@ function paneToolsHTML(kind, i) {
 function paneBody(kind, i) {
   if (kind === 'map') {
     return `<div class="pn-map">
-      <img src="assets/img/floor.png?v=202609141735" alt="맵뷰">
+      <img src="assets/img/floor.png?v=202609141745" alt="맵뷰">
       ${PANE.mapTools.includes('path') ? paneMapPathHTML() : ''}
       ${PANE.mapTools.includes('cctv') ? `<div class="pn-cones">${MAP_CCTV.map(c =>
         `<span class="map-cone" style="left:${c.x}%;top:${c.y}%;rotate:${c.deg}deg"><i></i><b></b></span>`).join('')}</div>` : ''}
@@ -3066,7 +3066,7 @@ function renderPanes() {
     if (PANE.kind[0] !== 'map') v.insertAdjacentHTML('beforeend', paneToolsHTML('video', 0));
     if (PANE.kind[0] === 'map') {
       v.insertAdjacentHTML('afterbegin', `<div class="pn-map">
-        <img src="assets/img/floor.png?v=202609141735" alt="맵뷰">
+        <img src="assets/img/floor.png?v=202609141745" alt="맵뷰">
         ${PANE.mapTools.includes('path') ? paneMapPathHTML() : ''}
         ${PANE.mapTools.includes('cctv') ? `<div class="pn-cones">${MAP_CCTV.map(c =>
           `<span class="map-cone" style="left:${c.x}%;top:${c.y}%;rotate:${c.deg}deg"><i></i><b></b></span>`).join('')}</div>` : ''}
@@ -3230,6 +3230,9 @@ function renderDetail(tab) {
   const cur = DT.clips[DT.clip] || o;
 
   $('#dtCam').textContent = isGroup ? cur.cam : o.cam;
+  /* 탭을 처음 그리거나 다른 탭에서 넘어오면 영상도 그 대상의 카메라로 (검색 결과 썸네일과 같은 영상) */
+  const vKey = tab.id || o.id;
+  if (DT._vidFor !== vKey) { DT._vidFor = vKey; DT.adjPrev = null; $('#dtVideoImg').src = srcVideo(isGroup ? cur.cam : o.cam) || o.img; }
   $('#dtCamCaret').hidden = !isGroup;
   /* 사양 2-1) 표기 형식 : YYYY-MM-DD HH:MM:SS ~ HH:MM:SS (선택한 구간 기준) */
   const tc = (typeof TL_TRACKS !== 'undefined' && TL_TRACKS[0] && TL_TRACKS[0].clips[(TL.sel && TL.sel.c) || 0]) || null;
@@ -3274,7 +3277,7 @@ function renderDetail(tab) {
   renderTimeline($('#dtTl'), TL_TRACKS, {
     edit: DT.edit,
     onRight: () => syncTlEditBtn(tab),
-    onSelect: (tr, c) => { const im = $('#dtVideoImg'); if (im) im.src = c.img; renderPip(c); },
+    onSelect: (tr, c) => { const im = $('#dtVideoImg'); if (im) im.src = srcVideo(c.cam) || c.img; renderPip(c); },
     onAdd: () => openClipAdd(tab)
   });
   renderPanes();
@@ -3313,7 +3316,7 @@ function renderDetail(tab) {
   $$('#dtClips .dt-clip').forEach(n => n.onclick = e => {
     if (e.target.closest('[data-clipbk]') || e.target.closest('[data-rmclip]')) return;
     DT.clip = +n.dataset.clip;
-    $('#dtVideoImg').src = DT.clips[DT.clip].img;
+    $('#dtVideoImg').src = srcVideo(DT.clips[DT.clip].cam) || DT.clips[DT.clip].img;
     renderDetail(tab);
   });
   $$('#dtClips [data-rmclip]').forEach(b => b.onclick = e => {
@@ -3393,7 +3396,7 @@ function openNearDetail(x) {
   const seed = { ...OBJECTS[0], id: 'near_' + x.id, img: x.img, cam: x.cam, sim: x.sim, top: x.top, bottom: x.bottom, group: 'etc' };
   DT.clip = 0; DT.removed = new Set(); DT.edit = false; DT.area = null; DT.tracks = false;
   newTab(`${x.cam}`, seed, { label: x.name, event: x.event });
-  $('#dtVideoImg').src = x.img;
+  $('#dtVideoImg').src = srcVideo(x.cam) || x.img;
 }
 
 /* ---- 영상 도구 상태 반영 ---- */
@@ -3887,7 +3890,7 @@ function renderMap3d(paths) {
     const poly = polys ? `<svg class="m3-path" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${polys}</svg>` : '';
     /* 위층이 앞(위)에 오도록 쌓는다 — DOM 순서대로면 아래층이 덮는다 */
     return `<div class="m3-floor${pl.some(({ pts }) => onFl(pts).length) ? '' : ' dim'}" data-fl="${f.label}" style="--i:${fi};z-index:${M3_FLOORS.length - fi}">
-      <img src="assets/img/floor.png?v=202609141735" alt="">
+      <img src="assets/img/floor.png?v=202609141745" alt="">
       ${poly}
       ${pl.map(({ p, pts }) => onFl(pts).map(t => `<span class="map-wp" data-pt="${f.key}-${p.slot}-${t.n}" data-cam="${t.cam}"
           data-hh="${t.hh}" data-x="${t.x}" data-y="${t.y}"
@@ -4126,7 +4129,7 @@ function spreadMapLabels(host, sel) {
 $$('#dtMapSeg button').forEach(b => b.onclick = () => {
   $$('#dtMapSeg button').forEach(x => x.classList.toggle('on', x === b));
   DT.map = b.dataset.m;
-  $('#dtMapImg').src = DT.map === 'map' ? 'assets/img/map.png?v=202609141735' : 'assets/img/floor.png?v=202609141735';
+  $('#dtMapImg').src = DT.map === 'map' ? 'assets/img/map.png?v=202609141745' : 'assets/img/floor.png?v=202609141745';
   $('#dtFloor').hidden = true;                 /* 층 배지는 3D 각 층에 붙는다 */
   renderMap3d(MAP_PATHS_CACHE);
 });
@@ -4331,7 +4334,7 @@ $('#dtObjMore').onclick = e => openObjMenu(e);
 $('#dtCam').parentElement.onclick = () => {
   if (!DT._tab || DT._tab.kind !== 'group') return;
   DT.clip = (DT.clip + 1) % DT.clips.length;
-  $('#dtVideoImg').src = DT.clips[DT.clip].img;
+  $('#dtVideoImg').src = srcVideo(DT.clips[DT.clip].cam) || DT.clips[DT.clip].img;
   renderDetail(DT._tab);
 };
 
@@ -4804,7 +4807,7 @@ function mvwPaths() {
 }
 function renderMapView() {
   const paths = mvwPaths();
-  const mapImg = DT.map === 'map' ? 'assets/img/map.png?v=202609141735' : 'assets/img/floor.png?v=202609141735';
+  const mapImg = DT.map === 'map' ? 'assets/img/map.png?v=202609141745' : 'assets/img/floor.png?v=202609141745';
   const seg = `<div class="seg"><button class="${DT.map === 'map' ? 'on' : ''}" data-mm="map">지도</button><button class="${DT.map === 'map' ? '' : 'on'}" data-mm="floor">층별</button></div>`;
   /* 사양서 Detail_000_4 · 4-4) : 주변 카메라 / 이동 경로 / 전체 보기
      이동 경로는 **단일 대상일 때 비활성** (그룹·경로비교에서만 사용) */
@@ -4866,7 +4869,7 @@ function renderMapView() {
   /* 바인딩 */
   $$('#mvwBody [data-mm]').forEach(b => b.onclick = () => {
     DT.map = b.dataset.mm;
-    $('#dtMapImg').src = DT.map === 'map' ? 'assets/img/map.png?v=202609141735' : 'assets/img/floor.png?v=202609141735';
+    $('#dtMapImg').src = DT.map === 'map' ? 'assets/img/map.png?v=202609141745' : 'assets/img/floor.png?v=202609141745';
     $('#dtFloor').hidden = DT.map === 'map';
     renderMapView();
   });
@@ -5332,7 +5335,7 @@ function applyDemo() {
   }
   if (d === 'personmgr') { switchMode('person'); renderPersonGrid(); openPersonMgr(); }
   if (d === 'history')   { HIST.open.add('0-0'); $('#btnHistory').click(); }
-  if (d === 'imagemodal'){ setMode('person'); setPfWay('img'); loadImage('assets/img/obj01.png?v=202609141735'); }
+  if (d === 'imagemodal'){ setMode('person'); setPfWay('img'); loadImage(PIMG('v01', 0)); }
   if (d === 'person') { setMode('person'); S.selPersons = ['p1', 'p3']; renderPersonGrid(); buildFilters('person'); runSearch(false); }
   if (d === 'algo')   { setMode('algo'); S.algos = ['침입', '배회']; renderAlgoGrid(); buildFilters('algo'); runSearch(false); }
   if (d === 'image')  { setMode('person'); setPfWay('img'); }
@@ -5988,7 +5991,7 @@ function csDetailHTML(c) {
           <button class="btn-ghost sm" style="margin-left:auto" data-csmap>전체 보기</button>
         </div>
         <div style="position:relative;height:196px;border-radius:6px;overflow:hidden;background:var(--bg-1);border:1px solid var(--ln-subtle)">
-          <img src="assets/img/map.png?v=202609141735" style="width:100%;height:100%;object-fit:cover;opacity:.85" alt="">
+          <img src="assets/img/map.png?v=202609141745" style="width:100%;height:100%;object-fit:cover;opacity:.85" alt="">
           ${c.path.map((p, i) => {
             const x = 16 + (i * 23) % 68, y = 22 + (i * 17) % 54;
             return `<span style="position:absolute;left:${x}%;top:${y}%;width:9px;height:9px;border-radius:50%;
@@ -7767,7 +7770,7 @@ function renderZoneMap(host, pts, color) {
   }
   zm.hidden = false;
   const seq = pts.slice().sort((a, b) => a.n - b.n);
-  zm.innerHTML = `<div class="zm-stage"><img src="assets/img/map.png?v=202609141735" alt="외부 지도" draggable="false">
+  zm.innerHTML = `<div class="zm-stage"><img src="assets/img/map.png?v=202609141745" alt="외부 지도" draggable="false">
       <svg class="zm-path" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${seq.length > 1
         ? `<polyline points="${seq.map(t => `${t.x},${t.y}`).join(' ')}" fill="none" stroke="${color}" stroke-width="2.5"
             stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>` : ''}</svg>
@@ -7845,7 +7848,7 @@ function renderFloorPane(host, pts, color) {
   const fl = last ? m3FloorOf(last.cam) : '1F';
   const mine = pts.filter(t => m3FloorOf(t.cam) === fl).sort((a, b) => a.n - b.n);
   const flb = (M3_FLOORS.find(f => f.key === fl) || {}).label || fl;
-  fp.innerHTML = `<img src="assets/img/floor.png?v=202609141735" alt=""><span class="dt-floor">${flb}</span>
+  fp.innerHTML = `<img src="assets/img/floor.png?v=202609141745" alt=""><span class="dt-floor">${flb}</span>
     <svg class="zp-path" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${mine.length > 1
       ? `<polyline points="${mine.map(t => `${t.x},${t.y}`).join(' ')}" fill="none" stroke="${color}" stroke-width="2" vector-effect="non-scaling-stroke"/>` : ''}</svg>
     ${mine.map(t => `<span class="map-wp" data-cam="${t.cam}" data-hh="${t.hh}" data-x="${t.x}" data-y="${t.y}"
@@ -8314,7 +8317,7 @@ document.addEventListener('keydown', e => {
    재생/일시정지 · 배속(역방향은 되감기) · 10초 이동 · 타임라인 커서와 시각을 맞춘다.
    ============================================================ */
 const VID = { playing: false, last: 0, tick: 0 };
-const VID_SEL = '#dtVideoImg, #dtMulti .mv-tile > img, #cmpGrid .cmp-vid > img, #vwBody .vw-stage > img, #vwBody .vg-tile > img';
+const VID_SEL = '#pvVideo > img, #dtVideoImg, #dtMulti .mv-tile > img, #cmpGrid .cmp-vid > img, #vwBody .vw-stage > img, #vwBody .vg-tile > img';
 function vidTarget() { return (TL.d0 != null && TL.span) ? ((TL.d0 + TL.cursor * TL.span) / 1000) : 0; }
 function vidPlace(img, v) {
   const cs = getComputedStyle(img);
@@ -8323,6 +8326,8 @@ function vidPlace(img, v) {
   if (hidden) { if (!v.paused) v.pause(); return; }
   Object.assign(v.style, { left: img.offsetLeft + 'px', top: img.offsetTop + 'px', width: img.offsetWidth + 'px', height: img.offsetHeight + 'px',
     objectFit: cs.objectFit, transform: img.style.transform || '', transformOrigin: cs.transformOrigin });
+  const pv = img.closest('#pvVideo');   /* 검색 결과 미리보기는 자체 재생 상태를 따른다 */
+  if (pv) { pv.classList.contains('paused') ? v.pause() : v.paused && v.play().catch(() => {}); return; }
   if (VID.playing && v.paused && (DT.rateDir || 1) > 0) v.play().catch(() => {});
 }
 function vidSync(img) {
@@ -8343,9 +8348,21 @@ function vidSync(img) {
   v.playbackRate = Math.max(1, DT.rate || 1);
   vidPlace(img, v);
 }
+/* 상세를 연 대상의 썸네일이 그 영상에서 잘라낸 인물이면, 그 인물이 나오는 시각(P_T)부터 보이도록 어긋남을 둔다 */
+function vidOff(v) {
+  const inPv = v.closest('#pvVideo');
+  const o = inPv ? ((S.preview || []).find(x => x.uid === PV.id) || findObj((S.preview || [])[0] && S.preview[0].id)) : DT._tab && DT._tab.obj;
+  const m = o && /video\/p\/(v\d\d)_(\d+)\.jpg/.exec(o.img || '');
+  const name = (/video\/(v\d\d)\.mp4/.exec(v.getAttribute('src') || '') || [])[1];
+  if (!m || m[1] !== name || typeof P_T === 'undefined') return 0;
+  VID.off = VID.off || {}; VID.offKey = VID.offKey || {};
+  const ok = (inPv ? 'pv:' : '') + (o.uid || o.id);
+  if (VID.offKey[name] !== ok) { VID.offKey[name] = ok; VID.off[name] = (P_T[`${m[1]}_${m[2]}`] || 0) - vidTarget(); }
+  return VID.off[name];
+}
 function vidSeek(v, force) {
   if (!v.duration || isNaN(v.duration)) return;
-  const target = vidTarget() % v.duration;
+  const d = v.duration, target = ((vidTarget() + vidOff(v)) % d + d) % d;
   if (force || Math.abs(v.currentTime - target) > 1.5) { try { v.currentTime = target; } catch (_) {} }
 }
 function vidAll() { return [...document.querySelectorAll('video.vid-layer')].filter(v => v.style.display !== 'none'); }

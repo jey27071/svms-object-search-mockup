@@ -5,12 +5,17 @@
 
 /* 이미지에도 캐시 버스터를 붙인다.
    에셋을 갈아끼워도 브라우저가 옛 그림을 그대로 쓰던 문제(2026-09-09). */
-const IMG_V = '202609141735';
+const IMG_V = '202609141745';
 /* 영상 샘플(2026-09-14) : 카메라 프레임 이미지는 실제 영상의 대표 프레임(vNN.jpg)으로.
    재생 영역에서는 같은 이름의 vNN.mp4 가 그 위에 겹쳐 재생된다 (app.js 영상 레이어) */
 const FRAME_V = { video: 'v01', cam2: 'v06', cam3: 'v07', cam4: 'v03', nb1: 'v04', nb2: 'v09',
   v01: 'v01', v02: 'v02', v03: 'v03', v04: 'v04', v05: 'v05', v06: 'v06', v07: 'v07', v08: 'v08', v09: 'v09' };
 const IMG = n => FRAME_V[n] ? `assets/video/${FRAME_V[n]}.jpg?v=${IMG_V}` : `assets/img/${n}.png?v=${IMG_V}`;
+/* 인물 크롭(2026-09-14) : 각 카메라 영상(vNN)에서 실제로 잡힌 인물을 잘라 썸네일로 쓴다.
+   카메라가 있는 기록은 그 카메라 영상의 인물을, 없는 기록은 영상들을 돌아가며 쓴다. P_T = 영상 속 등장 시각(초) */
+const P_N = {"v01": 8, "v02": 8, "v03": 8, "v04": 2, "v05": 4, "v06": 8, "v07": 4, "v08": 8, "v09": 8};
+const P_T = {"v01_1": 0, "v01_2": 3, "v01_3": 12, "v01_4": 18, "v01_5": 45, "v01_6": 48, "v01_7": 51, "v01_8": 57, "v02_1": 0, "v02_2": 9, "v02_3": 12, "v02_4": 12, "v02_5": 42, "v02_6": 42, "v02_7": 51, "v02_8": 57, "v03_1": 9, "v03_2": 6, "v03_3": 9, "v03_4": 9, "v03_5": 18, "v03_6": 51, "v03_7": 42, "v03_8": 57, "v04_1": 54, "v04_2": 45, "v05_1": 0, "v05_2": 18, "v05_3": 30, "v05_4": 39, "v06_1": 21, "v06_2": 21, "v06_3": 27, "v06_4": 30, "v06_5": 33, "v06_6": 39, "v06_7": 51, "v06_8": 54, "v07_1": 6, "v07_2": 9, "v07_3": 27, "v07_4": 36, "v08_1": 6, "v08_2": 12, "v08_3": 27, "v08_4": 36, "v08_5": 33, "v08_6": 45, "v08_7": 39, "v08_8": 27, "v09_1": 3, "v09_2": 12, "v09_3": 24, "v09_4": 27, "v09_5": 33, "v09_6": 42, "v09_7": 45, "v09_8": 48};
+const PIMG = (v, n) => `assets/video/p/${v}_${(n % P_N[v]) + 1}.jpg?v=${IMG_V}`;
 
 /* 카메라 — 사양서 필터 트리 9개소 */
 const CAMERAS = [
@@ -40,47 +45,47 @@ const ALGOS = ['침입', '배회', '쓰러짐', '가상펜스', '지게차 감�
 /* group: c1 = 유사 대상 후보 1, c2 = 후보 2, etc = 기타 유사 대상 */
 const OBJECTS = [
   /* --- 유사 대상 후보 1 : 검정 상의 배송기사 (10건 / 평균 98%) --- */
-  { id: 'o01', img: IMG('obj01'), sim: 98, cam: 'B1 주차장',     t: '2026-06-30 14:52:03', group: 'c1', type: '인물', sex: '남성', top: 'black', bottom: 'black' },
-  { id: 'o02', img: IMG('obj12'), sim: 96, cam: '3층 매장',  t: '2026-06-30 14:48:11', group: 'c1', type: '인물', sex: '남성', top: 'black', bottom: 'black' },
-  { id: 'o03', img: IMG('obj13'), sim: 95, cam: 'B1 엘리베이터', t: '2026-06-30 14:45:32', group: 'c1', type: '인물', sex: '남성', top: 'black', bottom: 'black' },
-  { id: 'o04', img: IMG('obj14'), sim: 94, cam: 'B1 주차장',     t: '2026-06-30 14:41:07', group: 'c1', type: '인물', sex: '남성', top: 'black', bottom: 'black' },
-  { id: 'o05', img: IMG('obj18'), sim: 92, cam: '2층 통로',      t: '2026-06-30 14:38:55', group: 'c1', type: '인물', sex: '남성', top: 'black', bottom: 'black' },
-  { id: 'o06', img: IMG('obj20'), sim: 90, cam: 'B1 입구',       t: '2026-06-30 14:35:20', group: 'c1', type: '인물', sex: '남성', top: 'black', bottom: 'black' },
-  { id: 'o07', img: IMG('obj23'), sim: 88, cam: '외부 CCTV',   t: '2026-06-30 14:31:46', group: 'c1', type: '인물', sex: '남성', top: 'black', bottom: 'black' },
-  { id: 'o08', img: IMG('obj24'), sim: 86, cam: 'B1 주차장',     t: '2026-06-30 14:28:02', group: 'c1', type: '인물', sex: '남성', top: 'black', bottom: 'black' },
-  { id: 'o09', img: IMG('obj25'), sim: 85, cam: '외부 CCTV',   t: '2026-06-30 14:24:18', group: 'c1', type: '인물', sex: '남성', top: 'black', bottom: 'black' },
-  { id: 'o10', img: IMG('obj31'), sim: 84, cam: '3층 매장',  t: '2026-06-30 14:20:44', group: 'c1', type: '인물', sex: '남성', top: 'black', bottom: 'blue'  },
+  { id: 'o01', img: PIMG('v05', 1), sim: 98, cam: 'B1 주차장',     t: '2026-06-30 14:52:03', group: 'c1', type: '인물', sex: '남성', top: 'black', bottom: 'black' },
+  { id: 'o02', img: PIMG('v07', 12), sim: 96, cam: '3층 매장',  t: '2026-06-30 14:48:11', group: 'c1', type: '인물', sex: '남성', top: 'black', bottom: 'black' },
+  { id: 'o03', img: PIMG('v04', 13), sim: 95, cam: 'B1 엘리베이터', t: '2026-06-30 14:45:32', group: 'c1', type: '인물', sex: '남성', top: 'black', bottom: 'black' },
+  { id: 'o04', img: PIMG('v05', 14), sim: 94, cam: 'B1 주차장',     t: '2026-06-30 14:41:07', group: 'c1', type: '인물', sex: '남성', top: 'black', bottom: 'black' },
+  { id: 'o05', img: PIMG('v06', 18), sim: 92, cam: '2층 통로',      t: '2026-06-30 14:38:55', group: 'c1', type: '인물', sex: '남성', top: 'black', bottom: 'black' },
+  { id: 'o06', img: PIMG('v09', 20), sim: 90, cam: 'B1 입구',       t: '2026-06-30 14:35:20', group: 'c1', type: '인물', sex: '남성', top: 'black', bottom: 'black' },
+  { id: 'o07', img: PIMG('v08', 23), sim: 88, cam: '외부 CCTV',   t: '2026-06-30 14:31:46', group: 'c1', type: '인물', sex: '남성', top: 'black', bottom: 'black' },
+  { id: 'o08', img: PIMG('v05', 24), sim: 86, cam: 'B1 주차장',     t: '2026-06-30 14:28:02', group: 'c1', type: '인물', sex: '남성', top: 'black', bottom: 'black' },
+  { id: 'o09', img: PIMG('v08', 25), sim: 85, cam: '외부 CCTV',   t: '2026-06-30 14:24:18', group: 'c1', type: '인물', sex: '남성', top: 'black', bottom: 'black' },
+  { id: 'o10', img: PIMG('v07', 31), sim: 84, cam: '3층 매장',  t: '2026-06-30 14:20:44', group: 'c1', type: '인물', sex: '남성', top: 'black', bottom: 'blue'  },
 
   /* --- 유사 대상 후보 2 : 흰색 상의 남성 (5건 / 평균 91%) --- */
-  { id: 'o11', img: IMG('obj07'), sim: 94, cam: 'B1 주차장',     t: '2026-06-30 13:22:10', group: 'c2', type: '인물', sex: '여성', top: 'white', bottom: 'gray'  },
-  { id: 'o12', img: IMG('obj09'), sim: 94, cam: 'B1 주차장',     t: '2026-06-30 13:19:37', group: 'c2', type: '인물', sex: '여성', top: 'white', bottom: 'gray'  },
-  { id: 'o13', img: IMG('obj04'), sim: 93, cam: '1층 로비',      t: '2026-06-29 13:15:02', group: 'c2', type: '인물', sex: '여성', top: 'white', bottom: 'black' },
-  { id: 'o14', img: IMG('obj05'), sim: 92, cam: '2층 통로',      t: '2026-06-29 13:11:48', group: 'c2', type: '인물', sex: '여성', top: 'white', bottom: 'black' },
-  { id: 'o15', img: IMG('obj29'), sim: 82, cam: 'B1 엘리베이터', t: '2026-06-29 13:06:25', group: 'c2', type: '인물', sex: '여성', top: 'white', bottom: 'black' },
+  { id: 'o11', img: PIMG('v05', 7), sim: 94, cam: 'B1 주차장',     t: '2026-06-30 13:22:10', group: 'c2', type: '인물', sex: '여성', top: 'white', bottom: 'gray'  },
+  { id: 'o12', img: PIMG('v05', 9), sim: 94, cam: 'B1 주차장',     t: '2026-06-30 13:19:37', group: 'c2', type: '인물', sex: '여성', top: 'white', bottom: 'gray'  },
+  { id: 'o13', img: PIMG('v02', 4), sim: 93, cam: '1층 로비',      t: '2026-06-29 13:15:02', group: 'c2', type: '인물', sex: '여성', top: 'white', bottom: 'black' },
+  { id: 'o14', img: PIMG('v06', 5), sim: 92, cam: '2층 통로',      t: '2026-06-29 13:11:48', group: 'c2', type: '인물', sex: '여성', top: 'white', bottom: 'black' },
+  { id: 'o15', img: PIMG('v04', 29), sim: 82, cam: 'B1 엘리베이터', t: '2026-06-29 13:06:25', group: 'c2', type: '인물', sex: '여성', top: 'white', bottom: 'black' },
 
   /* --- 기타 유사 대상 (15건) --- */
-  { id: 'o16', img: IMG('obj02'), sim: 93, cam: '외부 CCTV',   t: '2026-06-29 12:58:31', group: 'etc', type: '인물', sex: '여성', top: 'green',  bottom: 'black' },
-  { id: 'o17', img: IMG('obj03'), sim: 90, cam: '외부 CCTV',   t: '2026-06-29 12:51:19', group: 'etc', type: '인물', sex: '남성', top: 'gray',   bottom: 'black' },
-  { id: 'o18', img: IMG('obj06'), sim: 88, cam: '외부 CCTV',   t: '2026-06-29 12:44:07', group: 'etc', type: '인물', sex: '여성', top: 'green',  bottom: 'black' },
-  { id: 'o19', img: IMG('obj08'), sim: 87, cam: 'B1 주차장',     t: '2026-06-29 12:38:52', group: 'etc', type: '인물', sex: '남성', top: 'blue',   bottom: 'blue'  },
-  { id: 'o20', img: IMG('obj10'), sim: 86, cam: '3층 매장',  t: '2026-06-29 12:31:40', group: 'etc', type: '인물', sex: '여성', top: 'black',  bottom: 'black' },
-  { id: 'o21', img: IMG('obj11'), sim: 85, cam: 'B1 입구',       t: '2026-06-29 12:25:14', group: 'etc', type: '인물', sex: '남성', top: 'blue',   bottom: 'blue'  },
-  { id: 'o22', img: IMG('obj15'), sim: 84, cam: '2층 통로',      t: '2026-06-29 12:18:03', group: 'etc', type: '인물', sex: '여성', top: 'blue',   bottom: 'black' },
-  { id: 'o23', img: IMG('obj16'), sim: 82, cam: '외부 CCTV',   t: '2026-06-29 12:09:47', group: 'etc', type: '인물', sex: '남성', top: 'green',  bottom: 'black' },
-  { id: 'o24', img: IMG('obj17'), sim: 80, cam: '외부 CCTV',   t: '2026-06-29 12:02:35', group: 'etc', type: '인물', sex: '여성', top: 'green',  bottom: 'black' },
-  { id: 'o25', img: IMG('obj19'), sim: 84, cam: '3층 매장',  t: '2026-06-28 11:55:22', group: 'etc', type: '인물', sex: '남성', top: 'gray',   bottom: 'black' },
-  { id: 'o26', img: IMG('obj21'), sim: 83, cam: 'B1 주차장',     t: '2026-06-28 11:47:09', group: 'etc', type: '인물', sex: '여성', top: 'blue',   bottom: 'blue'  },
-  { id: 'o27', img: IMG('obj22'), sim: 82, cam: '1층 로비',      t: '2026-06-28 11:39:56', group: 'etc', type: '인물', sex: '남성', top: 'brown',  bottom: 'black' },
-  { id: 'o28', img: IMG('obj26'), sim: 81, cam: 'B1 엘리베이터', t: '2026-06-28 11:31:44', group: 'etc', type: '인물', sex: '여성', top: 'black',  bottom: 'black' },
-  { id: 'o29', img: IMG('obj27'), sim: 80, cam: '외부 CCTV',   t: '2026-06-28 11:24:31', group: 'etc', type: '인물', sex: '남성', top: 'brown',  bottom: 'black' },
-  { id: 'o30', img: IMG('obj28'), sim: 80, cam: 'B1 주차장',     t: '2026-06-28 11:16:18', group: 'etc', type: '인물', sex: '여성', top: 'black',  bottom: 'black' },
+  { id: 'o16', img: PIMG('v08', 2), sim: 93, cam: '외부 CCTV',   t: '2026-06-29 12:58:31', group: 'etc', type: '인물', sex: '여성', top: 'green',  bottom: 'black' },
+  { id: 'o17', img: PIMG('v08', 3), sim: 90, cam: '외부 CCTV',   t: '2026-06-29 12:51:19', group: 'etc', type: '인물', sex: '남성', top: 'gray',   bottom: 'black' },
+  { id: 'o18', img: PIMG('v08', 6), sim: 88, cam: '외부 CCTV',   t: '2026-06-29 12:44:07', group: 'etc', type: '인물', sex: '여성', top: 'green',  bottom: 'black' },
+  { id: 'o19', img: PIMG('v05', 8), sim: 87, cam: 'B1 주차장',     t: '2026-06-29 12:38:52', group: 'etc', type: '인물', sex: '남성', top: 'blue',   bottom: 'blue'  },
+  { id: 'o20', img: PIMG('v07', 10), sim: 86, cam: '3층 매장',  t: '2026-06-29 12:31:40', group: 'etc', type: '인물', sex: '여성', top: 'black',  bottom: 'black' },
+  { id: 'o21', img: PIMG('v09', 11), sim: 85, cam: 'B1 입구',       t: '2026-06-29 12:25:14', group: 'etc', type: '인물', sex: '남성', top: 'blue',   bottom: 'blue'  },
+  { id: 'o22', img: PIMG('v06', 15), sim: 84, cam: '2층 통로',      t: '2026-06-29 12:18:03', group: 'etc', type: '인물', sex: '여성', top: 'blue',   bottom: 'black' },
+  { id: 'o23', img: PIMG('v08', 16), sim: 82, cam: '외부 CCTV',   t: '2026-06-29 12:09:47', group: 'etc', type: '인물', sex: '남성', top: 'green',  bottom: 'black' },
+  { id: 'o24', img: PIMG('v08', 17), sim: 80, cam: '외부 CCTV',   t: '2026-06-29 12:02:35', group: 'etc', type: '인물', sex: '여성', top: 'green',  bottom: 'black' },
+  { id: 'o25', img: PIMG('v07', 19), sim: 84, cam: '3층 매장',  t: '2026-06-28 11:55:22', group: 'etc', type: '인물', sex: '남성', top: 'gray',   bottom: 'black' },
+  { id: 'o26', img: PIMG('v05', 21), sim: 83, cam: 'B1 주차장',     t: '2026-06-28 11:47:09', group: 'etc', type: '인물', sex: '여성', top: 'blue',   bottom: 'blue'  },
+  { id: 'o27', img: PIMG('v02', 22), sim: 82, cam: '1층 로비',      t: '2026-06-28 11:39:56', group: 'etc', type: '인물', sex: '남성', top: 'brown',  bottom: 'black' },
+  { id: 'o28', img: PIMG('v04', 26), sim: 81, cam: 'B1 엘리베이터', t: '2026-06-28 11:31:44', group: 'etc', type: '인물', sex: '여성', top: 'black',  bottom: 'black' },
+  { id: 'o29', img: PIMG('v08', 27), sim: 80, cam: '외부 CCTV',   t: '2026-06-28 11:24:31', group: 'etc', type: '인물', sex: '남성', top: 'brown',  bottom: 'black' },
+  { id: 'o30', img: PIMG('v05', 28), sim: 80, cam: 'B1 주차장',     t: '2026-06-28 11:16:18', group: 'etc', type: '인물', sex: '여성', top: 'black',  bottom: 'black' },
 
   /* --- 유사도 80% 미만 : 기본 검색에서는 제외, '모든 결과 출력' 시 노출 --- */
-  { id: 'o31', img: IMG('obj30'), sim: 78, cam: 'B1 엘리베이터', t: '2026-06-28 10:58:04', group: 'etc', type: '인물', sex: '남성', top: 'black',  bottom: 'black' },
-  { id: 'o32', img: IMG('ai03'),  sim: 75, cam: '1층 로비',      t: '2026-06-28 10:44:51', group: 'etc', type: '인물', sex: '여성', top: 'black',  bottom: 'black' },
-  { id: 'o33', img: IMG('ai10'),  sim: 72, cam: '2층 통로',      t: '2026-06-28 10:31:38', group: 'etc', type: '인물', sex: '남성', top: 'black',  bottom: 'black' },
-  { id: 'o34', img: IMG('ai11'),  sim: 68, cam: '외부 CCTV',   t: '2026-06-28 10:18:25', group: 'etc', type: '인물', sex: '여성', top: 'blue',   bottom: 'blue'  },
-  { id: 'o35', img: IMG('ai13'),  sim: 60, cam: '외부 CCTV',   t: '2026-06-28 10:05:12', group: 'etc', type: '인물', sex: '남성', top: 'blue',   bottom: 'blue'  }
+  { id: 'o31', img: PIMG('v04', 30), sim: 78, cam: 'B1 엘리베이터', t: '2026-06-28 10:58:04', group: 'etc', type: '인물', sex: '남성', top: 'black',  bottom: 'black' },
+  { id: 'o32', img: PIMG('v02', 43),  sim: 75, cam: '1층 로비',      t: '2026-06-28 10:44:51', group: 'etc', type: '인물', sex: '여성', top: 'black',  bottom: 'black' },
+  { id: 'o33', img: PIMG('v06', 50),  sim: 72, cam: '2층 통로',      t: '2026-06-28 10:31:38', group: 'etc', type: '인물', sex: '남성', top: 'black',  bottom: 'black' },
+  { id: 'o34', img: PIMG('v08', 51),  sim: 68, cam: '외부 CCTV',   t: '2026-06-28 10:18:25', group: 'etc', type: '인물', sex: '여성', top: 'blue',   bottom: 'blue'  },
+  { id: 'o35', img: PIMG('v08', 53),  sim: 60, cam: '외부 CCTV',   t: '2026-06-28 10:05:12', group: 'etc', type: '인물', sex: '남성', top: 'blue',   bottom: 'blue'  }
 ];
 
 /* 그룹 메타 */
@@ -92,25 +97,25 @@ const GROUPS = [
 
 /* ---------------- 등록 인물 ---------------- */
 const PERSONS = [
-  { id: 'p1',  name: '김보안', guid: '909854931029', desc: '통합플랫폼 개발팀 · 사원증 미착용 이력', reg: '2026-06-12 09:12', imgs: [IMG('ai02'), IMG('ai06')] },
-  { id: 'p2',  name: '이지훈', guid: '909854931030', desc: '통합플랫폼 개발팀 · 협력사 상주',       reg: '2026-06-12 10:40', imgs: [IMG('ai06')] },
-  { id: 'p3',  name: '박수민', guid: '909854931031', desc: '운영팀 · 야간 출입 대상',               reg: '2026-06-13 14:02', imgs: [IMG('ai01')] },
-  { id: 'p4',  name: '최영은', guid: '909854931032', desc: '고객지원팀 · 방문객 응대',             reg: '2026-06-15 11:25', imgs: [IMG('ai09')] },
-  { id: 'p5',  name: '정한결', guid: '909854931033', desc: '시설팀 · B1 상시 출입',                reg: '2026-06-16 08:55', imgs: [IMG('ai05')] },
-  { id: 'p6',  name: '한도윤', guid: '909854931034', desc: '보안팀 · 관제 근무자',                 reg: '2026-06-18 16:31', imgs: [IMG('ai07')] },
-  { id: 'p7',  name: '오세라', guid: '909854931035', desc: '총무팀 · 방문 차량 등록 담당',          reg: '2026-06-20 13:47', imgs: [IMG('ai12')] },
-  { id: 'p8',  name: '윤재호', guid: '909854931036', desc: '물류팀 · 배송 협력사',                 reg: '2026-06-22 09:03', imgs: [IMG('ai14')] },
-  { id: 'p9',  name: '서민지', guid: '909854931037', desc: '개발팀 · 3층 매장 상주',           reg: '2026-06-24 17:19', imgs: [IMG('ai03')] },
-  { id: 'p10', name: '강태윤', guid: '909854931038', desc: '외주 인력 · 임시 출입증',              reg: '2026-06-26 10:58', imgs: [IMG('ai11')] }
+  { id: 'p1',  name: '김보안', guid: '909854931029', desc: '통합플랫폼 개발팀 · 사원증 미착용 이력', reg: '2026-06-12 09:12', imgs: [PIMG('v07', 42), PIMG('v02', 46)] },
+  { id: 'p2',  name: '이지훈', guid: '909854931030', desc: '통합플랫폼 개발팀 · 협력사 상주',       reg: '2026-06-12 10:40', imgs: [PIMG('v02', 46)] },
+  { id: 'p3',  name: '박수민', guid: '909854931031', desc: '운영팀 · 야간 출입 대상',               reg: '2026-06-13 14:02', imgs: [PIMG('v06', 41)] },
+  { id: 'p4',  name: '최영은', guid: '909854931032', desc: '고객지원팀 · 방문객 응대',             reg: '2026-06-15 11:25', imgs: [PIMG('v05', 49)] },
+  { id: 'p5',  name: '정한결', guid: '909854931033', desc: '시설팀 · B1 상시 출입',                reg: '2026-06-16 08:55', imgs: [PIMG('v01', 45)] },
+  { id: 'p6',  name: '한도윤', guid: '909854931034', desc: '보안팀 · 관제 근무자',                 reg: '2026-06-18 16:31', imgs: [PIMG('v03', 47)] },
+  { id: 'p7',  name: '오세라', guid: '909854931035', desc: '총무팀 · 방문 차량 등록 담당',          reg: '2026-06-20 13:47', imgs: [PIMG('v08', 52)] },
+  { id: 'p8',  name: '윤재호', guid: '909854931036', desc: '물류팀 · 배송 협력사',                 reg: '2026-06-22 09:03', imgs: [PIMG('v01', 54)] },
+  { id: 'p9',  name: '서민지', guid: '909854931037', desc: '개발팀 · 3층 매장 상주',           reg: '2026-06-24 17:19', imgs: [PIMG('v08', 43)] },
+  { id: 'p10', name: '강태윤', guid: '909854931038', desc: '외주 인력 · 임시 출입증',              reg: '2026-06-26 10:58', imgs: [PIMG('v07', 51)] }
 ];
 
 /* ---------------- 이미지 검색 : 자동 추출 대상 ---------------- */
 const EXTRACTED = [
-  { id: 'x1', img: IMG('obj01'), type: 'object', box: { x: 40, y: 26, w: 22, h: 52 } },
-  { id: 'x2', img: IMG('obj12'), type: 'object', box: { x: 36, y: 58, w: 26, h: 30 } },
-  { id: 'x3', img: IMG('ai02'),  type: 'face',   box: { x: 46, y: 21, w: 9,  h: 12 } },
-  { id: 'x4', img: IMG('obj23'), type: 'object', box: { x: 34, y: 40, w: 15, h: 26 } },
-  { id: 'x5', img: IMG('ai06'),  type: 'face',   box: { x: 56, y: 30, w: 8,  h: 11 } }
+  { id: 'x1', img: PIMG('v02', 1), type: 'object', box: { x: 40, y: 26, w: 22, h: 52 } },
+  { id: 'x2', img: PIMG('v06', 12), type: 'object', box: { x: 36, y: 58, w: 26, h: 30 } },
+  { id: 'x3', img: PIMG('v07', 42),  type: 'face',   box: { x: 46, y: 21, w: 9,  h: 12 } },
+  { id: 'x4', img: PIMG('v06', 23), type: 'object', box: { x: 34, y: 40, w: 15, h: 26 } },
+  { id: 'x5', img: PIMG('v02', 46),  type: 'face',   box: { x: 56, y: 30, w: 8,  h: 11 } }
 ];
 
 /* ---------------- AI 에이전트 ---------------- */
@@ -121,11 +126,11 @@ const AI_SUGGESTIONS = [
 ];
 
 const AI_RESULT = [
-  { id: 'a1', img: IMG('ai05'), sim: 94, cam: 'B1 주차장', t: '2026-06-30 14:02:11', type: '인물' },
-  { id: 'a2', img: IMG('ai01'), sim: 90, cam: 'B1 주차장', t: '2026-06-30 14:05:37', type: '인물' },
-  { id: 'a3', img: IMG('ai06'), sim: 85, cam: '1층 로비',  t: '2026-06-30 14:08:02', type: '인물' },
-  { id: 'a4', img: IMG('ai09'), sim: 68, cam: 'B1 주차장', t: '2026-06-30 15:03:44', type: '인물' },
-  { id: 'a5', img: IMG('ai12'), sim: 60, cam: 'B1 주차장', t: '2026-06-30 16:04:29', type: '인물' }
+  { id: 'a1', img: PIMG('v05', 45), sim: 94, cam: 'B1 주차장', t: '2026-06-30 14:02:11', type: '인물' },
+  { id: 'a2', img: PIMG('v05', 41), sim: 90, cam: 'B1 주차장', t: '2026-06-30 14:05:37', type: '인물' },
+  { id: 'a3', img: PIMG('v02', 46), sim: 85, cam: '1층 로비',  t: '2026-06-30 14:08:02', type: '인물' },
+  { id: 'a4', img: PIMG('v05', 49), sim: 68, cam: 'B1 주차장', t: '2026-06-30 15:03:44', type: '인물' },
+  { id: 'a5', img: PIMG('v05', 52), sim: 60, cam: 'B1 주차장', t: '2026-06-30 16:04:29', type: '인물' }
 ];
 
 const AI_ANSWER = {
@@ -198,10 +203,10 @@ const SLOT_STILLS = [IMG('video'), IMG('cam3'), IMG('cam2'), IMG('cam4')];
 
 /* 대상별 동선 패널 — 영상 우측 상단 버튼으로 열림 */
 const PATH_OBJECTS = [
-  { id: 'pt1', img: IMG('obj01'), sex: '남성', t: '2026-06-29 오후 14:52:03', top: 'black',  bottom: 'black' },
-  { id: 'pt2', img: IMG('ai09'),  sex: '남성', t: '2026-06-29 오후 14:52:03', top: 'brown',  bottom: 'gray'  },
-  { id: 'pt3', img: IMG('obj04'), sex: '남성', t: '2026-06-29 오후 14:52:03', top: 'black',  bottom: 'gray'  },
-  { id: 'pt4', img: IMG('ai12'),  sex: '남성', t: '2026-06-29 오후 14:52:03', top: 'white',  bottom: 'black' }
+  { id: 'pt1', img: PIMG('v02', 1), sex: '남성', t: '2026-06-29 오후 14:52:03', top: 'black',  bottom: 'black' },
+  { id: 'pt2', img: PIMG('v05', 49),  sex: '남성', t: '2026-06-29 오후 14:52:03', top: 'brown',  bottom: 'gray'  },
+  { id: 'pt3', img: PIMG('v05', 4), sex: '남성', t: '2026-06-29 오후 14:52:03', top: 'black',  bottom: 'gray'  },
+  { id: 'pt4', img: PIMG('v08', 52),  sex: '남성', t: '2026-06-29 오후 14:52:03', top: 'white',  bottom: 'black' }
 ];
 
 /* 영상 위 CCTV 마커 (%) — hover 시 썸네일 popover */
@@ -246,29 +251,29 @@ const MOVE_PATHS = [
      예전에는 카메라도 시각도 달라, 커서를 옮겨도 지도가 다른 이야기를 했다.
      hh 는 시각(시)이며 각 구간의 시작 시각을 쓴다. */
   { slot: 'A', label: '인물 A', pts: [
-      { n: 1, cam: '1F 메인 복도',  t: '08:14', code: 'CAM-B01',  x: 31, y: 46, hh: 8.23,  img: IMG('obj01') },
-      { n: 2, cam: '1F 엘리베이터 홀', t: '10:50', code: 'CAM-B03', x: 22, y: 34, hh: 10.84, img: IMG('obj03') },
-      { n: 3, cam: 'B1 엘리베이터', t: '11:20', code: 'CAM-B02',  x: 44, y: 44, hh: 11.34, img: IMG('obj13') },
-      { n: 4, cam: 'B1 주차장',     t: '13:10', code: 'CAM-B04',  x: 57, y: 38, hh: 13.18, img: IMG('obj02') },
+      { n: 1, cam: '1F 메인 복도',  t: '08:14', code: 'CAM-B01',  x: 31, y: 46, hh: 8.23,  img: PIMG('v01', 1) },
+      { n: 2, cam: '1F 엘리베이터 홀', t: '10:50', code: 'CAM-B03', x: 22, y: 34, hh: 10.84, img: PIMG('v03', 3) },
+      { n: 3, cam: 'B1 엘리베이터', t: '11:20', code: 'CAM-B02',  x: 44, y: 44, hh: 11.34, img: PIMG('v04', 13) },
+      { n: 4, cam: 'B1 주차장',     t: '13:10', code: 'CAM-B04',  x: 57, y: 38, hh: 13.18, img: PIMG('v05', 2) },
       /* 외부 지점의 x·y 는 외곽 지도(map.png) 기준 % */
-      { n: 5, cam: '외부 CCTV',        t: '15:41', code: 'CAM-EXT1', x: 44, y: 61, hh: 15.69, img: IMG('obj20') },
-      { n: 6, cam: '외부 본관 별동',    t: '16:24', code: 'CAM-EXT2', x: 39, y: 64, hh: 16.40, img: IMG('obj22') },
-      { n: 7, cam: '외부 주차장 1구역', t: '17:05', code: 'CAM-EXT3', x: 60, y: 44, hh: 17.08, img: IMG('obj25') },
-      { n: 8, cam: '외부 사업장 정문',  t: '18:02', code: 'CAM-EXT4', x: 80, y: 70, hh: 18.04, img: IMG('obj28') }] },
+      { n: 5, cam: '외부 CCTV',        t: '15:41', code: 'CAM-EXT1', x: 44, y: 61, hh: 15.69, img: PIMG('v08', 20) },
+      { n: 6, cam: '외부 본관 별동',    t: '16:24', code: 'CAM-EXT2', x: 39, y: 64, hh: 16.40, img: PIMG('v09', 22) },
+      { n: 7, cam: '외부 주차장 1구역', t: '17:05', code: 'CAM-EXT3', x: 60, y: 44, hh: 17.08, img: PIMG('v05', 25) },
+      { n: 8, cam: '외부 사업장 정문',  t: '18:02', code: 'CAM-EXT4', x: 80, y: 70, hh: 18.04, img: PIMG('v08', 28) }] },
   { slot: 'B', label: '인물 B', pts: [
-      { n: 1, cam: '1F 로비',       t: '08:40', code: 'CAM-B05',  x: 34, y: 52, hh: 8.67,  img: IMG('obj05') },
-      { n: 2, cam: '1F 계단',       t: '10:25', code: 'CAM-B07',  x: 58, y: 30, hh: 10.42, img: IMG('obj06') },
-      { n: 3, cam: '2층 통로',      t: '11:44', code: 'CAM-C01',  x: 55, y: 41, hh: 11.74, img: IMG('obj08') },
-      { n: 4, cam: 'B1 입구',       t: '14:48', code: 'CAM-B06',  x: 40, y: 33, hh: 14.81, img: IMG('obj11') }] },
+      { n: 1, cam: '1F 로비',       t: '08:40', code: 'CAM-B05',  x: 34, y: 52, hh: 8.67,  img: PIMG('v02', 5) },
+      { n: 2, cam: '1F 계단',       t: '10:25', code: 'CAM-B07',  x: 58, y: 30, hh: 10.42, img: PIMG('v02', 6) },
+      { n: 3, cam: '2층 통로',      t: '11:44', code: 'CAM-C01',  x: 55, y: 41, hh: 11.74, img: PIMG('v06', 8) },
+      { n: 4, cam: 'B1 입구',       t: '14:48', code: 'CAM-B06',  x: 40, y: 33, hh: 14.81, img: PIMG('v09', 11) }] },
   { slot: 'C', label: '인물 C', pts: [
-      { n: 1, cam: '3층 매장',      t: '08:55', code: 'CAM-C02',  x: 62, y: 26, hh: 8.93,  img: IMG('obj16') },
-      { n: 2, cam: '1F 메인 복도',  t: '13:20', code: 'CAM-B01',  x: 31, y: 46, hh: 13.33, img: IMG('obj18') },
-      { n: 3, cam: '1F 로비',       t: '15:20', code: 'CAM-B05',  x: 34, y: 52, hh: 15.34, img: IMG('obj19') }] },
+      { n: 1, cam: '3층 매장',      t: '08:55', code: 'CAM-C02',  x: 62, y: 26, hh: 8.93,  img: PIMG('v07', 16) },
+      { n: 2, cam: '1F 메인 복도',  t: '13:20', code: 'CAM-B01',  x: 31, y: 46, hh: 13.33, img: PIMG('v01', 18) },
+      { n: 3, cam: '1F 로비',       t: '15:20', code: 'CAM-B05',  x: 34, y: 52, hh: 15.34, img: PIMG('v02', 19) }] },
   { slot: 'D', label: '인물 D', pts: [
-      { n: 1, cam: 'B1 주차장',     t: '09:20', code: 'CAM-B04',  x: 57, y: 38, hh: 9.34,  img: IMG('obj24') },
-      { n: 2, cam: '외부 CCTV',     t: '12:40', code: 'CAM-EXT2', x: 21, y: 54, hh: 12.68, img: IMG('obj27') },
-      { n: 3, cam: '1F 로비',       t: '15:02', code: 'CAM-B05',  x: 34, y: 52, hh: 15.04, img: IMG('obj30') },
-      { n: 4, cam: '1F 업무공간',   t: '17:30', code: 'CAM-B08',  x: 64, y: 50, hh: 17.51, img: IMG('obj31') }] }
+      { n: 1, cam: 'B1 주차장',     t: '09:20', code: 'CAM-B04',  x: 57, y: 38, hh: 9.34,  img: PIMG('v05', 24) },
+      { n: 2, cam: '외부 CCTV',     t: '12:40', code: 'CAM-EXT2', x: 21, y: 54, hh: 12.68, img: PIMG('v08', 27) },
+      { n: 3, cam: '1F 로비',       t: '15:02', code: 'CAM-B05',  x: 34, y: 52, hh: 15.04, img: PIMG('v02', 30) },
+      { n: 4, cam: '1F 업무공간',   t: '17:30', code: 'CAM-B08',  x: 64, y: 50, hh: 17.51, img: PIMG('v07', 31) }] }
 ];
 
 /* 그룹 상세 · 비교 화면 탐지 이력 세그먼트 (%) */
@@ -282,11 +287,11 @@ const HIST_LANES = {
 /* 대상 그룹 상세 — 클립 6건 */
 const GROUP_CLIPS = [
   { id: 'g1', img: IMG('video'),  cam: '1F 메인 복도',  n: 4, t: '08:24:12' },
-  { id: 'g2', img: IMG('obj12'),  cam: 'B1 창고 앞',    n: 2, t: '09:12:40' },
-  { id: 'g3', img: IMG('obj04'),  cam: '3층 화장실',    n: 3, t: '10:38:05' },
-  { id: 'g4', img: IMG('obj18'),  cam: 'B1 엘리베이터', n: 1, t: '12:04:51' },
-  { id: 'g5', img: IMG('obj25'),  cam: '3F 주차장 출구', n: 2, t: '17:20:33' },
-  { id: 'g6', img: IMG('obj23'),  cam: '외부 CCTV',   n: 1, t: '21:47:19' }
+  { id: 'g2', img: PIMG('v01', 12),  cam: 'B1 창고 앞',    n: 2, t: '09:12:40' },
+  { id: 'g3', img: PIMG('v01', 4),  cam: '3층 화장실',    n: 3, t: '10:38:05' },
+  { id: 'g4', img: PIMG('v04', 18),  cam: 'B1 엘리베이터', n: 1, t: '12:04:51' },
+  { id: 'g5', img: PIMG('v01', 25),  cam: '3F 주차장 출구', n: 2, t: '17:20:33' },
+  { id: 'g6', img: PIMG('v08', 23),  cam: '외부 CCTV',   n: 1, t: '21:47:19' }
 ];
 
 /* 주변 대상 — 상세 우측 패널 */
@@ -298,22 +303,22 @@ const NEAR_OBJECTS = [
 
 /* 영역 검색 결과 (도형·선을 그린 뒤 주변 대상로 노출) */
 const AREA_HITS = [
-  { id: 'a1', name: '인물 C', slot: 'C', n: 7, img: IMG('obj29'), t: '2026-01-15 14:20', cam: '1F 메인 복도', sim: 94, event: '이동/계수', top: 'white', bottom: 'black' },
-  { id: 'a2', name: '인물 C', slot: 'C', n: 7, img: IMG('obj31'), t: '2026-01-15 14:20', cam: '1F 메인 복도', sim: 91, event: '이동/계수', top: 'white', bottom: 'black' }
+  { id: 'a1', name: '인물 C', slot: 'C', n: 7, img: PIMG('v01', 29), t: '2026-01-15 14:20', cam: '1F 메인 복도', sim: 94, event: '이동/계수', top: 'white', bottom: 'black' },
+  { id: 'a2', name: '인물 C', slot: 'C', n: 7, img: PIMG('v01', 31), t: '2026-01-15 14:20', cam: '1F 메인 복도', sim: 91, event: '이동/계수', top: 'white', bottom: 'black' }
 ];
 
 /* 비교 대상 추가 팝업 — 후보 풀 10건 */
 const CMP_POOL = [
-  { id: 'c01', img: IMG('ai05'), name: '인물 C', n: 7, sim: 94, cam: 'B1 엘리베이터', t: '2026-06-30 14:52:03', src: '공통' },
-  { id: 'c02', img: IMG('ai01'), name: '인물 C', n: 7, sim: 94, cam: 'B1 엘리베이터', t: '2026-06-30 14:52:03', src: '공통' },
-  { id: 'c03', img: IMG('ai06'), name: '인물 C', n: 7, sim: 94, cam: 'B1 엘리베이터', t: '2026-06-30 14:52:03', src: '공통' },
-  { id: 'c04', img: IMG('ai07'), name: '인물 C', n: 7, sim: 93, cam: '1F 메인 홀',    t: '2026-06-30 14:48:11', src: '인물 A' },
-  { id: 'c05', img: IMG('ai02'), name: '인물 C', n: 7, sim: 92, cam: '3층 매장',  t: '2026-06-30 14:45:32', src: '인물 B' },
-  { id: 'c06', img: IMG('ai03'), name: '인물 C', n: 7, sim: 91, cam: '2층 통로',      t: '2026-06-30 14:41:07', src: '인물 B' },
-  { id: 'c07', img: IMG('ai10'), name: '인물 C', n: 7, sim: 90, cam: 'B1 입구',       t: '2026-06-30 14:38:55', src: '인물 B' },
-  { id: 'c08', img: IMG('ai11'), name: '인물 C', n: 7, sim: 88, cam: '외부 CCTV',   t: '2026-06-30 14:35:20', src: '인물 B' },
-  { id: 'c09', img: IMG('ai13'), name: '인물 C', n: 7, sim: 86, cam: 'B1 주차장',     t: '2026-06-30 14:31:46', src: '인물 B' },
-  { id: 'c10', img: IMG('ai14'), name: '인물 C', n: 7, sim: 85, cam: '1층 로비',      t: '2026-06-30 14:28:02', src: '인물 B' }
+  { id: 'c01', img: PIMG('v04', 45), name: '인물 C', n: 7, sim: 94, cam: 'B1 엘리베이터', t: '2026-06-30 14:52:03', src: '공통' },
+  { id: 'c02', img: PIMG('v04', 41), name: '인물 C', n: 7, sim: 94, cam: 'B1 엘리베이터', t: '2026-06-30 14:52:03', src: '공통' },
+  { id: 'c03', img: PIMG('v04', 46), name: '인물 C', n: 7, sim: 94, cam: 'B1 엘리베이터', t: '2026-06-30 14:52:03', src: '공통' },
+  { id: 'c04', img: PIMG('v01', 47), name: '인물 C', n: 7, sim: 93, cam: '1F 메인 홀',    t: '2026-06-30 14:48:11', src: '인물 A' },
+  { id: 'c05', img: PIMG('v07', 42), name: '인물 C', n: 7, sim: 92, cam: '3층 매장',  t: '2026-06-30 14:45:32', src: '인물 B' },
+  { id: 'c06', img: PIMG('v06', 43), name: '인물 C', n: 7, sim: 91, cam: '2층 통로',      t: '2026-06-30 14:41:07', src: '인물 B' },
+  { id: 'c07', img: PIMG('v09', 50), name: '인물 C', n: 7, sim: 90, cam: 'B1 입구',       t: '2026-06-30 14:38:55', src: '인물 B' },
+  { id: 'c08', img: PIMG('v08', 51), name: '인물 C', n: 7, sim: 88, cam: '외부 CCTV',   t: '2026-06-30 14:35:20', src: '인물 B' },
+  { id: 'c09', img: PIMG('v05', 53), name: '인물 C', n: 7, sim: 86, cam: 'B1 주차장',     t: '2026-06-30 14:31:46', src: '인물 B' },
+  { id: 'c10', img: PIMG('v02', 54), name: '인물 C', n: 7, sim: 85, cam: '1층 로비',      t: '2026-06-30 14:28:02', src: '인물 B' }
 ];
 
 /* 사건 등록 팝업 */
@@ -330,7 +335,7 @@ const CASES = [
 /* 관심인물 등록 팝업 */
 const WATCH_CLASSES = ['용의자', '침입자', '실종 · 보호대상', 'VIP', '기타'];
 const WATCH_TERMS   = ['30일 (기본)', '7일', '90일', '180일', '무기한'];
-const WATCH_IMGS    = [IMG('obj01'), IMG('obj12'), IMG('obj13'), IMG('obj18'), IMG('obj20'), IMG('obj23')];
+const WATCH_IMGS    = [PIMG('v02', 1), PIMG('v06', 12), PIMG('v05', 13), PIMG('v01', 18), PIMG('v03', 20), PIMG('v06', 23)];
 
 /* ============================================================
    북마크 (UI사양서_0807 확장분 — Bookmark_001_01 / _02)
@@ -344,8 +349,8 @@ const BOOKMARKS = [
     cam: 'cam 01-234', shot: '2026-06-30 14:38:55', memo: '용의자 최초 포착 지점', range: [63, 9] },
 
   { id: 'bm02', kind: 'object', reg: '2026-06-30 18:44:02', obj: 'o01',
-    img: IMG('obj01'), target: '인물 A', guid: '909854931029', first: '2026-06-30 14:20:44',
-    top: 'black', bottom: 'black', imgs: [IMG('obj01'), IMG('obj12'), IMG('obj13'), IMG('obj14')] },
+    img: PIMG('v02', 1), target: '인물 A', guid: '909854931029', first: '2026-06-30 14:20:44',
+    top: 'black', bottom: 'black', imgs: [PIMG('v02', 1), PIMG('v06', 12), PIMG('v05', 13), PIMG('v06', 14)] },
 
   { id: 'bm03', kind: 'video',  reg: '2026-06-30 18:20:15', obj: 'o03',
     img: IMG('cam3'), dur: '15초', place: 'B1 엘리베이터',  target: '인물 A',
@@ -356,8 +361,8 @@ const BOOKMARKS = [
     cam: 'cam 03-091', shot: '2026-06-30 14:52:03', memo: '차량 접근 구간 확인', range: [70, 7] },
 
   { id: 'bm05', kind: 'object', reg: '2026-06-30 17:30:08', obj: 'o11',
-    img: IMG('obj07'), target: '인물 B', guid: '', first: '2026-06-30 13:06:25',
-    top: 'white', bottom: 'gray', imgs: [IMG('obj07'), IMG('obj09'), IMG('obj04')] },
+    img: PIMG('v08', 7), target: '인물 B', guid: '', first: '2026-06-30 13:06:25',
+    top: 'white', bottom: 'gray', imgs: [PIMG('v08', 7), PIMG('v01', 9), PIMG('v05', 4)] },
 
   { id: 'bm06', kind: 'video',  reg: '2026-06-30 16:58:47', obj: 'o13',
     img: IMG('cam4'), dur: '20초', place: '1층 로비',       target: '인물 B',
@@ -368,16 +373,16 @@ const BOOKMARKS = [
     cam: 'cam 07-402', shot: '2026-06-30 12:58:31', memo: '', range: [12, 10] },
 
   { id: 'bm08', kind: 'object', reg: '2026-06-30 15:47:53', obj: 'o16',
-    img: IMG('obj23'), target: '인물 C', guid: '774210658833', first: '2026-06-30 12:44:07',
-    top: 'green', bottom: 'black', imgs: [IMG('obj23'), IMG('obj02'), IMG('obj06'), IMG('obj17'), IMG('obj27')] },
+    img: PIMG('v06', 23), target: '인물 C', guid: '774210658833', first: '2026-06-30 12:44:07',
+    top: 'green', bottom: 'black', imgs: [PIMG('v06', 23), PIMG('v03', 2), PIMG('v07', 6), PIMG('v09', 17), PIMG('v01', 27)] },
 
   { id: 'bm09', kind: 'video',  reg: '2026-06-30 15:20:36', obj: 'o20',
     img: IMG('nb2'), dur: '25초', place: '3층 매장',    target: '인물 D',
     cam: 'cam 05-117', shot: '2026-06-30 12:31:40', memo: '매장 진입 직후 동선', range: [35, 13] },
 
   { id: 'bm10', kind: 'object', reg: '2026-06-30 15:05:22', obj: 'o19',
-    img: IMG('ai05'), target: '인물 E', guid: '318902547116', first: '2026-06-30 12:38:52',
-    top: 'blue', bottom: 'blue', imgs: [IMG('ai05'), IMG('ai01')] }
+    img: PIMG('v01', 45), target: '인물 E', guid: '318902547116', first: '2026-06-30 12:38:52',
+    top: 'blue', bottom: 'blue', imgs: [PIMG('v01', 45), PIMG('v06', 41)] }
 ];
 
 /* ---------------- 빈 상태 문구 (사양서) ---------------- */
@@ -406,9 +411,9 @@ const CASE_DB = [
     desc: '택배 보관함에서 타인의 택배를 가져가는 인물 확인',
     no: 'CASE1',
     targets: [
-      { obj: 'o01', name: '인물 A', img: IMG('obj01'), at: '2026-06-30 14:52:03', ev: '이동/계수', top: 'black',  bottom: 'black' },
-      { obj: 'o11', name: '인물 B', img: IMG('obj07'), at: '2026-06-30 13:06:25', ev: '-',         top: 'white',  bottom: 'gray'  },
-      { obj: 'o16', name: '인물 C', img: IMG('obj23'), at: '2026-06-30 12:44:07', ev: '배회',      top: 'green',  bottom: 'black' },
+      { obj: 'o01', name: '인물 A', img: PIMG('v02', 1), at: '2026-06-30 14:52:03', ev: '이동/계수', top: 'black',  bottom: 'black' },
+      { obj: 'o11', name: '인물 B', img: PIMG('v08', 7), at: '2026-06-30 13:06:25', ev: '-',         top: 'white',  bottom: 'gray'  },
+      { obj: 'o16', name: '인물 C', img: PIMG('v06', 23), at: '2026-06-30 12:44:07', ev: '배회',      top: 'green',  bottom: 'black' },
       { obj: 'o20', name: '인물 D', img: IMG('nb2'),   at: '2026-06-30 12:31:40', ev: '-',         top: 'blue',   bottom: 'blue'  }
     ],
     videos: [
@@ -438,7 +443,7 @@ const CASE_DB = [
     desc: '3층 매장 앞 통로를 반복 왕복하는 인물 확인',
     no: 'CASE2',
     targets: [
-      { obj: 'o16', name: '인물 C', img: IMG('obj23'), at: '2026-06-29 22:41:07', ev: '배회', top: 'green', bottom: 'black' }
+      { obj: 'o16', name: '인물 C', img: PIMG('v06', 23), at: '2026-06-29 22:41:07', ev: '배회', top: 'green', bottom: 'black' }
     ],
     videos: [
       { img: IMG('nb1'), place: '3층 매장', at: '2026-06-29 22:41:07', cam: 'CAM 117', rel: '인물 C', ok: true },
@@ -464,7 +469,7 @@ const CASE_DB = [
     desc: '외부 출입구 잠금 장치 조작 시도 정황',
     no: 'CASE3',
     targets: [
-      { obj: 'o19', name: '인물 E', img: IMG('ai05'), at: '2026-06-28 03:24:12', ev: '침입', top: 'blue', bottom: 'blue' }
+      { obj: 'o19', name: '인물 E', img: PIMG('v01', 45), at: '2026-06-28 03:24:12', ev: '침입', top: 'blue', bottom: 'blue' }
     ],
     videos: [
       { img: IMG('video'), place: '외부 CCTV', at: '2026-06-28 03:24:12', cam: 'CAM 402', rel: '인물 E', ok: true }
@@ -486,7 +491,7 @@ const CASE_DB = [
     desc: 'B1 주차장 차량 접촉 후 미신고 이탈',
     no: 'CASE4',
     targets: [
-      { obj: 'o05', name: '인물 A', img: IMG('obj12'), at: '2026-06-25 18:09:44', ev: '이동/계수', top: 'black', bottom: 'black' }
+      { obj: 'o05', name: '인물 A', img: PIMG('v06', 12), at: '2026-06-25 18:09:44', ev: '이동/계수', top: 'black', bottom: 'black' }
     ],
     videos: [
       { img: IMG('cam2'), place: 'B1 주차장', at: '2026-06-25 18:09:44', cam: 'CAM 104', rel: '인물 A', ok: true }
@@ -552,15 +557,15 @@ const ALARMS = [
 
 const WATCHES = [
   { id: 'w1', name: '김보안', cls: '용의자',        mode: '상시 사용', reg: '2026-06-28 09:12:03',
-    reason: '택배 도난 용의자', imgs: [IMG('obj01'), IMG('obj12'), IMG('obj13'), IMG('obj18'), IMG('obj20')] },
+    reason: '택배 도난 용의자', imgs: [PIMG('v02', 1), PIMG('v06', 12), PIMG('v05', 13), PIMG('v01', 18), PIMG('v03', 20)] },
   { id: 'w2', name: '이출입', cls: '침입자',        mode: '스케줄 설정', reg: '2026-06-27 14:40:55',
-    reason: '야간 무단 출입 반복', imgs: [IMG('obj07'), IMG('obj09'), IMG('obj04')] },
+    reason: '야간 무단 출입 반복', imgs: [PIMG('v08', 7), PIMG('v01', 9), PIMG('v05', 4)] },
   { id: 'w3', name: '박관심', cls: 'VIP',           mode: '상시 사용', reg: '2026-06-26 10:05:21',
-    reason: '임원 동선 보호', imgs: [IMG('obj23'), IMG('obj02')] },
+    reason: '임원 동선 보호', imgs: [PIMG('v06', 23), PIMG('v03', 2)] },
   { id: 'w4', name: '최실종', cls: '실종・보호대상', mode: '상시 사용', reg: '2026-06-25 16:22:38',
-    reason: '보호대상 이탈 감지', imgs: [IMG('ai05')] },
+    reason: '보호대상 이탈 감지', imgs: [PIMG('v01', 45)] },
   { id: 'w5', name: '정기타', cls: '기타',          mode: '미사용', reg: '2026-06-24 08:31:09',
-    reason: '협력사 출입 확인', imgs: [IMG('obj27'), IMG('obj17')] }
+    reason: '협력사 출입 확인', imgs: [PIMG('v01', 27), PIMG('v09', 17)] }
 ];
 
 /* ---- 차량번호 검색 (Search main_002_1) ---- */
@@ -672,34 +677,34 @@ const CAM_TREE = [
    ============================================================ */
 const TL_TRACKS = [
   { slot: 'A', label: '인물 A', clips: [
-    { n: 1, cam: '1F 메인 복도',  img: IMG('obj01'), from: '2026-06-29 08:14:05', to: '2026-06-29 10:46:20',
+    { n: 1, cam: '1F 메인 복도',  img: PIMG('v01', 1), from: '2026-06-29 08:14:05', to: '2026-06-29 10:46:20',
       extra: [{ cam: '1F 메인 복도(북)', img: IMG('cam2') }, { cam: '1F 메인 복도(남)', img: IMG('cam3') }] },
     /* 비교 지도에서 1층 경로가 선으로 보이도록 1층 지점 보강 (2026-09-11) */
-    { n: 2, cam: '1F 엘리베이터 홀', img: IMG('obj03'), from: '2026-06-29 10:50:30', to: '2026-06-29 11:12:40' },
-    { n: 3, cam: 'B1 엘리베이터', img: IMG('obj13'), from: '2026-06-29 11:20:11', to: '2026-06-29 12:05:02' },
-    { n: 4, cam: 'B1 주차장',     img: IMG('obj02'), from: '2026-06-29 13:10:47', to: '2026-06-29 13:22:19',
+    { n: 2, cam: '1F 엘리베이터 홀', img: PIMG('v03', 3), from: '2026-06-29 10:50:30', to: '2026-06-29 11:12:40' },
+    { n: 3, cam: 'B1 엘리베이터', img: PIMG('v04', 13), from: '2026-06-29 11:20:11', to: '2026-06-29 12:05:02' },
+    { n: 4, cam: 'B1 주차장',     img: PIMG('v05', 2), from: '2026-06-29 13:10:47', to: '2026-06-29 13:22:19',
       extra: [{ cam: 'B1 주차장(램프)', img: IMG('cam4') }] },
-    { n: 5, cam: '외부 CCTV',        img: IMG('obj20'), from: '2026-06-29 15:41:08', to: '2026-06-29 16:12:40' },
-    { n: 6, cam: '외부 본관 별동',    img: IMG('obj22'), from: '2026-06-29 16:24:10', to: '2026-06-29 16:51:30' },
-    { n: 7, cam: '외부 주차장 1구역', img: IMG('obj25'), from: '2026-06-29 17:05:02', to: '2026-06-29 17:48:44' },
-    { n: 8, cam: '외부 사업장 정문',  img: IMG('obj28'), from: '2026-06-29 18:02:15', to: '2026-06-29 18:28:52' }
+    { n: 5, cam: '외부 CCTV',        img: PIMG('v08', 20), from: '2026-06-29 15:41:08', to: '2026-06-29 16:12:40' },
+    { n: 6, cam: '외부 본관 별동',    img: PIMG('v09', 22), from: '2026-06-29 16:24:10', to: '2026-06-29 16:51:30' },
+    { n: 7, cam: '외부 주차장 1구역', img: PIMG('v05', 25), from: '2026-06-29 17:05:02', to: '2026-06-29 17:48:44' },
+    { n: 8, cam: '외부 사업장 정문',  img: PIMG('v08', 28), from: '2026-06-29 18:02:15', to: '2026-06-29 18:28:52' }
   ] },
   { slot: 'B', label: '인물 B', clips: [
-    { n: 1, cam: '1F 로비',       img: IMG('obj05'), from: '2026-06-29 08:40:00', to: '2026-06-29 10:12:30' },
-    { n: 2, cam: '1F 계단',       img: IMG('obj06'), from: '2026-06-29 10:25:10', to: '2026-06-29 11:05:40' },
-    { n: 3, cam: '2F 통로',       img: IMG('obj08'), from: '2026-06-29 11:44:12', to: '2026-06-29 12:31:01' },
-    { n: 4, cam: 'B1 입구',       img: IMG('obj11'), from: '2026-06-29 14:48:22', to: '2026-06-29 16:35:10' }
+    { n: 1, cam: '1F 로비',       img: PIMG('v02', 5), from: '2026-06-29 08:40:00', to: '2026-06-29 10:12:30' },
+    { n: 2, cam: '1F 계단',       img: PIMG('v02', 6), from: '2026-06-29 10:25:10', to: '2026-06-29 11:05:40' },
+    { n: 3, cam: '2F 통로',       img: PIMG('v06', 8), from: '2026-06-29 11:44:12', to: '2026-06-29 12:31:01' },
+    { n: 4, cam: 'B1 입구',       img: PIMG('v09', 11), from: '2026-06-29 14:48:22', to: '2026-06-29 16:35:10' }
   ] },
   { slot: 'C', label: '인물 C', clips: [
-    { n: 1, cam: '3F 매장',       img: IMG('obj16'), from: '2026-06-29 08:55:31', to: '2026-06-29 11:02:44' },
-    { n: 2, cam: '1F 메인 복도',  img: IMG('obj18'), from: '2026-06-29 13:20:05', to: '2026-06-29 15:07:29',
+    { n: 1, cam: '3F 매장',       img: PIMG('v07', 16), from: '2026-06-29 08:55:31', to: '2026-06-29 11:02:44' },
+    { n: 2, cam: '1F 메인 복도',  img: PIMG('v01', 18), from: '2026-06-29 13:20:05', to: '2026-06-29 15:07:29',
       extra: [{ cam: '1F 메인 복도(북)', img: IMG('cam2') }] },
-    { n: 3, cam: '1F 로비',       img: IMG('obj19'), from: '2026-06-29 15:20:10', to: '2026-06-29 16:05:30' }
+    { n: 3, cam: '1F 로비',       img: PIMG('v02', 19), from: '2026-06-29 15:20:10', to: '2026-06-29 16:05:30' }
   ] },
   { slot: 'D', label: '인물 D', clips: [
-    { n: 1, cam: 'B1 주차장',     img: IMG('obj24'), from: '2026-06-29 09:20:40', to: '2026-06-29 11:16:12' },
-    { n: 2, cam: '외부 CCTV',     img: IMG('obj27'), from: '2026-06-29 12:40:33', to: '2026-06-29 13:04:00' },
-    { n: 3, cam: '1F 로비',       img: IMG('obj30'), from: '2026-06-29 15:02:18', to: '2026-06-29 17:19:44' },
-    { n: 4, cam: '1F 업무공간',   img: IMG('obj31'), from: '2026-06-29 17:30:20', to: '2026-06-29 18:12:05' }
+    { n: 1, cam: 'B1 주차장',     img: PIMG('v05', 24), from: '2026-06-29 09:20:40', to: '2026-06-29 11:16:12' },
+    { n: 2, cam: '외부 CCTV',     img: PIMG('v08', 27), from: '2026-06-29 12:40:33', to: '2026-06-29 13:04:00' },
+    { n: 3, cam: '1F 로비',       img: PIMG('v02', 30), from: '2026-06-29 15:02:18', to: '2026-06-29 17:19:44' },
+    { n: 4, cam: '1F 업무공간',   img: PIMG('v07', 31), from: '2026-06-29 17:30:20', to: '2026-06-29 18:12:05' }
   ] }
 ];

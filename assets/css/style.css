@@ -6188,3 +6188,5 @@ body.dt-b .dt-sec-head .dt-bldg{margin:0}
 img.has-vid{opacity:0 !important}
 video.vid-layer{position:absolute;display:block;pointer-events:none;background:#000;margin:0;padding:0}
 #dtVideo > video.vid-layer{z-index:0}
+/* 영상에서 잘라낸 인물 썸네일 : 가로 카드에서도 머리가 잘리지 않게 위쪽 기준 */
+img[src*="video/p/"]{object-position:50% 18%}
