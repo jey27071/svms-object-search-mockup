@@ -1947,7 +1947,7 @@ function renderPM() {
   const ok = $('#pmOk'); if (ok) ok.onclick = () => { closeModal('#mdPerson'); renderPersonGrid(); };
   const q = $('#pmQ'); if (q) q.oninput = e => { pmQuery = e.target.value; renderPM(); $('#pmQ').focus(); };
 }
-const IMG_POOL = ['assets/img/ai01.png?v=202609141709', 'assets/img/ai02.png?v=202609141709', 'assets/img/ai05.png?v=202609141709', 'assets/img/ai06.png?v=202609141709', 'assets/img/ai09.png?v=202609141709'];
+const IMG_POOL = ['assets/img/ai01.png?v=202609141713', 'assets/img/ai02.png?v=202609141713', 'assets/img/ai05.png?v=202609141713', 'assets/img/ai06.png?v=202609141713', 'assets/img/ai09.png?v=202609141713'];
 function pmNew() { pmForm = { name: '', desc: '', imgs: [] }; pmView = 'new'; renderPM(); }
 
 $('#btnTabAdd').onclick = () => { S.activeTab = 'search'; renderTabs(); syncPanels(); toast('검색 홈 탭으로 이동합니다. (새 탭은 카드 더블클릭으로 생성됩니다)'); };
@@ -2336,9 +2336,8 @@ function renderTimeline(host, tracks, opt = {}) {
   const rows = tracks.map((tr, ti) => `
     <div class="tl-row${TL.off.has(tr.slot) ? ' off' : ''}" data-tr="${ti}">
       <div class="tl-obj" style="--slot:${typeof slotColor === 'function' ? slotColor(tr.slot) : 'var(--primary)'}">
-        <img src="${(tr.clips[0] || {}).img || 'assets/img/obj01.png?v=202609141709'}" alt="">
-        <span class="nm"><i></i>${tr.label}</span>
-        ${ti > 0 ? `<button class="rm" data-tlrm="${ti}" title="${tr.label} 제거">${ICON.xs || '×'}</button>` : ''}
+        <img src="${(tr.clips[0] || {}).img || 'assets/img/obj01.png?v=202609141713'}" alt="">
+        <span class="nm"><i></i><em>${tr.label}</em>${ti > 0 ? `<button class="rm" data-tlrm="${ti}" title="${tr.label} 삭제">${ICON.xs || '×'}</button>` : ''}</span>
       </div>
       <div class="tl-lane">
         ${(() => {
@@ -2361,6 +2360,7 @@ function renderTimeline(host, tracks, opt = {}) {
             <div class="tl-th${on ? ' on' : ''}${opt.edit ? ' edit' : ''}" style="left:${l}%;width:${w}%;--bc:${typeof slotColor === 'function' ? slotColor(tr.slot) : 'var(--primary)'}" data-tr="${ti}" data-c="${ci}" title="${c.cam}">
               <span class="tl-film" style="background-image:url('${(typeof srcVideo === 'function' && srcVideo(c.cam)) || c.img}')"></span>
               <span class="tl-n">${c.n}</span>
+              <span class="tl-loc">${c.cam}</span>
               ${extra ? `<span class="tl-more" title="같은 장소 카메라 ${extra + 1}대">+${extra}</span>` : ''}
               ${opt.edit ? `<button class="tl-del" data-tld="${ti}:${ci}" title="이 구간 삭제">${ICON.trash}</button>
                 <span class="tl-grip s" data-tlg="${ti}:${ci}:s" title="시작 지점 조정"></span>
@@ -2391,8 +2391,8 @@ function renderTimeline(host, tracks, opt = {}) {
     <div class="tl-foot">
       <div class="tf-l">
         <!-- ✎ = 경로 편집(영상 선택·추가) / 필름 = 영상 편집(클립 길이) — 2026-09-11 구두로 기능 맞바꿈 -->
-        <button class="btn-icon" data-tledit title="경로 편집 (영상 선택·추가)"><svg viewBox="0 0 16 16" class="ic" aria-hidden="true"><path d="M3 13l.6-2.6L10.4 3.6a1.1 1.1 0 011.6 0l.4.4a1.1 1.1 0 010 1.6L5.6 12.4z" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><path d="M9.4 4.6l2 2" stroke="currentColor" stroke-width="1.2"/></svg></button>
-        <button class="btn-icon${DT.edit ? ' on' : ''}" data-tlvedit title="영상 편집 (클립 길이)"><svg viewBox="0 0 16 16" class="ic" aria-hidden="true"><path d="M5.6 3H3v10h2.6M10.4 3H13v10h-2.6M8 2v12" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg></button>
+        <button class="btn-icon" data-tledit title="경로 편집"><svg viewBox="0 0 16 16" class="ic" aria-hidden="true"><path d="M3 13l.6-2.6L10.4 3.6a1.1 1.1 0 011.6 0l.4.4a1.1 1.1 0 010 1.6L5.6 12.4z" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><path d="M9.4 4.6l2 2" stroke="currentColor" stroke-width="1.2"/></svg></button>
+        <button class="btn-icon${tlEditOn() ? ' on' : ''}" data-tlvedit title="영상 클립 편집"><svg viewBox="0 0 16 16" class="ic" aria-hidden="true"><circle cx="4" cy="4.5" r="2" fill="none" stroke="currentColor" stroke-width="1.2"/><circle cx="4" cy="11.5" r="2" fill="none" stroke="currentColor" stroke-width="1.2"/><path d="M5.7 5.6L14 12.5M5.7 10.4L14 3.5" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></button>
       </div>
       <div class="tf-zoom" title="타임라인 확대/축소">
         <button class="btn-icon zb" data-tlz="out" title="축소"><svg viewBox="0 0 16 16" class="ic" aria-hidden="true"><circle cx="7" cy="7" r="4.6" fill="none" stroke="currentColor" stroke-width="1.2"/><path d="M10.4 10.4L14 14M5 7h4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></button>
@@ -2401,7 +2401,7 @@ function renderTimeline(host, tracks, opt = {}) {
       </div>
       <div class="tf-r">${opt.edit ? `
         <button class="btn-ghost sm" data-tledcancel>취소</button>
-        <button class="btn-primary sm" data-tledsave>저장</button>` : `
+        <button class="btn-primary sm" data-tledsave ${tlEditDirty() ? '' : 'disabled'}>저장</button>` : `
         <button class="btn-ghost sm tf-cmp" data-tladdobj
           ${nCmp >= TL_MAX ? 'disabled' : ''}
           title="${nCmp >= TL_MAX ? `한 번에 ${TL_MAX}명까지 비교할 수 있습니다` : '경로를 비교할 인물 추가'}">경로 비교</button>
@@ -2679,10 +2679,10 @@ function renderTimeline(host, tracks, opt = {}) {
     const mv = ev => {
       const d = (ev.clientX - sx) / pxPerMs;
       if (side === 's') {
-        const v = Math.min(from0 + d, to0 - 60e3);      /* 최소 1분 */
+        const v = Math.min(from0 + d, to0 - 5e3);       /* 최소 5초 (v0.8) */
         c.from = iso(Math.max(F0, d0, v));
       } else {
-        const v = Math.max(to0 + d, from0 + 60e3);
+        const v = Math.max(to0 + d, from0 + 5e3);
         c.to = iso(Math.min(T0, d1, v));
       }
       renderTimeline(host, tracks, opt);
@@ -2742,7 +2742,9 @@ function renderTimeline(host, tracks, opt = {}) {
   };
   host.querySelectorAll('.tl-row').forEach(row => {
     const chip = row.querySelector('.tl-obj'); if (!chip) return;
-    chip.addEventListener('mouseenter', e => {
+    /* v0.8 3-1 : 상세 툴팁은 칩 **이미지** 호버, 삭제 ✕ 는 **이름 영역** 호버 — 서로 가리지 않게 */
+    const chipImg = chip.querySelector('img') || chip;
+    chipImg.addEventListener('mouseenter', e => {
       clearTimeout(tipTimer);
       const tr = tracks[+row.dataset.tr]; if (!tr || !tr.clips.length) return;
       const a = tr.clips[0], z = tr.clips[tr.clips.length - 1];
@@ -2758,7 +2760,7 @@ function renderTimeline(host, tracks, opt = {}) {
       tip.style.left = Math.max(8, Math.min(r.left, innerWidth - tip.offsetWidth - 8)) + 'px';
       tip.style.top = Math.max(8, r.top - tip.offsetHeight - 6) + 'px';
     });
-    chip.addEventListener('mouseleave', () => { tipTimer = setTimeout(() => { const t = document.getElementById('tlTip'); if (t) t.hidden = true; }, 160); });
+    chipImg.addEventListener('mouseleave', () => { tipTimer = setTimeout(() => { const t = document.getElementById('tlTip'); if (t) t.hidden = true; }, 160); });
     /* 사양 4759:35111 : 칩을 누르면 그 인물을 활성/비활성으로 — 영상 칸 Dim · 타임라인 Dim · 지도 경로 흐리게.
        ✕(삭제)는 제외. 한 명만 있으면 끌 대상이 없고, 최소 한 명은 활성으로 남긴다. */
     chip.addEventListener('click', e => {
@@ -2780,10 +2782,25 @@ function renderTimeline(host, tracks, opt = {}) {
     openPersonPick(tracks, k => openClipReselect(host, allTracks, opt, allTracks.indexOf(tracks[k])));
   };
   const ve = host.querySelector('[data-tlvedit]');
-  if (ve) ve.onclick = () => { DT.edit = !DT.edit; if (typeof syncPanels === 'function') syncPanels(); };
+  if (ve) ve.onclick = () => { tlEditOn() ? tlEditCancel() : tlEditStart(); };
   const ec = host.querySelector('[data-tledcancel]'), es = host.querySelector('[data-tledsave]');
-  if (ec) ec.onclick = () => { DT.edit = false; if (typeof syncPanels === 'function') syncPanels(); toast('편집을 취소했습니다.'); };
-  if (es) es.onclick = () => { DT.edit = false; if (typeof syncPanels === 'function') syncPanels(); toast('영상 구간을 저장했습니다.'); };
+  if (ec) ec.onclick = () => tlEditCancel();
+  if (es) es.onclick = () => tlEditSave();
+  /* v0.8 3-4 : 구간 너비가 좁으면 내부 썸네일·위치명 생략 */
+  host.querySelectorAll('.tl-th').forEach(n => { const w = n.offsetWidth; n.classList.toggle('narrow', w < 64); n.classList.toggle('tiny', w < 22); });
+  /* v0.8 3-3 : 탐지 구간 호버 → 그 지점의 영상 썸네일 + HH:MM:SS 미리보기 (편집 중엔 끄는 지점 미리보기가 대신) */
+  if (!opt.edit) host.querySelectorAll('.tl-th').forEach(n => {
+    const tr = tracks[+n.dataset.tr], c = tr && tr.clips[+n.dataset.c]; if (!c) return;
+    const show = e => {
+      const inner = host.querySelector('.tl-inner'), r = inner.getBoundingClientRect();
+      const gut = parseFloat(getComputedStyle(inner).paddingLeft) || 0;
+      const f = Math.max(0, Math.min(1, (e.clientX - r.left - gut) / (r.width - gut)));
+      const t = new Date(d0 + f * span);
+      trimPreview(e.clientX, n, c, `0000-00-00 ${tlHMS(t)}`, tr);
+    };
+    n.addEventListener('mousemove', show);
+    n.addEventListener('mouseleave', () => { const pv = document.getElementById('tlCurPv'); if (pv) pv.hidden = true; });
+  });
 }
 
 function rulerHTML(opt = {}) {
@@ -2951,7 +2968,7 @@ function paneToolsHTML(kind, i) {
 function paneBody(kind, i) {
   if (kind === 'map') {
     return `<div class="pn-map">
-      <img src="assets/img/floor.png?v=202609141709" alt="맵뷰">
+      <img src="assets/img/floor.png?v=202609141713" alt="맵뷰">
       ${PANE.mapTools.includes('path') ? paneMapPathHTML() : ''}
       ${PANE.mapTools.includes('cctv') ? `<div class="pn-cones">${MAP_CCTV.map(c =>
         `<span class="map-cone" style="left:${c.x}%;top:${c.y}%;rotate:${c.deg}deg"><i></i><b></b></span>`).join('')}</div>` : ''}
@@ -2978,14 +2995,14 @@ function paneBody(kind, i) {
   if ((PANE.vmode[i] || 'multi') === 'multi') {
     return `<div class="pn-vid pn-quad">
       <div class="pq">${[0, 1, 2, 3].map(k =>
-        `<span><img src="${(clips[k] || clips[0] || {}).img || 'assets/img/video.png?v=202609141709'}" alt="">
+        `<span><img src="${(clips[k] || clips[0] || {}).img || 'assets/img/video.png?v=202609141713'}" alt="">
          ${tileHead(k)}</span>`).join('')}</div>
       ${paneToolsHTML('video', i)}
       ${paneNearCamHTML(i)}
     </div>`;
   }
   return `<div class="pn-vid">
-    <img src="${(clips[Math.min(i, 3)] || {}).img || 'assets/img/video.png?v=202609141709'}" alt="">
+    <img src="${(clips[Math.min(i, 3)] || {}).img || 'assets/img/video.png?v=202609141713'}" alt="">
     ${tileHead(Math.min(i, 3))}
     ${paneToolsHTML('video', i)}
     ${paneNearCamHTML(i)}
@@ -3033,7 +3050,7 @@ function renderPanes() {
     if (PANE.kind[0] !== 'map') v.insertAdjacentHTML('beforeend', paneToolsHTML('video', 0));
     if (PANE.kind[0] === 'map') {
       v.insertAdjacentHTML('afterbegin', `<div class="pn-map">
-        <img src="assets/img/floor.png?v=202609141709" alt="맵뷰">
+        <img src="assets/img/floor.png?v=202609141713" alt="맵뷰">
         ${PANE.mapTools.includes('path') ? paneMapPathHTML() : ''}
         ${PANE.mapTools.includes('cctv') ? `<div class="pn-cones">${MAP_CCTV.map(c =>
           `<span class="map-cone" style="left:${c.x}%;top:${c.y}%;rotate:${c.deg}deg"><i></i><b></b></span>`).join('')}</div>` : ''}
@@ -3830,7 +3847,7 @@ function renderMap3d(paths) {
     const poly = polys ? `<svg class="m3-path" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${polys}</svg>` : '';
     /* 위층이 앞(위)에 오도록 쌓는다 — DOM 순서대로면 아래층이 덮는다 */
     return `<div class="m3-floor${pl.some(({ pts }) => onFl(pts).length) ? '' : ' dim'}" data-fl="${f.label}" style="--i:${fi};z-index:${M3_FLOORS.length - fi}">
-      <img src="assets/img/floor.png?v=202609141709" alt="">
+      <img src="assets/img/floor.png?v=202609141713" alt="">
       ${poly}
       ${pl.map(({ p, pts }) => onFl(pts).map(t => `<span class="map-wp" data-pt="${f.key}-${p.slot}-${t.n}" data-cam="${t.cam}"
           data-hh="${t.hh}" data-x="${t.x}" data-y="${t.y}"
@@ -4069,7 +4086,7 @@ function spreadMapLabels(host, sel) {
 $$('#dtMapSeg button').forEach(b => b.onclick = () => {
   $$('#dtMapSeg button').forEach(x => x.classList.toggle('on', x === b));
   DT.map = b.dataset.m;
-  $('#dtMapImg').src = DT.map === 'map' ? 'assets/img/map.png?v=202609141709' : 'assets/img/floor.png?v=202609141709';
+  $('#dtMapImg').src = DT.map === 'map' ? 'assets/img/map.png?v=202609141713' : 'assets/img/floor.png?v=202609141713';
   $('#dtFloor').hidden = true;                 /* 층 배지는 3D 각 층에 붙는다 */
   renderMap3d(MAP_PATHS_CACHE);
 });
@@ -4731,7 +4748,7 @@ function mvwPaths() {
 }
 function renderMapView() {
   const paths = mvwPaths();
-  const mapImg = DT.map === 'map' ? 'assets/img/map.png?v=202609141709' : 'assets/img/floor.png?v=202609141709';
+  const mapImg = DT.map === 'map' ? 'assets/img/map.png?v=202609141713' : 'assets/img/floor.png?v=202609141713';
   const seg = `<div class="seg"><button class="${DT.map === 'map' ? 'on' : ''}" data-mm="map">지도</button><button class="${DT.map === 'map' ? '' : 'on'}" data-mm="floor">층별</button></div>`;
   /* 사양서 Detail_000_4 · 4-4) : 주변 카메라 / 이동 경로 / 전체 보기
      이동 경로는 **단일 대상일 때 비활성** (그룹·경로비교에서만 사용) */
@@ -4793,7 +4810,7 @@ function renderMapView() {
   /* 바인딩 */
   $$('#mvwBody [data-mm]').forEach(b => b.onclick = () => {
     DT.map = b.dataset.mm;
-    $('#dtMapImg').src = DT.map === 'map' ? 'assets/img/map.png?v=202609141709' : 'assets/img/floor.png?v=202609141709';
+    $('#dtMapImg').src = DT.map === 'map' ? 'assets/img/map.png?v=202609141713' : 'assets/img/floor.png?v=202609141713';
     $('#dtFloor').hidden = DT.map === 'map';
     renderMapView();
   });
@@ -5260,7 +5277,7 @@ function applyDemo() {
   }
   if (d === 'personmgr') { switchMode('person'); renderPersonGrid(); openPersonMgr(); }
   if (d === 'history')   { HIST.open.add('0-0'); $('#btnHistory').click(); }
-  if (d === 'imagemodal'){ setMode('person'); setPfWay('img'); loadImage('assets/img/obj01.png?v=202609141709'); }
+  if (d === 'imagemodal'){ setMode('person'); setPfWay('img'); loadImage('assets/img/obj01.png?v=202609141713'); }
   if (d === 'person') { setMode('person'); S.selPersons = ['p1', 'p3']; renderPersonGrid(); buildFilters('person'); runSearch(false); }
   if (d === 'algo')   { setMode('algo'); S.algos = ['침입', '배회']; renderAlgoGrid(); buildFilters('algo'); runSearch(false); }
   if (d === 'image')  { setMode('person'); setPfWay('img'); }
@@ -5343,7 +5360,7 @@ function imsBuild() {
 }
 
 function openImgSearch(src) {
-  IMS.src = src || (OBJECTS[0] || {}).img || 'assets/img/video.png?v=202609141709';
+  IMS.src = src || (OBJECTS[0] || {}).img || 'assets/img/video.png?v=202609141713';
   IMS.kind = '전체'; IMS.sel = new Set(); IMS.items = [];
   const img = document.getElementById('imsImg'); if (img) img.src = IMS.src;
   document.getElementById('imsGrid').innerHTML = '';
@@ -5913,7 +5930,7 @@ function csDetailHTML(c) {
           <button class="btn-ghost sm" style="margin-left:auto" data-csmap>전체 보기</button>
         </div>
         <div style="position:relative;height:196px;border-radius:6px;overflow:hidden;background:var(--bg-1);border:1px solid var(--ln-subtle)">
-          <img src="assets/img/map.png?v=202609141709" style="width:100%;height:100%;object-fit:cover;opacity:.85" alt="">
+          <img src="assets/img/map.png?v=202609141713" style="width:100%;height:100%;object-fit:cover;opacity:.85" alt="">
           ${c.path.map((p, i) => {
             const x = 16 + (i * 23) % 68, y = 22 + (i * 17) % 54;
             return `<span style="position:absolute;left:${x}%;top:${y}%;width:9px;height:9px;border-radius:50%;
@@ -7610,7 +7627,7 @@ function renderZoneMap(host, pts, color) {
   }
   zm.hidden = false;
   const seq = pts.slice().sort((a, b) => a.n - b.n);
-  zm.innerHTML = `<div class="zm-stage"><img src="assets/img/map.png?v=202609141709" alt="외부 지도" draggable="false">
+  zm.innerHTML = `<div class="zm-stage"><img src="assets/img/map.png?v=202609141713" alt="외부 지도" draggable="false">
       <svg class="zm-path" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${seq.length > 1
         ? `<polyline points="${seq.map(t => `${t.x},${t.y}`).join(' ')}" fill="none" stroke="${color}" stroke-width="2.5"
             stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>` : ''}</svg>
@@ -7684,7 +7701,7 @@ function renderFloorPane(host, pts, color) {
   const fl = last ? m3FloorOf(last.cam) : '1F';
   const mine = pts.filter(t => m3FloorOf(t.cam) === fl).sort((a, b) => a.n - b.n);
   const flb = (M3_FLOORS.find(f => f.key === fl) || {}).label || fl;
-  fp.innerHTML = `<img src="assets/img/floor.png?v=202609141709" alt=""><span class="dt-floor">${flb}</span>
+  fp.innerHTML = `<img src="assets/img/floor.png?v=202609141713" alt=""><span class="dt-floor">${flb}</span>
     <svg class="zp-path" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${mine.length > 1
       ? `<polyline points="${mine.map(t => `${t.x},${t.y}`).join(' ')}" fill="none" stroke="${color}" stroke-width="2" vector-effect="non-scaling-stroke"/>` : ''}</svg>
     ${mine.map(t => `<span class="map-wp" data-cam="${t.cam}" data-hh="${t.hh}" data-x="${t.x}" data-y="${t.y}"
@@ -8088,3 +8105,36 @@ document.addEventListener('keydown', e => {
   const pop = document.getElementById('vZoomPop'); if (pop) pop.hidden = true;
 });
 try { S.noAskTabClose = localStorage.getItem('svms.noAskTabClose') === '1'; } catch (_) {}
+
+/* ── 영상 클립 편집 모드 (사양 v0.8 PTS_DTL_002_1 영상 클립 편집) ─────────────
+   상세 = DT.edit / 경로 비교 = CMP.edit. 진입 시 모든 트랙 구간을 스냅샷해
+   변경 여부로 `저장` 활성, `취소` 는 변경이 있을 때만 편집 취소 alert. ESC = 취소 */
+function tlEditCmp() { const t = S.tabs.find(x => x.id === S.activeTab); return !!(t && t.kind === 'compare'); }
+function tlEditOn() { return tlEditCmp() ? !!CMP.edit : !!DT.edit; }
+function tlSnap() { return JSON.stringify(TL_TRACKS.map(t => t.clips.map(c => [c.from, c.to]))); }
+function tlEditDirty() { return !!TL._snap && TL._snap !== tlSnap(); }
+function tlEditSet(on) {
+  if (tlEditCmp()) CMP.edit = on; else DT.edit = on;
+  if (!on) TL._snap = null;
+  const pv = document.getElementById('tlCurPv'); if (pv) pv.hidden = true;
+  if (typeof syncPanels === 'function') syncPanels();
+}
+function tlEditStart() { TL._snap = tlSnap(); tlEditSet(true); }
+function tlEditCancel() {
+  if (!tlEditDirty()) { tlEditSet(false); return; }
+  alertSpec('editCancel', () => {
+    const snap = JSON.parse(TL._snap);
+    TL_TRACKS.forEach((t, i) => t.clips.forEach((c, j) => { if (snap[i] && snap[i][j]) { c.from = snap[i][j][0]; c.to = snap[i][j][1]; } }));
+    tlEditSet(false);
+  });
+}
+function tlEditSave() {
+  if (!tlEditDirty()) return;
+  tlEditSet(false);
+  toast('저장되었습니다.');
+}
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Escape' || !tlEditOn()) return;
+  if ([...document.querySelectorAll('.modal')].some(m => !m.hidden)) return;
+  tlEditCancel();
+});
