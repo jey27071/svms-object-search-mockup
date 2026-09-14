@@ -6624,3 +6624,31 @@ body.dt-b .tl-th.edit:hover .tl-del{opacity:1}
 /* 폭이 좁은 구간은 흰 손잡이 막대를 숨긴다(끌기는 그대로) — 붙은 구간끼리 막대가 뭉쳐 보이지 않게 */
 body.dt-b .tl-th.edit{container-type:inline-size}
 @container (max-width: 28px){ body.dt-b .tl-th.edit .tl-grip::before{display:none} }
+
+/* ── GUI 260914 반영 8 : 지도 위치 변경(맵 뷰어 듀얼) · 영상 위치 전환 (5254:70736 · 69917) ── */
+/* 맵이 넓은 왼쪽 : 맵 상자 1280 안쪽 여백 12/16 · 머리 34 · 두 칸은 좌우로 */
+body.dt-b.dt-swap #dtPanes > #dtMapSec,
+body.dt-b.dt-swap #cmpMain > #dtMapSec{padding:12px 16px;gap:8px;background:#1c1d23;box-sizing:border-box}
+body.dt-b.dt-swap #dtMapSec.split-on .map-ctl #dtBldg{left:25px;top:66px}
+body.dt-b.dt-swap #dtMapSec.split-on .map-ctl .zone-nav{left:175px;top:66px}
+/* 영상이 오른쪽 616 칸 : 여백 없이 꽉 · 머리말 앞에 인물 칩 */
+body.dt-b.dt-swap .dt-side{padding:0}
+body.dt-b.dt-swap #dtVhead #dtVhObj{display:flex;align-items:center;gap:4px;padding-right:8px;margin-right:8px;border-right:1px solid rgba(255,255,255,.3);line-height:18px}
+body.dt-b.dt-swap #dtVhead #dtVhObj i{width:8px;height:8px;border-radius:2px}
+body.dt-b.dt-swap #dtVhead #dtVhObj b{font-size:14px;font-weight:500;color:#ecedf0}
+/* 분할 칸 머리말 : 인물 칩(24) · 위치 · 시각 / 오른쪽 북마크·비율·확대 24(간격 16) · ⋯ 과 번호 배지는 숨김 */
+body.dt-b #dtMulti .mv-head .mv-obj,
+body.dt-b #dtMulti .mv-head .mv-sw{display:none}
+body.dt-b.dt-swap #dtMulti .mv-head .mv-obj{display:flex;align-items:center;gap:4px;height:24px;padding:0 8px;border-radius:4px;background:rgba(0,0,0,.5);flex:0 0 auto}
+body.dt-b.dt-swap #dtMulti .mv-head .mv-obj i{width:8px;height:8px;border-radius:2px}
+body.dt-b.dt-swap #dtMulti .mv-head .mv-obj b{font-size:12px;font-weight:500;color:#ecedf0;white-space:nowrap}
+body.dt-b.dt-swap #dtMulti .mv-head .nm,
+body.dt-b.dt-swap #dtMulti .mv-head .tm{line-height:24px}
+body.dt-b.dt-swap #dtMulti .mv-head .mv-sw{display:flex;align-items:center;gap:16px}
+body.dt-b.dt-swap #dtMulti .mv-head .mv-sw .tb{width:24px;height:24px}
+body.dt-b.dt-swap #dtMulti .mv-head .mv-sw .tb .i{width:24px;height:24px}
+body.dt-b.dt-swap #dtMulti .mv-head .mv-more,
+body.dt-b.dt-swap #dtMulti .mv-no{display:none}
+/* 3·4분할은 영상이 칸을 꽉 채운다(듀얼은 16:9 전체 보기) */
+body.dt-b.dt-swap .dt-side #dtMulti:is([data-n="3"],[data-n="4"]) .mv-tile > :is(img,video){object-fit:cover !important;width:100%;height:100%}
+body.dt-b.dt-swap #dtVhead #dtVhObj b{display:inline;word-spacing:normal;letter-spacing:-.28px;white-space:nowrap}
