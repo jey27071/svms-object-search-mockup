@@ -6078,3 +6078,29 @@ body.dt-b #dtTools > #dtFull{display:inline-flex}
 .toast .tt-x:hover{color:var(--tx-primary)}
 /* 탭 닫기 alert : 다시 묻지 않기 */
 #alDesc .al-noask{display:inline-flex;margin-top:14px;font-size:12px;color:var(--tx-secondary)}
+
+/* ── 사양 v0.8 청크 B : 멀티 뷰 드롭다운 · 분할 ── */
+body.dt-b .dt-ctrl .vm4 .vm4-menu{min-width:176px;overflow:visible}
+body.dt-b .dt-ctrl .vm4 .vm4-menu > .vm4-row{position:relative;display:flex;align-items:center;gap:8px;height:34px;padding:0 10px 0 12px}
+body.dt-b .dt-ctrl .vm4 .vm4-menu > .vm4-row::before{content:none}
+body.dt-b .dt-ctrl .vm4 .vm4-row .k{color:var(--tx-secondary)}
+body.dt-b .dt-ctrl .vm4 .vm4-row b{margin-left:auto;font-weight:400;color:var(--tx-primary)}
+body.dt-b .dt-ctrl .vm4 .vm4-row .ar{font-style:normal;color:var(--tx-helper)}
+body.dt-b .dt-ctrl .vm4 .vm4-row:hover,body.dt-b .dt-ctrl .vm4 .vm4-row.open{background:rgba(255,255,255,.07)}
+.vm4-sub{
+  display:none;position:absolute;left:calc(100% + 4px);bottom:0;min-width:120px;padding:4px 0;border-radius:4px;
+  background:var(--bg-2);border:1px solid var(--ln-border);box-shadow:0 8px 20px rgba(0,0,0,.45)
+}
+.vm4-row:hover > .vm4-sub,.vm4-row.open > .vm4-sub{display:block}
+.vm4-sub > div{display:flex;align-items:center;height:30px;padding:0 12px 0 8px;font-size:12px;color:var(--tx-secondary);cursor:pointer;white-space:nowrap}
+.vm4-sub > div::before{content:'';display:inline-block;width:18px}
+.vm4-sub > div.on{color:var(--tx-primary)}
+.vm4-sub > div.on::before{content:'✓'}
+.vm4-sub > div:hover{background:rgba(255,255,255,.08)}
+/* 분할 : 2 = 좌우 · 3 = 3열 · 4 = 2×2 */
+.dt-multi[data-n="3"]{grid-template-columns:repeat(3,1fr);grid-template-rows:1fr}
+.dt-multi[data-n="3"] .mv-tile:first-child{grid-column:auto}
+/* 영역 전환(좁은 칸) : 분할 수만큼 위아래 */
+body.dt-swap .dt-side #dtMulti[data-n="2"]{grid-template-rows:repeat(2,1fr) !important}
+body.dt-swap .dt-side #dtMulti[data-n="3"]{grid-template-rows:repeat(3,1fr) !important}
+body.dt-swap .dt-side #dtMulti[data-n="4"]{grid-template-rows:repeat(4,1fr) !important}
