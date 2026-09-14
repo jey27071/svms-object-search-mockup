@@ -2985,7 +2985,7 @@ function paneToolsHTML(kind, i) {
 function paneBody(kind, i) {
   if (kind === 'map') {
     return `<div class="pn-map">
-      <img src="assets/img/floor.png?v=202609141758" alt="맵뷰">
+      <img src="assets/img/floor.png?v=202609141806" alt="맵뷰">
       ${PANE.mapTools.includes('path') ? paneMapPathHTML() : ''}
       ${PANE.mapTools.includes('cctv') ? `<div class="pn-cones">${MAP_CCTV.map(c =>
         `<span class="map-cone" style="left:${c.x}%;top:${c.y}%;rotate:${c.deg}deg"><i></i><b></b></span>`).join('')}</div>` : ''}
@@ -3067,7 +3067,7 @@ function renderPanes() {
     if (PANE.kind[0] !== 'map') v.insertAdjacentHTML('beforeend', paneToolsHTML('video', 0));
     if (PANE.kind[0] === 'map') {
       v.insertAdjacentHTML('afterbegin', `<div class="pn-map">
-        <img src="assets/img/floor.png?v=202609141758" alt="맵뷰">
+        <img src="assets/img/floor.png?v=202609141806" alt="맵뷰">
         ${PANE.mapTools.includes('path') ? paneMapPathHTML() : ''}
         ${PANE.mapTools.includes('cctv') ? `<div class="pn-cones">${MAP_CCTV.map(c =>
           `<span class="map-cone" style="left:${c.x}%;top:${c.y}%;rotate:${c.deg}deg"><i></i><b></b></span>`).join('')}</div>` : ''}
@@ -3545,11 +3545,12 @@ function renderMulti() {
       .concat(extra.concat(pool.filter(same), pool.filter(x => !same(x))).slice(0, N - 1).map(x => ({ cam: x.cam, img: x.img, range: rng(main) })));
     while (slots.length < N) slots.push(null);
   }
-  /* 이동 경로 칸 : PIP 로 바꿔 둔 메인 카메라 반영 */
+  /* 이동 경로 칸 : PIP 로 바꿔 둔 메인 카메라 반영.
+     프로토타입(2026-09-14 구두) : 다채널에서 동시 포착 PIP 는 **재생 중인 1칸에만**, 나머지는 단일 영상 */
   if (type === '이동 경로') slots.forEach(sl => { if (!sl) return;
     const pr = pipResolve('mv-' + sl.ci, { cam: sl.cam, img: sl.img }, simulCams(clips[sl.ci]));
     sl.cam = pr.main.cam; sl.img = pr.main.img; sl.pip = pr.list; });
-  DT._mvKey = type + ':' + ci;
+  DT._mvKey = type + N + ':' + ci;   /* syncCursor 의 비교 키와 같은 형식이어야 한다 — 다르면 커서가 움직일 때마다 다시 그려 영상이 끊긴다 */
   DT._mvSlots = slots;
   const col = slotColor(tr ? tr.slot : 'A');
   host.dataset.n = N; host.dataset.type = type;
@@ -3558,7 +3559,7 @@ function renderMulti() {
       <img src="${s.img}" alt="">
       <div class="mv-head"><span class="nm">${s.cam}</span><span class="tm">${s.range}</span><span class="mv-ic">${VH_BM}${VH_RATIO}${VH_ZOOM}</span></div>
       ${s.n ? `<span class="mv-no" style="background:${col}">${s.n}</span>` : ''}
-      ${type === '이동 경로' && s.ci != null ? pipHTML('mv-' + s.ci, s.pip) : ''}
+      ${type === '이동 경로' && s.ci != null && s.now ? pipHTML('mv-' + s.ci, s.pip) : ''}
     </div>` : `<div class="mv-tile empty" data-mv="${i}"></div>`).join('');
   $$('#dtMulti [data-pipcam]').forEach(b => b.onclick = e => { e.stopPropagation(); pipSwap(b); });
   /* 칸별 비율·확대 상태는 다시 그려도 유지 (기본 원본 비율 · 1.0) */
@@ -3893,7 +3894,7 @@ function renderMap3d(paths) {
     const poly = polys ? `<svg class="m3-path" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${polys}</svg>` : '';
     /* 위층이 앞(위)에 오도록 쌓는다 — DOM 순서대로면 아래층이 덮는다 */
     return `<div class="m3-floor${pl.some(({ pts }) => onFl(pts).length) ? '' : ' dim'}" data-fl="${f.label}" style="--i:${fi};z-index:${M3_FLOORS.length - fi}">
-      <img src="assets/img/floor.png?v=202609141758" alt="">
+      <img src="assets/img/floor.png?v=202609141806" alt="">
       ${poly}
       ${pl.map(({ p, pts }) => onFl(pts).map(t => `<span class="map-wp" data-pt="${f.key}-${p.slot}-${t.n}" data-cam="${t.cam}"
           data-hh="${t.hh}" data-x="${t.x}" data-y="${t.y}"
@@ -4132,7 +4133,7 @@ function spreadMapLabels(host, sel) {
 $$('#dtMapSeg button').forEach(b => b.onclick = () => {
   $$('#dtMapSeg button').forEach(x => x.classList.toggle('on', x === b));
   DT.map = b.dataset.m;
-  $('#dtMapImg').src = DT.map === 'map' ? 'assets/img/map.png?v=202609141758' : 'assets/img/floor.png?v=202609141758';
+  $('#dtMapImg').src = DT.map === 'map' ? 'assets/img/map.png?v=202609141806' : 'assets/img/floor.png?v=202609141806';
   $('#dtFloor').hidden = true;                 /* 층 배지는 3D 각 층에 붙는다 */
   renderMap3d(MAP_PATHS_CACHE);
 });
@@ -4470,12 +4471,13 @@ function renderCmpView(tab) {
     const o = objs[i], s = (o && CMP_SLOTS.find(x => x.k === o.slot))
       || CMP_SLOTS.find(x => !objs.some(v => v.slot === x.k)) || CMP_SLOTS[i];   /* 빈 칸은 안 쓰인 슬롯 */
     if (o) {
-      /* PIP 로 칸 안 메인을 바꿔 뒀으면 그 상태로 (다시 그려도 유지) */
+      /* PIP 로 칸 안 메인을 바꿔 뒀으면 그 상태로 (다시 그려도 유지).
+         프로토타입(2026-09-14 구두) : 동시 포착 PIP 는 첫 칸(기준 인물)에만, 나머지는 단일 영상 */
       const pr = pipResolve('cmp-' + o.slot, { cam: cmpSlotCam(i, o), img: SLOT_STILLS[cmpTi(i)] || o.img },
         simulCams(cmpSlotTrack(i) && cmpSlotTrack(i).clips[0]));
       h += `<div class="cmp-tile${TL.off.has(o.slot) ? ' off' : ''}" data-tile="${i}">
         <!-- 2·3명은 칸 안에서 원본 비율(레터박스), 4명은 칸을 채운다. 박스는 영상 기준 좌표 -->
-        <div class="cmp-vid"><img src="${pr.main.img}" alt="">${pipHTML('cmp-' + o.slot, pr.list)}</div>
+        <div class="cmp-vid"><img src="${pr.main.img}" alt="">${i === 0 ? pipHTML('cmp-' + o.slot, pr.list) : ''}</div>
         <!-- 시안 5126:59281 : ■ 인물 A · 위치 · 일시 … 우측 더보기(⋯) -->
         <div class="cmp-head">
           <span class="cmp-lb"><i style="background:${s.color}"></i>${s.label}</span>
@@ -4810,7 +4812,7 @@ function mvwPaths() {
 }
 function renderMapView() {
   const paths = mvwPaths();
-  const mapImg = DT.map === 'map' ? 'assets/img/map.png?v=202609141758' : 'assets/img/floor.png?v=202609141758';
+  const mapImg = DT.map === 'map' ? 'assets/img/map.png?v=202609141806' : 'assets/img/floor.png?v=202609141806';
   const seg = `<div class="seg"><button class="${DT.map === 'map' ? 'on' : ''}" data-mm="map">지도</button><button class="${DT.map === 'map' ? '' : 'on'}" data-mm="floor">층별</button></div>`;
   /* 사양서 Detail_000_4 · 4-4) : 주변 카메라 / 이동 경로 / 전체 보기
      이동 경로는 **단일 대상일 때 비활성** (그룹·경로비교에서만 사용) */
@@ -4872,7 +4874,7 @@ function renderMapView() {
   /* 바인딩 */
   $$('#mvwBody [data-mm]').forEach(b => b.onclick = () => {
     DT.map = b.dataset.mm;
-    $('#dtMapImg').src = DT.map === 'map' ? 'assets/img/map.png?v=202609141758' : 'assets/img/floor.png?v=202609141758';
+    $('#dtMapImg').src = DT.map === 'map' ? 'assets/img/map.png?v=202609141806' : 'assets/img/floor.png?v=202609141806';
     $('#dtFloor').hidden = DT.map === 'map';
     renderMapView();
   });
@@ -5994,7 +5996,7 @@ function csDetailHTML(c) {
           <button class="btn-ghost sm" style="margin-left:auto" data-csmap>전체 보기</button>
         </div>
         <div style="position:relative;height:196px;border-radius:6px;overflow:hidden;background:var(--bg-1);border:1px solid var(--ln-subtle)">
-          <img src="assets/img/map.png?v=202609141758" style="width:100%;height:100%;object-fit:cover;opacity:.85" alt="">
+          <img src="assets/img/map.png?v=202609141806" style="width:100%;height:100%;object-fit:cover;opacity:.85" alt="">
           ${c.path.map((p, i) => {
             const x = 16 + (i * 23) % 68, y = 22 + (i * 17) % 54;
             return `<span style="position:absolute;left:${x}%;top:${y}%;width:9px;height:9px;border-radius:50%;
@@ -7773,7 +7775,7 @@ function renderZoneMap(host, pts, color) {
   }
   zm.hidden = false;
   const seq = pts.slice().sort((a, b) => a.n - b.n);
-  zm.innerHTML = `<div class="zm-stage"><img src="assets/img/map.png?v=202609141758" alt="외부 지도" draggable="false">
+  zm.innerHTML = `<div class="zm-stage"><img src="assets/img/map.png?v=202609141806" alt="외부 지도" draggable="false">
       <svg class="zm-path" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${seq.length > 1
         ? `<polyline points="${seq.map(t => `${t.x},${t.y}`).join(' ')}" fill="none" stroke="${color}" stroke-width="2.5"
             stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>` : ''}</svg>
@@ -7851,7 +7853,7 @@ function renderFloorPane(host, pts, color) {
   const fl = last ? m3FloorOf(last.cam) : '1F';
   const mine = pts.filter(t => m3FloorOf(t.cam) === fl).sort((a, b) => a.n - b.n);
   const flb = (M3_FLOORS.find(f => f.key === fl) || {}).label || fl;
-  fp.innerHTML = `<img src="assets/img/floor.png?v=202609141758" alt=""><span class="dt-floor">${flb}</span>
+  fp.innerHTML = `<img src="assets/img/floor.png?v=202609141806" alt=""><span class="dt-floor">${flb}</span>
     <svg class="zp-path" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${mine.length > 1
       ? `<polyline points="${mine.map(t => `${t.x},${t.y}`).join(' ')}" fill="none" stroke="${color}" stroke-width="2" vector-effect="non-scaling-stroke"/>` : ''}</svg>
     ${mine.map(t => `<span class="map-wp" data-cam="${t.cam}" data-hh="${t.hh}" data-x="${t.x}" data-y="${t.y}"
@@ -8322,10 +8324,11 @@ document.addEventListener('keydown', e => {
 const VID = { playing: false, last: 0, tick: 0 };
 const VID_SEL = '#pvVideo > img, #dtVideoImg, #dtMulti .mv-tile > img, #cmpGrid .cmp-vid > img, #vwBody .vw-stage > img, #vwBody .vg-tile > img';
 /* ── 영상 · 타임라인 · 지도 동기화 모델 ──
-   클립 한 구간을 샘플 영상 한 편(VDUR 초)으로 본다. 재생하면 커서가 구간을 VDUR 초에 걸쳐 지나가고
-   (배속이면 그만큼 빠르게) 영상 위치 = 구간 안 진행률 × 영상 길이. 구간이 끝나면 사이 빈 시간을 건너뛰어
+   실제 구간(수십 분~수 시간)을 그대로 재생하면 커서가 거의 안 움직여 보인다(2026-09-14 구두 : 동작을 알아볼 수 있어야 함).
+   그래서 구간 하나를 **구간 폭에 비례한 5~15초**(vidDemo)에 재생한다 — 커서가 눈에 보이게 움직이고,
+   영상은 1배속으로 앞부분(진행률 × vidDemo 초)을 쓴다. 구간이 끝나면 사이 빈 시간을 건너뛰어
    다음 구간으로 넘어가며 카메라 영상·카메라명·PIP 가 바뀌고, 지도는 커서 시각을 따라간다. */
-const VDUR = 60;
+const vidDemo = c => Math.max(5, Math.min(15, (+tlTime(c.to) - +tlTime(c.from)) / (TL.span || 1) * 100));
 const tlNow = () => (TL.d0 != null && TL.span) ? TL.d0 + TL.cursor * TL.span : null;
 const vidSpan = c => Math.max(1, +tlTime(c.to) - +tlTime(c.from));
 function vidIsCompare() { const t = S.tabs.find(x => x.id === S.activeTab); return !!(t && t.kind === 'compare'); }
@@ -8384,7 +8387,7 @@ function vidSeek(v, force) {
   const img = v.previousElementSibling;
   if (!img || img.closest('#pvVideo') || !v.duration || isNaN(v.duration)) return;
   const k = vidClipOf(img), dir = DT.rateDir || 1;
-  const sec = k ? Math.max(0, Math.min(0.999, (tlNow() - +tlTime(k.c.from)) / vidSpan(k.c))) * v.duration : 0;
+  const sec = k ? Math.min(v.duration - 0.05, Math.max(0, Math.min(0.999, (tlNow() - +tlTime(k.c.from)) / vidSpan(k.c))) * vidDemo(k.c)) : 0;
   const thr = force ? 0.01 : (VID.playing && dir > 0 ? 0.8 : 0.15);
   if (Math.abs(v.currentTime - sec) > thr) { try { v.currentTime = sec; } catch (_) {} }
   const run = VID.playing && dir > 0 && k && k.on;
@@ -8422,16 +8425,19 @@ function vidFollow() {
 }
 function vidSeekAll() { vidFollow(); vidAll().forEach(v => vidSeek(v)); }
 function vidHosts() { return ['dtTl', 'cmpTl'].map(id => document.getElementById(id)).filter(h => h && h._sync && h.offsetParent !== null); }
-/* 10초 이동 = 영상 10초 = 구간 길이 × 10 / VDUR */
+/* 10초 이동 = 영상 10초 = 구간 길이 × 10 / vidDemo */
 function vidNudge(ms) {
   const { clips, ci } = mvCurClip();
   const c = (vidIsCompare() && [0, 1, 2, 3].map(i => cmpClipAt(i)).find(Boolean)) || clips[ci];
-  return c ? ms * vidSpan(c) / (VDUR * 1000) : ms;
+  return c ? Math.min(vidSpan(c) * 0.5, ms * vidSpan(c) / (vidDemo(c) * 1000)) : ms;
 }
 function vidScan() { VID.scanQ = 0; document.querySelectorAll(VID_SEL).forEach(vidSync); }
+/* 영상 칸 이미지가 새로 생기거나 src·크기·확대(style)가 바뀔 때만 다시 맞춘다 — 커서·지도 표시 변경은 무시 */
+const vidHasImg = n => n.nodeType === 1 && (n.tagName === 'IMG' || !!n.querySelector('img'));
 new MutationObserver(muts => {
   if (VID.scanQ) return;
-  if (!muts.some(m => m.type === 'childList' || (m.target.matches && m.target.matches(VID_SEL)))) return;
+  if (!muts.some(m => m.type === 'childList' ? [...m.addedNodes].some(vidHasImg)
+    : m.target.tagName === 'IMG' ? m.target.matches(VID_SEL) : m.attributeName === 'hidden')) return;
   VID.scanQ = setTimeout(vidScan, 30);   /* rAF 는 탭이 그려지지 않으면 멈춰 있어 타이머로 */
 }).observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['src', 'style', 'class', 'hidden'] });
 setTimeout(vidScan, 0);
@@ -8462,7 +8468,7 @@ document.addEventListener('click', e => {
     vidAll().forEach(v => vidSeek(v, true));
     VID.last = performance.now();
     clearInterval(VID.timer); VID.timer = null;
-    if (VID.playing) VID.timer = setInterval(() => vidLoop(performance.now()), 33);   /* rAF 는 창이 그려지지 않으면 드물게 와서 타이머로 */
+    if (VID.playing) VID.timer = setInterval(() => vidLoop(performance.now()), 50);   /* rAF 는 창이 그려지지 않으면 드물게 와서 타이머로 */
   }, 0);
 }, true);   /* 캡처 단계 — 버튼이 아이콘(innerHTML)을 먼저 바꾸면 눌린 아이콘이 떨어져 나가 버튼을 못 찾는다 */
 /* 배속이 바뀌면 영상 재생 속도도 (역방향은 영상을 멈추고 커서를 따라 프레임을 되감는다) */
@@ -8479,7 +8485,7 @@ function vidLoop(now) {
     const all = vidTracks().flatMap(tr => tr.clips || []);
     const act = all.filter(c => +tlTime(c.from) <= t && t <= +tlTime(c.to));
     let nt;
-    if (act.length) nt = t + dir * rate * dt * Math.min(...act.map(vidSpan)) / (VDUR * 1000);
+    if (act.length) nt = t + dir * rate * dt * Math.min(...act.map(c => vidSpan(c) / vidDemo(c))) / 1000;
     else {
       /* 구간 사이 빈 시간은 건너뛴다 */
       const nx = dir > 0 ? all.map(c => +tlTime(c.from)).filter(x => x > t).sort((a, b) => a - b)[0]
@@ -8496,7 +8502,7 @@ function vidLoop(now) {
     });
     if (TL.cursor <= 0 || TL.cursor >= 1) { vidStop(); return; }
   }
-  if (now - VID.tick > 120) {
+  if (now - VID.tick > 250) {
     VID.tick = now;
     const hs = vidHosts();
     if (hs.length) hs.forEach(h => h._sync()); else { syncMapToCursor(); vidSeekAll(); }
