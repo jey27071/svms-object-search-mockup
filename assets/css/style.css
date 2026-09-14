@@ -5919,3 +5919,9 @@ body.dt-swap .dt-side .cmp-grid:is(.n3,.n4) .cmp-tile > .cmp-vid{inset:0;top:0;t
 /* 영역 검색 도구는 id 규칙(#dtAreaTools)이 켜 두므로 id 로 끈다 */
 body.dt-swap .dt-side #dtAreaTools,
 body.dt-swap .dt-side #dtTools{display:none !important}
+/* PIP 스위칭 직후 칸 테두리를 잠깐 강조 — 어느 칸이 바뀌었는지 */
+.cmp-tile.pip-flash::before,.mv-tile.pip-flash::before{
+  content:'';position:absolute;inset:0;z-index:8;pointer-events:none;border:2px solid var(--primary);
+  animation:pipFlash .7s ease-out forwards
+}
+@keyframes pipFlash{from{opacity:1}to{opacity:0}}
