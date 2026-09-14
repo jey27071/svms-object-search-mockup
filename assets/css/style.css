@@ -6780,3 +6780,13 @@ body.in-detail .content-col > .tabbar .tab:not(.tab-search).on .x{background:var
 body.in-detail .content-col > .tabbar .tab:not(.tab-search):hover .x{opacity:1 !important}
 /* `검색 결과` 탭 바로 뒤 탭의 왼쪽 1px 안쪽 그림자(예전 구분선) — 시안에 없다 */
 .content-col > .tabbar .tab.tab-search + .tab{box-shadow:none}
+
+/* ── 경로 비교 칸 동시 포착 : 영상 상자 밖 칸 하단 (2026-09-15 구두 · 시안 5254:70815 · 70836) ──
+   2·3명은 영상이 16:9 레터박스라, 상자 안에 두면 영상 아래를 가렸다. 칸 직계로 옮겨 칸 맨 아래에 붙인다. */
+.cmp-tile > .pipc{z-index:6}
+body.dt-b .cmp-tile.off > .pipc{visibility:hidden}
+/* 3명 칸(폭 424)에서 펼친 주변 카메라(428)가 칸 왼쪽으로 4px 삐져나오던 것 — 칸 폭 안에서 카메라 칸이 줄어든다 */
+.cmp-tile > .pipc{max-width:calc(100% - 8px)}
+.cmp-tile > .pipc .pip-box{max-width:100%;box-sizing:border-box}
+.cmp-tile > .pipc .pip-cams{min-width:0}
+.cmp-tile > .pipc .pip-cam{flex:1 1 0;min-width:0;width:auto}
