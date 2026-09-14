@@ -36,8 +36,8 @@ const S = {
   mode: 'aim', aiMode: false, aiStage: 'idle', aiResults: [],
   textOpt: '자연어', q: '',
   sim: 80, allResults: false, camQ: '', camOpen: new Set(['본관', '본관/지하 1층']),
-  cams: [], top: [], bottom: [],
-  period: '당일', dFrom: '2025-06-05', tFrom: '00:00', dTo: '2025-06-05', tTo: '00:00',
+  cams: [], top: [], bottom: [], carColor: [],
+  period: '오늘', dFrom: '2025-06-05', tFrom: '00:00', dTo: '2025-06-05', tTo: '00:00',
   searched: false, sort: '유사도순', grouped: false,
   openGroups: new Set(),
   results: [], selected: null, preview: [], compare: [],
@@ -203,11 +203,13 @@ function syncPanels() {
 /* 시안 1-1안(Solid/요청사항 반영) : 위치 → 기간 → 유사도 순.
    색상 필터는 시안에서 빠졌다. */
 const FILTER_DEF = {
-  text:   ['cam', 'period', 'sim'],
+  /* 와이어프레임 4862:108451 : 카메라(위치) · 유사도 · 기간 · 색상 순 */
+  text:   ['cam', 'sim', 'period', 'color'],
   /* 인물 검색은 이미지 검출·등록 인물 두 방식을 함께 쓰므로 유사도가 붙는다 */
-  person: ['cam', 'period', 'sim'],
-  algo:   ['cam', 'period', 'sim'],
-  car:    ['cam', 'cartype', 'period'],
+  person: ['cam', 'sim', 'period'],
+  algo:   ['cam', 'sim', 'period'],
+  /* 차량번호 : 차종 필터 삭제, 유사도 · 색상(차량) 추가 */
+  car:    ['cam', 'sim', 'period', 'color'],
   aim:    []
 };
 
@@ -225,12 +227,22 @@ function filterEnabled() {
 /* 트리에서 체크가 바뀔 때 머리말 요약을 즉시 고쳐 쓴다 */
 function syncCamSum() {
   const el = document.querySelector('.acc[data-acc="cam"] .acc-sum');
-  if (el) el.textContent = accSummary('cam');
+  if (el) el.innerHTML = accSumHTML('cam');
+}
+/* 와이어프레임 : 카메라(위치) 배지 `N개 선택 ✕` — ✕ 로 선택 해제.
+   많이 고르면(CAM_SLOW 이상) 검색 시간이 길어질 수 있다고 알려 준다 */
+const CAM_SLOW = 5;
+function accSumHTML(key) {
+  const t = accSummary(key);
+  if (key !== 'cam' || !(S.cams || []).length) return t;
+  const slow = S.cams.length >= CAM_SLOW;
+  return `${t}<i class="acc-x" data-camclear role="button" title="선택 해제">✕</i>`
+    + (slow ? `<i class="acc-warn" title="${CAM_SLOW}개 이상 선택 시 검색 완료까지 다소 시간이 걸릴 수 있습니다.">i</i>` : '');
 }
 
 function accSummary(key) {
   if (key === 'sim') return `${S.sim}% 이상`;
-  if (key === 'period') return S.period || '당일';
+  if (key === 'period') return S.period || '오늘';
   if (key === 'cam') {
     const n = (S.cams || []).length;
     if (!n) return '미선택';
@@ -242,6 +254,10 @@ function accSummary(key) {
     if (tops.length === 1) return tops[0];
     if (tops.length > 1) return `${tops[0]} 외 ${tops.length - 1}`;
     return `${n}곳`;
+  }
+  if (key === 'color' && S.mode === 'car') {
+    const k = S.carColor || [];
+    return k.length ? k.map(x => (COLORS.find(c => c.k === x) || {}).label).filter(Boolean).join('·') : '전체';
   }
   if (key === 'color') {
     const t = (S.top || []).length, b = (S.bottom || []).length;
@@ -255,7 +271,7 @@ function accSummary(key) {
 
 function accBlock(key, title, bodyHTML, open) {
   return `<div class="acc${open ? ' open' : ''}" data-acc="${key}">
-    <button class="acc-head">${title}<em class="acc-sum">${accSummary(key)}</em>${ICON.caret}</button>
+    <button class="acc-head">${title}<em class="acc-sum">${accSumHTML(key)}</em>${ICON.caret}</button>
     <div class="acc-body">${bodyHTML}</div>
   </div>`;
 }
@@ -333,7 +349,9 @@ function buildFilters(mode) {
     /* 사양 : **카메라(위치)만 펼침**이 기본. 나머지는 접어 둔다. */
     if (f === 'cam') parts.push(accBlock('cam', '카메라(위치)', camTreeHTML(), openOf('cam')));
 
-    if (f === 'color') parts.push(accBlock('color', '색상', `
+    if (f === 'color' && mode === 'car') parts.push(accBlock('color', '색상', `
+      <div class="color-row">${COLORS.map(c => `<span class="sw${S.carColor.includes(c.k) ? ' on' : ''}" data-part="carColor" data-c="${c.k}" style="background:${c.hex}" title="${c.label}"></span>`).join('')}</div>`, openOf('color')));
+    else if (f === 'color') parts.push(accBlock('color', '색상', `
       <div class="color-label">상의</div>
       <div class="color-row">${COLORS.map(c => `<span class="sw${S.top.includes(c.k) ? ' on' : ''}" data-part="top" data-c="${c.k}" style="background:${c.hex}" title="${c.label}"></span>`).join('')}</div>
       <div class="color-label">하의</div>
@@ -344,7 +362,7 @@ function buildFilters(mode) {
         `<button class="mn-chip${(S.carTypes || []).includes(t) ? ' on' : ''}" data-cartype="${t}">${t}</button>`).join('')}</div>`, on));
 
     if (f === 'period') parts.push(accBlock('period', '기간', `
-      ${['당일', '최근 3일', '최근 7일', '날짜 미정'].map(p =>
+      ${['오늘', '최근 3일', '최근 7일', '날짜 지정'].map(p =>
         `<label class="radio sm"><input type="radio" name="fp" data-p="${p}" ${S.period === p ? 'checked' : ''}><i></i>${p}</label>`).join('')}
       <!-- 시안 : 시작일·종료일은 라디오와 무관하게 늘 보이고, 라벨이 위에 붙는다 -->
       <div class="date-wrap">
@@ -419,10 +437,13 @@ function bindFilters(box) {
     const p = s.dataset.part, c = s.dataset.c;
     S[p] = S[p].includes(c) ? S[p].filter(x => x !== c) : [...S[p], c];
     s.classList.toggle('on'); savePrefs(); markDirty();
+    /* 접이 머리말 요약도 바로 갱신 (예전엔 다시 그릴 때까지 `전체` 로 남았다) */
+    const sm = box.querySelector('.acc[data-acc="color"] .acc-sum'); if (sm) sm.innerHTML = accSumHTML('color');
   });
   $$('[name=fp]', box).forEach(r => r.onchange = () => {
     S.period = r.dataset.p;
-    const w = $('.date-wrap', box); if (w) w.hidden = S.period !== '날짜 미정';
+    const w = $('.date-wrap', box); if (w) w.hidden = S.period !== '날짜 지정';
+    const sm = box.querySelector('.acc[data-acc="period"] .acc-sum'); if (sm) sm.innerHTML = accSumHTML('period');
     savePrefs(); markDirty();
   });
   ['dFrom', 'tFrom', 'dTo', 'tTo'].forEach(id => { const n = $('#' + id, box); if (n) n.onchange = () => { S[id] = n.value; markDirty(); }; });
@@ -545,7 +566,7 @@ document.addEventListener('click', e => {
 function matchFilters(o) {
   if (o.sim < S.sim) return false;
   if (S.cams.length && S.cams.length < CAMERAS.length && !S.cams.includes(o.cam)) return false;
-  if (FILTER_DEF[S.mode].includes('color')) {
+  if (FILTER_DEF[S.mode].includes('color') && S.mode !== 'car') {
     if (S.top.length && !S.top.includes(o.top)) return false;
     if (S.bottom.length && !S.bottom.includes(o.bottom)) return false;
   }
@@ -1285,7 +1306,7 @@ function renderChips() {
   if (removable.length || S.allResults || S.sim !== 80 || S.period !== '오늘') {
     const r = el('button', 'chips-reset', '초기화');
     r.onclick = () => {
-      S.cams = []; S.top = []; S.bottom = []; S.period = '당일';
+      S.cams = []; S.top = []; S.bottom = []; S.period = '오늘';
       S.allResults = false; S.sim = 80; S.carTypes = [];
       buildFilters(S.mode); runSearch(true);
     };
@@ -1521,7 +1542,7 @@ function finishExtract() {
   $('#imgCancel').disabled = false;
   $$('#ieFilter button').forEach(b => b.disabled = false);
   $('#bboxLayer').innerHTML = S.extracted.map(x =>
-    `<div class="bbox ${x.type}" style="left:${x.box.x}%;top:${x.box.y}%;width:${x.box.w}%;height:${x.box.h}%"><span>${x.type === 'face' ? '얼굴' : '전신'}</span></div>`).join('');
+    `<div class="bbox ${x.type}" style="left:${x.box.x}%;top:${x.box.y}%;width:${x.box.w}%;height:${x.box.h}%"><span>${x.type === 'face' ? '얼굴' : '외형'}</span></div>`).join('');
   renderExtractGrid('all');
 }
 
@@ -1530,7 +1551,7 @@ function renderExtractGrid(t) {
   $('#ieCount').textContent = S.extracted.length;
   if (!list.length) { $('#ieGrid').innerHTML = `<div class="ie-loading" style="color:#6b7785">이미지에서 추출된 대상이 없습니다.<br>다시 추출하거나 다른 이미지를 선택해 주세요.</div>`; return; }
   $('#ieGrid').innerHTML = list.map(x =>
-    `<div class="ext-item${S.extSel.includes(x.id) ? ' on' : ''}" data-x="${x.id}"><img src="${x.img}"><span class="tag">${x.type === 'face' ? '얼굴' : '전신'}</span></div>`).join('');
+    `<div class="ext-item${S.extSel.includes(x.id) ? ' on' : ''}" data-x="${x.id}"><img src="${x.img}"><span class="tag">${x.type === 'face' ? '얼굴' : '외형'}</span></div>`).join('');
   $$('#ieGrid .ext-item').forEach(n => n.onclick = () => {
     const id = n.dataset.x;
     S.extSel = S.extSel.includes(id) ? S.extSel.filter(x => x !== id) : [...S.extSel, id];
@@ -1562,7 +1583,8 @@ $('#extAll').onchange = e => { S.extSel = e.target.checked ? S.extracted.map(x =
 
 function renderSideExtract() {
   $('#extGrid').innerHTML = S.extracted.map(x =>
-    `<div class="ext-item${S.extSel.includes(x.id) ? ' on' : ''}" data-sx="${x.id}"><img src="${x.img}"><span class="tag">${x.type === 'face' ? '얼굴' : '전신'}</span></div>`).join('');
+    `<div class="ext-item${S.extSel.includes(x.id) ? ' on' : ''}" data-sx="${x.id}"><img src="${x.img}"><span class="tag">${x.type === 'face' ? '얼굴' : '외형'}</span><i class="ext-add">${S.extSel.includes(x.id) ? '✓' : '+'}</i></div>`).join('');
+  { const n = $('#extCount'); if (n) { n.hidden = !S.extracted.length; n.textContent = S.extracted.length; } }
   $$('#extGrid .ext-item').forEach(n => n.onclick = () => {
     const id = n.dataset.sx;
     S.extSel = S.extSel.includes(id) ? S.extSel.filter(x => x !== id) : [...S.extSel, id];
@@ -1582,7 +1604,24 @@ function renderPersonGrid() {
   $('#personQuery').disabled = empty;
   if (empty) return;
   box.innerHTML = list.map(p => `<div class="pcard${S.selPersons.includes(p.id) ? ' on' : ''}" data-p="${p.id}">
-    <div class="thumb"><img src="${p.imgs[0]}"></div><div class="nm">${p.name}</div><div class="ds">${p.desc}</div></div>`).join('');
+    <div class="thumb"><img src="${p.imgs[0]}"><button type="button" class="pc-more" data-pmore="${p.id}" title="더보기">⋮</button></div><div class="nm">${p.name}</div><div class="ds">${p.desc}</div></div>`).join('');
+  /* 와이어프레임 4862:109341 : 카드 ⋮ → 수정 · 삭제 */
+  $$('[data-pmore]', box).forEach(b => b.onclick = e => {
+    e.stopPropagation();
+    const id = b.dataset.pmore, m = $('#ctxMenu');
+    m.innerHTML = `<div data-act="pedit">수정</div><div data-act="pdel">삭제</div>`;
+    const r = b.getBoundingClientRect();
+    m.style.left = Math.min(r.left, innerWidth - 120) + 'px'; m.style.top = (r.bottom + 4) + 'px'; m.hidden = false;
+    $$('div', m).forEach(d => d.onclick = ev => {
+      ev.stopPropagation(); m.hidden = true; m.innerHTML = CTX_DEFAULT;
+      const p = S.persons.find(x => x.id === id); if (!p) return;
+      if (d.dataset.act === 'pedit') { openPersonMgr(); pmTarget = p; pmView = 'detail'; renderPM(); }
+      else alertSpec('personDel', () => {
+        S.persons = S.persons.filter(x => x.id !== id); S.selPersons = S.selPersons.filter(x => x !== id);
+        renderPersonGrid(); buildFilters('person'); runSearch(false);
+      });
+    });
+  });
   $$('.pcard', box).forEach(n => n.onclick = () => {
     const id = n.dataset.p;
     S.selPersons = S.selPersons.includes(id) ? S.selPersons.filter(x => x !== id) : [...S.selPersons, id];
@@ -1591,7 +1630,7 @@ function renderPersonGrid() {
 }
 $('#personAll').onchange = e => { S.selPersons = e.target.checked ? S.persons.map(p => p.id) : []; renderPersonGrid(); buildFilters('person'); runSearch(false); };
 $('#personQuery').oninput = e => { S.personQ = e.target.value; renderPersonGrid(); };
-$('#btnNewPersonInline').onclick = () => { openPersonMgr(); pmNew(); };
+{ const b = $('#btnNewPersonInline'); if (b) b.onclick = () => { openPersonMgr(); pmNew(); }; }
 
 /* ===================== 지능형 ===================== */
 function renderAlgoGrid() {
@@ -1811,7 +1850,7 @@ function renderPM() {
   const ok = $('#pmOk'); if (ok) ok.onclick = () => { closeModal('#mdPerson'); renderPersonGrid(); };
   const q = $('#pmQ'); if (q) q.oninput = e => { pmQuery = e.target.value; renderPM(); $('#pmQ').focus(); };
 }
-const IMG_POOL = ['assets/img/ai01.png?v=202609141633', 'assets/img/ai02.png?v=202609141633', 'assets/img/ai05.png?v=202609141633', 'assets/img/ai06.png?v=202609141633', 'assets/img/ai09.png?v=202609141633'];
+const IMG_POOL = ['assets/img/ai01.png?v=202609141650', 'assets/img/ai02.png?v=202609141650', 'assets/img/ai05.png?v=202609141650', 'assets/img/ai06.png?v=202609141650', 'assets/img/ai09.png?v=202609141650'];
 function pmNew() { pmForm = { name: '', desc: '', imgs: [] }; pmView = 'new'; renderPM(); }
 
 $('#btnTabAdd').onclick = () => { S.activeTab = 'search'; renderTabs(); syncPanels(); toast('검색 홈 탭으로 이동합니다. (새 탭은 카드 더블클릭으로 생성됩니다)'); };
@@ -1851,7 +1890,7 @@ function renderHistory() {
         <div class="hs-main">
           ${it.sub.length ? `<span class="hs-cv">${ICON.caret}</span>` : '<span style="width:10px"></span>'}
           <!-- 와이어프레임(히스토리 팝업) : 썸네일 + 검색어 + 일시 -->
-          <img class="hs-th" src="${(OBJECTS[(di * 3 + i) % OBJECTS.length] || {}).img || 'assets/img/obj01.png?v=202609141633'}" alt="">
+          <img class="hs-th" src="${(OBJECTS[(di * 3 + i) % OBJECTS.length] || {}).img || 'assets/img/obj01.png?v=202609141650'}" alt="">
           <span class="hs-bd"><b class="hs-q">${it.q}</b><em class="hs-t">${d.date} 14:52</em></span>
           ${it.ai ? '<span class="hs-ai">AI</span>' : ''}
           <span class="hs-n">${it.n}건</span>
@@ -2203,7 +2242,7 @@ function renderTimeline(host, tracks, opt = {}) {
   const rows = tracks.map((tr, ti) => `
     <div class="tl-row${TL.off.has(tr.slot) ? ' off' : ''}" data-tr="${ti}">
       <div class="tl-obj" style="--slot:${typeof slotColor === 'function' ? slotColor(tr.slot) : 'var(--primary)'}">
-        <img src="${(tr.clips[0] || {}).img || 'assets/img/obj01.png?v=202609141633'}" alt="">
+        <img src="${(tr.clips[0] || {}).img || 'assets/img/obj01.png?v=202609141650'}" alt="">
         <span class="nm"><i></i>${tr.label}</span>
         ${ti > 0 ? `<button class="rm" data-tlrm="${ti}" title="${tr.label} 제거">${ICON.xs || '×'}</button>` : ''}
       </div>
@@ -2818,7 +2857,7 @@ function paneToolsHTML(kind, i) {
 function paneBody(kind, i) {
   if (kind === 'map') {
     return `<div class="pn-map">
-      <img src="assets/img/floor.png?v=202609141633" alt="맵뷰">
+      <img src="assets/img/floor.png?v=202609141650" alt="맵뷰">
       ${PANE.mapTools.includes('path') ? paneMapPathHTML() : ''}
       ${PANE.mapTools.includes('cctv') ? `<div class="pn-cones">${MAP_CCTV.map(c =>
         `<span class="map-cone" style="left:${c.x}%;top:${c.y}%;rotate:${c.deg}deg"><i></i><b></b></span>`).join('')}</div>` : ''}
@@ -2845,14 +2884,14 @@ function paneBody(kind, i) {
   if ((PANE.vmode[i] || 'multi') === 'multi') {
     return `<div class="pn-vid pn-quad">
       <div class="pq">${[0, 1, 2, 3].map(k =>
-        `<span><img src="${(clips[k] || clips[0] || {}).img || 'assets/img/video.png?v=202609141633'}" alt="">
+        `<span><img src="${(clips[k] || clips[0] || {}).img || 'assets/img/video.png?v=202609141650'}" alt="">
          ${tileHead(k)}</span>`).join('')}</div>
       ${paneToolsHTML('video', i)}
       ${paneNearCamHTML(i)}
     </div>`;
   }
   return `<div class="pn-vid">
-    <img src="${(clips[Math.min(i, 3)] || {}).img || 'assets/img/video.png?v=202609141633'}" alt="">
+    <img src="${(clips[Math.min(i, 3)] || {}).img || 'assets/img/video.png?v=202609141650'}" alt="">
     ${tileHead(Math.min(i, 3))}
     ${paneToolsHTML('video', i)}
     ${paneNearCamHTML(i)}
@@ -2900,7 +2939,7 @@ function renderPanes() {
     if (PANE.kind[0] !== 'map') v.insertAdjacentHTML('beforeend', paneToolsHTML('video', 0));
     if (PANE.kind[0] === 'map') {
       v.insertAdjacentHTML('afterbegin', `<div class="pn-map">
-        <img src="assets/img/floor.png?v=202609141633" alt="맵뷰">
+        <img src="assets/img/floor.png?v=202609141650" alt="맵뷰">
         ${PANE.mapTools.includes('path') ? paneMapPathHTML() : ''}
         ${PANE.mapTools.includes('cctv') ? `<div class="pn-cones">${MAP_CCTV.map(c =>
           `<span class="map-cone" style="left:${c.x}%;top:${c.y}%;rotate:${c.deg}deg"><i></i><b></b></span>`).join('')}</div>` : ''}
@@ -3692,7 +3731,7 @@ function renderMap3d(paths) {
     const poly = polys ? `<svg class="m3-path" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${polys}</svg>` : '';
     /* 위층이 앞(위)에 오도록 쌓는다 — DOM 순서대로면 아래층이 덮는다 */
     return `<div class="m3-floor${pl.some(({ pts }) => onFl(pts).length) ? '' : ' dim'}" data-fl="${f.label}" style="--i:${fi};z-index:${M3_FLOORS.length - fi}">
-      <img src="assets/img/floor.png?v=202609141633" alt="">
+      <img src="assets/img/floor.png?v=202609141650" alt="">
       ${poly}
       ${pl.map(({ p, pts }) => onFl(pts).map(t => `<span class="map-wp" data-pt="${f.key}-${p.slot}-${t.n}" data-cam="${t.cam}"
           data-hh="${t.hh}" data-x="${t.x}" data-y="${t.y}"
@@ -3931,7 +3970,7 @@ function spreadMapLabels(host, sel) {
 $$('#dtMapSeg button').forEach(b => b.onclick = () => {
   $$('#dtMapSeg button').forEach(x => x.classList.toggle('on', x === b));
   DT.map = b.dataset.m;
-  $('#dtMapImg').src = DT.map === 'map' ? 'assets/img/map.png?v=202609141633' : 'assets/img/floor.png?v=202609141633';
+  $('#dtMapImg').src = DT.map === 'map' ? 'assets/img/map.png?v=202609141650' : 'assets/img/floor.png?v=202609141650';
   $('#dtFloor').hidden = true;                 /* 층 배지는 3D 각 층에 붙는다 */
   renderMap3d(MAP_PATHS_CACHE);
 });
@@ -4586,7 +4625,7 @@ function mvwPaths() {
 }
 function renderMapView() {
   const paths = mvwPaths();
-  const mapImg = DT.map === 'map' ? 'assets/img/map.png?v=202609141633' : 'assets/img/floor.png?v=202609141633';
+  const mapImg = DT.map === 'map' ? 'assets/img/map.png?v=202609141650' : 'assets/img/floor.png?v=202609141650';
   const seg = `<div class="seg"><button class="${DT.map === 'map' ? 'on' : ''}" data-mm="map">지도</button><button class="${DT.map === 'map' ? '' : 'on'}" data-mm="floor">층별</button></div>`;
   /* 사양서 Detail_000_4 · 4-4) : 주변 카메라 / 이동 경로 / 전체 보기
      이동 경로는 **단일 대상일 때 비활성** (그룹·경로비교에서만 사용) */
@@ -4648,7 +4687,7 @@ function renderMapView() {
   /* 바인딩 */
   $$('#mvwBody [data-mm]').forEach(b => b.onclick = () => {
     DT.map = b.dataset.mm;
-    $('#dtMapImg').src = DT.map === 'map' ? 'assets/img/map.png?v=202609141633' : 'assets/img/floor.png?v=202609141633';
+    $('#dtMapImg').src = DT.map === 'map' ? 'assets/img/map.png?v=202609141650' : 'assets/img/floor.png?v=202609141650';
     $('#dtFloor').hidden = DT.map === 'map';
     renderMapView();
   });
@@ -5115,7 +5154,7 @@ function applyDemo() {
   }
   if (d === 'personmgr') { switchMode('person'); renderPersonGrid(); openPersonMgr(); }
   if (d === 'history')   { HIST.open.add('0-0'); $('#btnHistory').click(); }
-  if (d === 'imagemodal'){ setMode('person'); setPfWay('img'); loadImage('assets/img/obj01.png?v=202609141633'); }
+  if (d === 'imagemodal'){ setMode('person'); setPfWay('img'); loadImage('assets/img/obj01.png?v=202609141650'); }
   if (d === 'person') { setMode('person'); S.selPersons = ['p1', 'p3']; renderPersonGrid(); buildFilters('person'); runSearch(false); }
   if (d === 'algo')   { setMode('algo'); S.algos = ['침입', '배회']; renderAlgoGrid(); buildFilters('algo'); runSearch(false); }
   if (d === 'image')  { setMode('person'); setPfWay('img'); }
@@ -5198,7 +5237,7 @@ function imsBuild() {
 }
 
 function openImgSearch(src) {
-  IMS.src = src || (OBJECTS[0] || {}).img || 'assets/img/video.png?v=202609141633';
+  IMS.src = src || (OBJECTS[0] || {}).img || 'assets/img/video.png?v=202609141650';
   IMS.kind = '전체'; IMS.sel = new Set(); IMS.items = [];
   const img = document.getElementById('imsImg'); if (img) img.src = IMS.src;
   document.getElementById('imsGrid').innerHTML = '';
@@ -5768,7 +5807,7 @@ function csDetailHTML(c) {
           <button class="btn-ghost sm" style="margin-left:auto" data-csmap>전체 보기</button>
         </div>
         <div style="position:relative;height:196px;border-radius:6px;overflow:hidden;background:var(--bg-1);border:1px solid var(--ln-subtle)">
-          <img src="assets/img/map.png?v=202609141633" style="width:100%;height:100%;object-fit:cover;opacity:.85" alt="">
+          <img src="assets/img/map.png?v=202609141650" style="width:100%;height:100%;object-fit:cover;opacity:.85" alt="">
           ${c.path.map((p, i) => {
             const x = 16 + (i * 23) % 68, y = 22 + (i * 17) % 54;
             return `<span style="position:absolute;left:${x}%;top:${y}%;width:9px;height:9px;border-radius:50%;
@@ -7175,7 +7214,7 @@ window.addEventListener('hashchange', () => location.reload());
   const rs = document.getElementById('btnSearchReset');
   if (rs) rs.onclick = () => {
     /* B타입 개선안 : 하단 `초기화` 는 검색 조건을 기본값으로 되돌린다 */
-    S.sim = 80; S.allResults = false; S.period = '당일';
+    S.sim = 80; S.allResults = false; S.period = '오늘';
     S.top = []; S.bottom = []; S.carTypes = []; S.cams = CAMERAS.slice();
     savePrefs(); buildFilters(S.mode);
     if (S.searched) runSearch(true); else syncSearchBtn();
@@ -7468,7 +7507,7 @@ function renderZoneMap(host, pts, color) {
   }
   zm.hidden = false;
   const seq = pts.slice().sort((a, b) => a.n - b.n);
-  zm.innerHTML = `<div class="zm-stage"><img src="assets/img/map.png?v=202609141633" alt="외부 지도" draggable="false">
+  zm.innerHTML = `<div class="zm-stage"><img src="assets/img/map.png?v=202609141650" alt="외부 지도" draggable="false">
       <svg class="zm-path" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${seq.length > 1
         ? `<polyline points="${seq.map(t => `${t.x},${t.y}`).join(' ')}" fill="none" stroke="${color}" stroke-width="2.5"
             stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>` : ''}</svg>
@@ -7542,7 +7581,7 @@ function renderFloorPane(host, pts, color) {
   const fl = last ? m3FloorOf(last.cam) : '1F';
   const mine = pts.filter(t => m3FloorOf(t.cam) === fl).sort((a, b) => a.n - b.n);
   const flb = (M3_FLOORS.find(f => f.key === fl) || {}).label || fl;
-  fp.innerHTML = `<img src="assets/img/floor.png?v=202609141633" alt=""><span class="dt-floor">${flb}</span>
+  fp.innerHTML = `<img src="assets/img/floor.png?v=202609141650" alt=""><span class="dt-floor">${flb}</span>
     <svg class="zp-path" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${mine.length > 1
       ? `<polyline points="${mine.map(t => `${t.x},${t.y}`).join(' ')}" fill="none" stroke="${color}" stroke-width="2" vector-effect="non-scaling-stroke"/>` : ''}</svg>
     ${mine.map(t => `<span class="map-wp" data-cam="${t.cam}" data-hh="${t.hh}" data-x="${t.x}" data-y="${t.y}"
@@ -7819,3 +7858,11 @@ function trimPreview(x, th, clip, t, tr) {
   pv.style.left = Math.max(8, Math.min(x - pv.offsetWidth / 2, innerWidth - pv.offsetWidth - 8)) + 'px';
   pv.style.top = Math.max(8, r.top - pv.offsetHeight - 10) + 'px';
 }
+
+/* 카메라(위치) 배지 ✕ : 선택 해제 (배지는 접이 머리말 버튼 안에 있어 캡처 단계에서 받는다) */
+document.addEventListener('click', e => {
+  const x = e.target.closest('[data-camclear]'); if (!x) return;
+  e.stopPropagation(); e.preventDefault();
+  S.cams = []; if (typeof savePrefs === 'function') savePrefs();
+  buildFilters(S.mode); if (typeof markDirty === 'function') markDirty();
+}, true);

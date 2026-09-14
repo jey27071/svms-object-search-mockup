@@ -9,8 +9,8 @@
 <title>SVMS — 동선 추적 검색 (Working Mockup)</title>
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
-<link rel="stylesheet" href="assets/css/icons.css?v=202609141633">
-<link rel="stylesheet" href="assets/css/style.css?v=202609141633">
+<link rel="stylesheet" href="assets/css/icons.css?v=202609141650">
+<link rel="stylesheet" href="assets/css/style.css?v=202609141650">
 </head>
 <body class="booting">
 
@@ -78,8 +78,9 @@
         <nav class="mode-chips" id="modeRail">
           <button data-mode="aim" class="on" data-tip="AI 검색">AI 검색</button>
           <button data-mode="text" data-tip="텍스트 검색">텍스트</button>
-          <button data-mode="person" data-tip="인물 검출하여 검색">인물</button>
+          <!-- 와이어프레임 4862:108451 (2026-09-14) : 텍스트 · 차량번호 · 인물 · 지능형 알고리즘 -->
           <button data-mode="car" data-tip="차량번호 검색">차량번호</button>
+          <button data-mode="person" data-tip="인물 검출하여 검색">인물</button>
           <button data-mode="algo" data-tip="지능형 알고리즘 검색">지능형 알고리즘</button>
         </nav>
 
@@ -140,8 +141,7 @@
               </div>
               <div class="person-grid" id="personGrid"></div>
               <div class="empty-inline" id="personEmpty" hidden>
-                등록된 인물이 없습니다.<br>대상 검색에 사용할 인물을 등록해 주세요.
-                <button class="btn-primary sm" id="btnNewPersonInline">새 인물 등록</button>
+                등록된 인물이 없습니다.<br>이미지를 업로드해 검색해 보세요.
               </div>
             </div>
             </div>
@@ -152,18 +152,18 @@
                 <div class="dropzone" id="dropzone">
                   <svg viewBox="0 0 24 24" class="up-ic"><path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/><path d="M4 15v3a2 2 0 002 2h12a2 2 0 002-2v-3" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg>
                   <p class="dz-main">이미지를 드래그하거나 클릭하여 업로드</p>
-                  <p class="dz-sub">JPG, PNG 지원 · 최대 10MB</p>
+                  <p class="dz-sub">JPG, PNG, BMP 지원 · 최대 20MB</p>
                   <button class="btn-primary sm" id="btnPickImage">이미지 선택</button>
-                  <input type="file" id="fileImage" accept="image/png,image/jpeg" hidden>
+                  <input type="file" id="fileImage" accept="image/png,image/jpeg,image/bmp" hidden>
                 </div>
                 <div class="uploaded" id="uploadedWrap" hidden>
                   <div class="uploaded-img"><img id="uploadedImg" alt=""><button class="clear-x" id="uploadedClear">&#10005;</button></div>
                 </div>
               </div>
               <div class="acc" id="extractedAcc">
-                <button class="acc-head" disabled>검출된 인물<i class="i i-16 i-chevron i-down caret"></i></button>
+                <button class="acc-head" disabled>검출된 인물<em class="acc-sum" id="extCount" hidden></em><i class="i i-16 i-chevron i-down caret"></i></button>
                 <div class="acc-body">
-                  <label class="check sm all"><input type="checkbox" id="extAll"><i></i>전체 선택</label>
+                  <label class="check sm all" hidden><input type="checkbox" id="extAll"><i></i>전체 선택</label>
                   <div class="ext-grid" id="extGrid"></div>
                 </div>
               </div>
@@ -302,7 +302,7 @@
         <!-- 상단 : 1~3단 패널. 각 칸은 영상 또는 맵뷰로 쓰고 좌우로 폭을 조정한다 -->
         <div class="dt-panes" id="dtPanes" data-panes="1">
         <div class="dt-video" id="dtVideo">
-          <img id="dtVideoImg" src="assets/img/video.png?v=202609141633" alt="">
+          <img id="dtVideoImg" src="assets/img/video.png?v=202609141650" alt="">
           <div class="ov ov-heat" id="ovHeat" hidden></div>
           <div class="ov ov-path" id="ovPath" hidden></div>
           <div class="ov ov-cctv" id="ovCctv" hidden></div>
@@ -438,7 +438,7 @@
           <div class="cmp-tabs" id="cmpTabs" hidden></div>
           <div id="dtObjMulti" hidden></div>
           <div class="dt-obj" id="dtObjSingle">
-            <div class="dt-obj-th"><img id="dtObjImg" src="assets/img/obj01.png?v=202609141633" alt=""></div>
+            <div class="dt-obj-th"><img id="dtObjImg" src="assets/img/obj01.png?v=202609141650" alt=""></div>
             <div class="dt-obj-bd">
               <div class="dt-obj-top">
                 <b id="dtObjName">인물 A</b><span class="badge" id="dtObjSim">94% 유사</span>
@@ -480,7 +480,7 @@
             </div>
           </div>
           <div class="dt-map" id="dtMap">
-            <img id="dtMapImg" src="assets/img/floor.png?v=202609141633" alt="">
+            <img id="dtMapImg" src="assets/img/floor.png?v=202609141650" alt="">
             <!-- 층별 : 참고안(검색상세 시안_260903)처럼 층을 비스듬히 쌓아
                  층간 이동을 관통선으로 보여준다 -->
             <div class="map-3d" id="dtMap3d" hidden></div>
@@ -602,7 +602,7 @@
         <div class="seg" id="ieFilter">
           <button class="on" data-t="all" disabled>전체</button>
           <button data-t="face" disabled>얼굴</button>
-          <button data-t="object" disabled>전신</button>
+          <button data-t="object" disabled>외형</button>
         </div>
       </div>
       <div class="ie-grid" id="ieGrid"><div class="ie-loading">대상 추출 중</div></div>
@@ -831,10 +831,10 @@
 <div class="toast" id="toast" hidden></div>
 
 <script src="assets/vendor/three.r128.min.js"></script>
-<script src="assets/js/floor-tex.js?v=202609141633"></script>
-<script src="assets/js/data.js?v=202609141633"></script>
-<script src="assets/js/map3d.js?v=202609141633"></script>
-<script src="assets/js/app.js?v=202609141633"></script>
+<script src="assets/js/floor-tex.js?v=202609141650"></script>
+<script src="assets/js/data.js?v=202609141650"></script>
+<script src="assets/js/map3d.js?v=202609141650"></script>
+<script src="assets/js/app.js?v=202609141650"></script>
 <script id="booting-guard">
   /* 앱 스크립트가 실패해도 화면은 나와야 한다 */
   setTimeout(function(){ document.body.classList.remove('booting'); }, 1500);
