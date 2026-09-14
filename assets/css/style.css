@@ -6506,3 +6506,26 @@ body.dt-b #ovArea .area-dir img{width:36px;height:36px;display:block}
 #mdAreaSearch .as-card .as-wrap{padding:6px 8px}
 #mdAreaSearch .as-card img{aspect-ratio:auto}
 #mdAreaSearch .as-pic img{width:100%;height:100%;aspect-ratio:auto}
+
+/* ── GUI 260914 반영 6 : 히트맵 · 인접 카메라 (5254:70213 · 70241 · 70301) ── */
+/* 인접 카메라 : 파란 원(여백 4) + 박스카메라 20(GUI 추출) · 그림자 */
+body.dt-b .cctv-pin{width:28px;height:28px;padding:4px;box-sizing:border-box;border:1px solid #1d6ceb;background:#1d6ceb;
+  box-shadow:2px 2px 4px rgba(0,0,0,.5);color:#fff}
+body.dt-b .cctv-pin .i{width:20px;height:20px}
+body.dt-b .cctv-pin:hover{background:#2a65c8;border-color:#2a65c8}
+/* 미리보기 160×90 · 아래 20px 어둡게 · 카메라명 10M 흰 글씨 */
+body.dt-b .cctv-pop{width:160px;border-radius:4px;background:#000;border:1px solid #2e2f38;box-shadow:0 4px 8px rgba(0,0,0,.25);pointer-events:none}
+body.dt-b .cctv-pop img{height:90px}
+body.dt-b .cctv-pop .cap{position:absolute;left:0;right:0;bottom:0;height:20px;padding:0 4px;background:linear-gradient(to top,#000 72.5%,rgba(0,0,0,0));
+  font-size:10px;font-weight:500;letter-spacing:.2px;line-height:1.4;align-items:flex-end;padding-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* 히트맵 : 시안은 영상에 합성된 이미지라 에셋을 뽑을 수 없어 동선 띠 모양으로 근사 */
+body.dt-b .ov-heat{mix-blend-mode:normal;opacity:.78;filter:blur(6px);
+  background:
+    radial-gradient(ellipse 22% 9% at 62% 70%, #ff1a00 0%, #ff4d00 30%, #ffb300 55%, rgba(120,220,20,.55) 78%, transparent 100%),
+    radial-gradient(ellipse 12% 20% at 90% 42%, #ff1a00 0%, #ff6a00 30%, #ffd000 55%, rgba(120,220,20,.5) 78%, transparent 100%),
+    radial-gradient(ellipse 16% 7% at 28% 38%, #ff3300 0%, #ff9900 35%, #ffe000 60%, rgba(120,220,20,.45) 80%, transparent 100%),
+    radial-gradient(ellipse 10% 14% at 44% 56%, #ff6a00 0%, #ffd000 45%, rgba(120,220,20,.45) 78%, transparent 100%),
+    radial-gradient(ellipse 9% 18% at 12% 30%, #ffd000 0%, #b8e000 45%, rgba(80,200,60,.35) 78%, transparent 100%),
+    radial-gradient(ellipse 18% 6% at 50% 82%, #ff9900 0%, #ffe000 45%, rgba(120,220,20,.4) 80%, transparent 100%)}
+/* 기존 버그 : 상세(dt-b) 오버레이 규칙(.dt-video > .ov pointer-events:none)이 인접 카메라 핀까지 막아 호버 · 선택이 안 됐다 — 핀만 살린다 */
+body.dt-b .dt-video > #ovCctv .cctv-pin{pointer-events:auto}
