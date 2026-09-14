@@ -6652,3 +6652,22 @@ body.dt-b.dt-swap #dtMulti .mv-no{display:none}
 /* 3·4분할은 영상이 칸을 꽉 채운다(듀얼은 16:9 전체 보기) */
 body.dt-b.dt-swap .dt-side #dtMulti:is([data-n="3"],[data-n="4"]) .mv-tile > :is(img,video){object-fit:cover !important;width:100%;height:100%}
 body.dt-b.dt-swap #dtVhead #dtVhObj b{display:inline;word-spacing:normal;letter-spacing:-.28px;white-space:nowrap}
+
+/* ── GUI 260914 반영 9 : 경로 비교 2·3·4명 · 인물 호버 및 비활성 (5254:70815 · 70836 · 70863 · 70892) ── */
+/* 영상 영역은 상세와 같은 자리(왼쪽 여백 없음) */
+body.dt-b .cmp-main{padding:0}
+/* 끈 인물 칸 : 영상 없이 빈 칸 · 머리말 흐리게 (위치 '-') */
+body.dt-b .cmp-tile.off::after{display:none}
+body.dt-b .cmp-tile.off{background:#16171c}
+body.dt-b .cmp-tile.off > .cmp-vid{visibility:hidden}
+body.dt-b .cmp-tile.off .cmp-head{background:none}
+body.dt-b .cmp-tile.off .cmp-head .nm{color:var(--tx-helper)}
+/* 인물 칩 빼기 : 썸네일 우상단 ⊗ 16 · 칩에 마우스를 올리면 보임 */
+body.dt-b :is(#dtTl,#cmpTl) .tl-obj .nm{position:static}
+body.dt-b :is(#dtTl,#cmpTl) .tl-obj .nm .rm,
+body.dt-b :is(#dtTl,#cmpTl) .tl-obj:hover .nm .rm{top:3px;right:3px;transform:none;width:16px;height:16px;background:none;border-radius:0;opacity:0;z-index:3}
+body.dt-b :is(#dtTl,#cmpTl) .tl-obj:hover .nm .rm{opacity:1}
+body.dt-b :is(#dtTl,#cmpTl) .tl-obj .nm .rm .i{width:16px;height:16px;color:#fff;filter:drop-shadow(0 0 2px rgba(0,0,0,.6))}
+body.dt-b :is(#dtTl,#cmpTl) .tl-obj .nm:hover em{padding-right:0}
+/* 이름 앞 색 네모(.nm i) 규칙이 ⊗ 아이콘에도 걸려 주황 8px 로 보이던 문제 */
+body.dt-b :is(#dtTl,#cmpTl) .tl-obj .nm .rm i.i{width:16px !important;height:16px !important;flex:0 0 16px;background:#fff !important;border-radius:0;opacity:1 !important;margin:0}
