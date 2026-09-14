@@ -5896,3 +5896,26 @@ body.dt-b .dt-video.has-multi > #dtPipc{display:none}
 }
 .pipc.col .pip-open:hover{color:#fff;background:rgba(0,0,0,.7)}
 .pipc.col .pip-open svg{width:12px;height:12px}
+
+/* ── 영역 전환 : 오른쪽 좁은 칸의 영상 (사양 4759:35134 · 시안 5223:57627) ── */
+/* 영상 검색·분석 도구 미제공 → 재생 조작만 가운데. 좁은 폭에서 도구가 겹치던 문제 */
+body.dt-swap .dt-side .dt-ctrl .grp.l,
+body.dt-swap .dt-side .dt-ctrl .grp.r{display:none}
+body.dt-swap .dt-side .dt-ctrl .grp.c{flex:1 1 auto;min-width:0;justify-content:center}
+/* 멀티 뷰 : 위에서 아래로 1×4 */
+body.dt-swap .dt-side #dtMulti{grid-template-columns:1fr !important;grid-template-rows:repeat(4,1fr) !important}
+body.dt-swap .dt-side #dtMulti .mv-tile:first-child{grid-column:auto}
+/* 경로 비교 : 영상 묶음(칸 + 조작 바)이 오른쪽, 지도가 왼쪽 넓은 자리 */
+body.dt-swap .dt-side > .cmp-stage{
+  flex:1 1 auto;min-height:0;width:100%;display:flex;flex-direction:column;
+  align-items:stretch;justify-content:flex-start;background:var(--bg-1);border-radius:0
+}
+body.dt-swap #cmpMain > #dtMapSec{flex:1 1 auto;min-width:0;min-height:0;display:flex;flex-direction:column;gap:10px;padding:0}
+body.dt-swap .dt-side .cmp-grid.n2{grid-template-columns:1fr;grid-template-rows:repeat(2,1fr)}
+body.dt-swap .dt-side .cmp-grid.n3{grid-template-columns:1fr;grid-template-rows:repeat(3,1fr)}
+body.dt-swap .dt-side .cmp-grid.n4{grid-template-columns:1fr;grid-template-rows:repeat(4,1fr)}
+/* 3·4명은 칸이 낮아 영상이 칸을 채운다 (2명은 원본 비율) */
+body.dt-swap .dt-side .cmp-grid:is(.n3,.n4) .cmp-tile > .cmp-vid{inset:0;top:0;transform:none;aspect-ratio:auto;max-height:none}
+/* 영역 검색 도구는 id 규칙(#dtAreaTools)이 켜 두므로 id 로 끈다 */
+body.dt-swap .dt-side #dtAreaTools,
+body.dt-swap .dt-side #dtTools{display:none !important}
