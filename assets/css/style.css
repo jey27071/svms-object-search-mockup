@@ -6764,3 +6764,19 @@ body:not(.in-detail) .shell > .side .side-head :is(.side-title, h2, b){font-size
 body:not(.in-detail) :is(#sidePanel,#aiPanel){border:0;border-radius:6px 6px 0 6px}
 body:not(.in-detail) #preview{border:0;border-radius:0 6px 6px 0}
 body:not(.in-detail) #btnFold .i{width:20px;height:20px}
+
+/* ══ 상세 화면 탭 : 시안 5254:70739 (Search Tab bar) ══════════════════════════════
+   검색 결과 = 12M secondary / 활성 = level-2 · 인물명 12R primary + 위치 12R tertiary(간격 4) · ✕ 없음
+   비활성 = 왼쪽 8 · 간격 10 · 12R, 구분선은 탭 오른쪽 끝. 닫기는 마우스를 올렸을 때만 */
+body.in-detail .content-col > .tabbar .tab.tab-search:not(.on) > span{color:var(--tx-secondary);font-weight:500}
+body.in-detail .content-col > .tabbar .tab:not(.tab-search){position:relative;font-weight:400}
+body.in-detail .content-col > .tabbar .tab:not(.tab-search):not(.on){padding:0 0 0 8px;gap:10px}
+body.in-detail .content-col > .tabbar .tab:not(.tab-search) .tt{gap:4px}
+body.in-detail .content-col > .tabbar .tab:not(.tab-search) .tt-n{color:var(--tx-primary);font-weight:400}
+body.in-detail .content-col > .tabbar .tab:not(.tab-search) .tt-c{color:var(--tx-tertiary);font-weight:400}
+body.in-detail .content-col > .tabbar .tab:not(.tab-search) .x{position:absolute;right:8px;top:5px;opacity:0 !important;background:inherit;border-radius:4px}
+body.in-detail .content-col > .tabbar .tab:not(.tab-search):not(.on) .x{background:var(--bg-0)}
+body.in-detail .content-col > .tabbar .tab:not(.tab-search).on .x{background:var(--bg-2)}
+body.in-detail .content-col > .tabbar .tab:not(.tab-search):hover .x{opacity:1 !important}
+/* `검색 결과` 탭 바로 뒤 탭의 왼쪽 1px 안쪽 그림자(예전 구분선) — 시안에 없다 */
+.content-col > .tabbar .tab.tab-search + .tab{box-shadow:none}
