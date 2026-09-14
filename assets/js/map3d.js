@@ -104,6 +104,8 @@ const M3D = (() => {
 
     /* 건물 층을 최대 4개까지 모두 쌓는다 — 위층이 위로. 포착되지 않은 층도 판은 보인다 (2026-09-11 구두) */
     const order = M3_FLOORS.slice(0, 4);
+    /* 인물이 검출된 층 — 나머지 층은 원본의 50% 투명도로 구분 (2026-09-14 구두) */
+    const hit = new Set(); list.forEach(p => p.pts.forEach(t => hit.add(m3FloorOf(t.cam))));
     const yOf = {};
     order.forEach((f, i) => { yOf[f.key] = (order.length - 1 - i) * GAP; });
     center.set(0, (order.length - 1) * GAP / 2, 0);
@@ -122,12 +124,15 @@ const M3D = (() => {
     const rimMat = new THREE.MeshBasicMaterial({ map: tex, color: 0x9ea1a9, alphaTest: 0.5, side: THREE.DoubleSide });
     const plane = new THREE.PlaneGeometry(W, D);
     tops = [];
+    const dimTop = new THREE.MeshBasicMaterial({ map: tex, alphaTest: 0.2, side: THREE.DoubleSide, transparent: true, opacity: 0.5, depthWrite: false });
+    const dimRim = new THREE.MeshBasicMaterial({ map: tex, color: 0x9ea1a9, alphaTest: 0.2, side: THREE.DoubleSide, transparent: true, opacity: 0.5, depthWrite: false });
     order.forEach(f => {
-      const topM = new THREE.Mesh(plane, topMat);
+      const off = !hit.has(f.key);
+      const topM = new THREE.Mesh(plane, off ? dimTop : topMat);
       topM.rotation.x = -Math.PI / 2; topM.position.y = yOf[f.key] + SLAB / 2;
       topM.userData.floor = f.key;
       /* 같은 윤곽을 조금 아래에 어둡게 한 겹 — 층판 두께처럼 보인다 */
-      const rim = new THREE.Mesh(plane, rimMat);
+      const rim = new THREE.Mesh(plane, off ? dimRim : rimMat);
       rim.rotation.x = -Math.PI / 2; rim.position.y = yOf[f.key] - SLAB / 2;
       root.add(rim, topM);
       tops.push(topM);
@@ -153,7 +158,7 @@ const M3D = (() => {
       all.map(({ t, p, pi }) => `<span class="map-wp" data-pt="gl-${pi ? p.slot + '-' : ''}${t.n}" data-slot="${p.slot}" data-cam="${t.cam}" data-hh="${t.hh}"
           data-x="${t.x}" data-y="${t.y}" title="${p.label || ''} · ${t.cam} · 이 지점으로 이동"
           style="background:${slotColor(p.slot)}${p.off ? ';opacity:.3' : ''}">${t.n}</span>`).join('') +
-      order.map(f => `<span class="m3g-tag">${f.label}</span>`).join('');
+      order.map(f => `<span class="m3g-tag${hit.has(f.key) ? '' : ' dim'}">${f.label}</span>`).join('');
     const kids = [...ov.children];
     pts = all.map(({ t }, i) => ({ v: pos(t), el: kids[i], floor: m3FloorOf(t.cam) }));
     tags = order.map((f, i) => ({ y: yOf[f.key] + SLAB / 2, el: kids[all.length + i] }));

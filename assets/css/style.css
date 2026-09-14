@@ -5925,3 +5925,13 @@ body.dt-swap .dt-side #dtTools{display:none !important}
   animation:pipFlash .7s ease-out forwards
 }
 @keyframes pipFlash{from{opacity:1}to{opacity:0}}
+
+/* 클립 길이 편집 : 잘려 나간 원래 구간 (흐린 썸네일 · 점선) */
+body.dt-b :is(#dtTl,#cmpTl) .tl-ghost{
+  position:absolute;top:8px;height:57px;box-sizing:border-box;overflow:hidden;pointer-events:none;
+  border:1px dashed var(--bc,var(--primary));border-top:0;border-radius:0 0 2px 2px;opacity:.35
+}
+body.dt-b :is(#dtTl,#cmpTl) .tl-ghost .tl-film{position:absolute;inset:0;background-color:#000;background-repeat:repeat-x;background-size:101px 56px}
+/* 3D · 적층 뷰 : 인물이 검출되지 않은 층은 50% */
+.m3-floor.dim{opacity:.5}
+.m3g-tag.dim{opacity:.5}
