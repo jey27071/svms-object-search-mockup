@@ -53,8 +53,13 @@ const S = {
 
 /* ===================== 유틸 ===================== */
 function toast(msg) {
-  const t = $('#toast'); t.textContent = msg; t.hidden = false;
-  clearTimeout(toast._t); toast._t = setTimeout(() => t.hidden = true, 1900);
+  /* 사양 v0.8 : 화면 중앙 하단 · 체크 아이콘 + 닫기 */
+  const t = $('#toast');
+  t.innerHTML = `<i class="tt-ok" aria-hidden="true"><svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="7" fill="currentColor"/><path d="M4.8 8.2l2.1 2.1 4.3-4.4" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></i><span></span><button type="button" class="tt-x" title="닫기">✕</button>`;
+  t.querySelector('span').textContent = msg;
+  t.querySelector('.tt-x').onclick = () => { t.hidden = true; };
+  t.hidden = false;
+  clearTimeout(toast._t); toast._t = setTimeout(() => t.hidden = true, 2600);
 }
 function openModal(id) { $('#overlay').hidden = false; $(id).hidden = false; }
 function closeModal(id) {
@@ -72,7 +77,7 @@ function alertBox({ title, desc, ok = '삭제', danger = true, onOk }) {
 /* ── 사양 §14 공통 Alert (문구·버튼 고정) ───────────────────────────
    본문은 사양서 표기 그대로. 입력·변경 내용이 없으면 호출하지 않는다(§14 공통 규칙). */
 const ALERT = {
-  chatDel:    { title: '대화 목록 삭제', desc: '선택한 대화 내용이 삭제됩니다.',                              ok: '삭제', danger: true  },
+  chatDel:    { title: '대화 목록 삭제', desc: '선택한 대화 목록이 영구적으로 삭제됩니다.<br>삭제하시겠습니까?',                              ok: '삭제', danger: true  },
   regCancel:  { title: '등록 취소',      desc: '작성 중인 내용이 저장되지 않습니다. 종료하시겠습니까?',        ok: '확인', danger: false },
   imgDel:     { title: '이미지 삭제',    desc: '선택한 이미지를 삭제하시겠습니까?',                            ok: '삭제', danger: true  },
   vidDel:     { title: '영상 삭제',      desc: '선택한 영상이 삭제됩니다. 삭제하시겠습니까?',                   ok: '삭제', danger: true  },
@@ -117,7 +122,21 @@ function renderTabs() {
     n.onclick = e => {
       if (e.target.closest('.x')) {
         if (t.fixed) { S.activeTab = t.id; }
-        else {
+        else if (!S.noAskTabClose) {
+          /* 사양 v0.8 공통 팝업 8 : 탭 닫기 alert (다시 묻지 않기) */
+          alertBox({ title: '탭 닫기', ok: '닫기', danger: false,
+            desc: `선택한 탭을 닫을까요?<br>사건으로 등록되지 않은 검색 기록은 히스토리에 최근 50개까지 보관되며,<br>이후에는 다시 확인할 수 없습니다.<label class="check sm al-noask"><input type="checkbox" id="alNoAsk"><i></i>다시 묻지 않기</label>`,
+            onOk: () => {
+              const na = document.getElementById('alNoAsk');
+              if (na && na.checked) { S.noAskTabClose = true; try { localStorage.setItem('svms.noAskTabClose', '1'); } catch (_) {} }
+              const i = S.tabs.findIndex(x => x.id === t.id);
+              pushClosedTab(t);
+              S.tabs = S.tabs.filter(x => x.id !== t.id);
+              if (S.activeTab === t.id) S.activeTab = (S.tabs[i - 1] || S.tabs[0] || { id: 'search' }).id;
+              renderTabs(); syncPanels();
+            } });
+          return;
+        } else {
           /* 사양 §2 : 탭을 닫으면 **이전 탭**으로 포커스가 자동 전환된다(검색 탭 고정 아님) */
           const i = S.tabs.findIndex(x => x.id === t.id);
           pushClosedTab(t);
@@ -1238,7 +1257,7 @@ function finishReid(ids) {
   toast(`'${name}' 으로 ${ids.length}건의 이동 경로를 구성했습니다.`);
   DT.clip = 0; DT.removed = new Set(); DT.edit = false; DT.area = null; DT.tracks = true;
   DT.tools = ['obj', 'single'];
-  newTab(`${o.cam} > ${name}`, o, { kind: 'group', label: name });
+  newTab(`${name} ${o.cam}`, o, { kind: 'group', label: name });
 }
 
 /* 결과 카드 → 상세 화면. 유사 대상별 보기의 대표 카드면 대상 그룹 상세로 연다. */
@@ -1249,7 +1268,7 @@ function openCardDetail(id, cardEl) {
   DT.clip = 0; DT.removed = new Set(); DT.edit = false; DT.area = null; DT.tracks = false; DT.tools = ['obj', 'single'];
   /* B타입 개선안 : 탭 타이틀은 `위치명 > 대상명` */
   const target = (g && g.label) || cardTitle(o) || '대상';
-  newTab(`${o.cam} > ${target}`, o, isRep ? { kind: 'group' } : undefined);
+  newTab(`${target} ${o.cam}`, o, isRep ? { kind: 'group' } : undefined);
 }
 
 function bindCards(root) {
@@ -1928,7 +1947,7 @@ function renderPM() {
   const ok = $('#pmOk'); if (ok) ok.onclick = () => { closeModal('#mdPerson'); renderPersonGrid(); };
   const q = $('#pmQ'); if (q) q.oninput = e => { pmQuery = e.target.value; renderPM(); $('#pmQ').focus(); };
 }
-const IMG_POOL = ['assets/img/ai01.png?v=202609141656', 'assets/img/ai02.png?v=202609141656', 'assets/img/ai05.png?v=202609141656', 'assets/img/ai06.png?v=202609141656', 'assets/img/ai09.png?v=202609141656'];
+const IMG_POOL = ['assets/img/ai01.png?v=202609141707', 'assets/img/ai02.png?v=202609141707', 'assets/img/ai05.png?v=202609141707', 'assets/img/ai06.png?v=202609141707', 'assets/img/ai09.png?v=202609141707'];
 function pmNew() { pmForm = { name: '', desc: '', imgs: [] }; pmView = 'new'; renderPM(); }
 
 $('#btnTabAdd').onclick = () => { S.activeTab = 'search'; renderTabs(); syncPanels(); toast('검색 홈 탭으로 이동합니다. (새 탭은 카드 더블클릭으로 생성됩니다)'); };
@@ -1974,7 +1993,7 @@ function renderHistory() {
     if (e.target.closest('[data-hsrm]')) return;
     const o = findObj(r.dataset.hsobj); if (!o) return;
     closeModal('#mdHistory');
-    newTab(`${o.cam} > ${r.dataset.hsnm}`, o);
+    newTab(`${r.dataset.hsnm} ${o.cam}`, o);
   });
   $$('#historyBody [data-hsrm]').forEach(b => b.onclick = e => {
     e.stopPropagation();
@@ -2317,7 +2336,7 @@ function renderTimeline(host, tracks, opt = {}) {
   const rows = tracks.map((tr, ti) => `
     <div class="tl-row${TL.off.has(tr.slot) ? ' off' : ''}" data-tr="${ti}">
       <div class="tl-obj" style="--slot:${typeof slotColor === 'function' ? slotColor(tr.slot) : 'var(--primary)'}">
-        <img src="${(tr.clips[0] || {}).img || 'assets/img/obj01.png?v=202609141656'}" alt="">
+        <img src="${(tr.clips[0] || {}).img || 'assets/img/obj01.png?v=202609141707'}" alt="">
         <span class="nm"><i></i>${tr.label}</span>
         ${ti > 0 ? `<button class="rm" data-tlrm="${ti}" title="${tr.label} 제거">${ICON.xs || '×'}</button>` : ''}
       </div>
@@ -2809,11 +2828,11 @@ function ctrlHTML(opt = {}) {
   const dim = opt.dimRight ? ' dim' : '';
   const left = `<div class="grp l${dim}">
     ${b('영역 검색', 'i-tool-shape')}
-    ${b('선 검색', 'i-tool-path')}
+    ${b('가상펜스 검색', 'i-tool-path')}
   </div>`;
   const center = `<div class="grp c">${playCtrlHTML()}</div>`;
   const right = `<div class="grp r">
-    <span class="tg${dim}">${b('히트맵', 'i-tool-heatmap')}${b('주변 카메라', 'i-tool-cctv')}</span>
+    <span class="tg${dim}">${b('히트맵', 'i-tool-heatmap')}${b('인접 카메라', 'i-tool-cctv')}</span>
     <span class="tb-div${dim}"></span>
     <span class="tg${dim}"><button class="btn-icon vm1 on" title="단일 영상 view"><svg class="vmi" viewBox="0 0 24 24" aria-hidden="true"><g class="o"><rect x="3" y="5" width="15" height="11" rx="1.6" fill="none" stroke="currentColor" stroke-width="1.4"/></g><g class="f"><rect x="3" y="5" width="15" height="11" rx="1.6" fill="currentColor"/></g><circle class="cut" cx="18" cy="17" r="5"/><circle cx="18" cy="17" r="3.8" fill="none" stroke="currentColor" stroke-width="1.2"/><text x="18" y="19.1" text-anchor="middle" font-size="5.6" font-weight="700" fill="currentColor">1</text></svg></button>
       <div class="vm4"><button class="vm4-go" title="멀티 뷰"><svg class="vmi" viewBox="0 0 24 24" aria-hidden="true"><g class="o" fill="none" stroke="currentColor" stroke-width="1.3"><rect x="3" y="5" width="7" height="5" rx=".8"/><rect x="11.5" y="5" width="7" height="5" rx=".8"/><rect x="3" y="11.5" width="7" height="5" rx=".8"/><rect x="11.5" y="11.5" width="4.5" height="5" rx=".8"/></g><g class="f" fill="currentColor"><rect x="3" y="5" width="7" height="5" rx=".8"/><rect x="11.5" y="5" width="7" height="5" rx=".8"/><rect x="3" y="11.5" width="7" height="5" rx=".8"/><rect x="11.5" y="11.5" width="4.5" height="5" rx=".8"/></g><circle class="cut" cx="18" cy="17" r="5"/><circle cx="18" cy="17" r="3.8" fill="none" stroke="currentColor" stroke-width="1.2"/><text x="18" y="19.1" text-anchor="middle" font-size="5.6" font-weight="700" fill="currentColor">4</text></svg><span class="vm4-lb">동시 포착</span></button><button class="vm4-dd" title="영상 유형 선택"><i class="i i-16 i-chevron i-down caret"></i></button></div></span>
@@ -2932,7 +2951,7 @@ function paneToolsHTML(kind, i) {
 function paneBody(kind, i) {
   if (kind === 'map') {
     return `<div class="pn-map">
-      <img src="assets/img/floor.png?v=202609141656" alt="맵뷰">
+      <img src="assets/img/floor.png?v=202609141707" alt="맵뷰">
       ${PANE.mapTools.includes('path') ? paneMapPathHTML() : ''}
       ${PANE.mapTools.includes('cctv') ? `<div class="pn-cones">${MAP_CCTV.map(c =>
         `<span class="map-cone" style="left:${c.x}%;top:${c.y}%;rotate:${c.deg}deg"><i></i><b></b></span>`).join('')}</div>` : ''}
@@ -2959,14 +2978,14 @@ function paneBody(kind, i) {
   if ((PANE.vmode[i] || 'multi') === 'multi') {
     return `<div class="pn-vid pn-quad">
       <div class="pq">${[0, 1, 2, 3].map(k =>
-        `<span><img src="${(clips[k] || clips[0] || {}).img || 'assets/img/video.png?v=202609141656'}" alt="">
+        `<span><img src="${(clips[k] || clips[0] || {}).img || 'assets/img/video.png?v=202609141707'}" alt="">
          ${tileHead(k)}</span>`).join('')}</div>
       ${paneToolsHTML('video', i)}
       ${paneNearCamHTML(i)}
     </div>`;
   }
   return `<div class="pn-vid">
-    <img src="${(clips[Math.min(i, 3)] || {}).img || 'assets/img/video.png?v=202609141656'}" alt="">
+    <img src="${(clips[Math.min(i, 3)] || {}).img || 'assets/img/video.png?v=202609141707'}" alt="">
     ${tileHead(Math.min(i, 3))}
     ${paneToolsHTML('video', i)}
     ${paneNearCamHTML(i)}
@@ -3014,7 +3033,7 @@ function renderPanes() {
     if (PANE.kind[0] !== 'map') v.insertAdjacentHTML('beforeend', paneToolsHTML('video', 0));
     if (PANE.kind[0] === 'map') {
       v.insertAdjacentHTML('afterbegin', `<div class="pn-map">
-        <img src="assets/img/floor.png?v=202609141656" alt="맵뷰">
+        <img src="assets/img/floor.png?v=202609141707" alt="맵뷰">
         ${PANE.mapTools.includes('path') ? paneMapPathHTML() : ''}
         ${PANE.mapTools.includes('cctv') ? `<div class="pn-cones">${MAP_CCTV.map(c =>
           `<span class="map-cone" style="left:${c.x}%;top:${c.y}%;rotate:${c.deg}deg"><i></i><b></b></span>`).join('')}</div>` : ''}
@@ -3423,7 +3442,7 @@ function renderCctvPins() {
       $('#ovCctv').appendChild(pop); n._pop = pop;
     };
     n.onmouseleave = () => { if (n._pop) { n._pop.remove(); n._pop = null; } };
-    n.onclick = () => openVideoView(VIDEO_CCTV[+n.dataset.vc]);
+    n.onclick = () => adjSwitch(VIDEO_CCTV[+n.dataset.vc]);
   });
 }
 
@@ -3806,7 +3825,7 @@ function renderMap3d(paths) {
     const poly = polys ? `<svg class="m3-path" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${polys}</svg>` : '';
     /* 위층이 앞(위)에 오도록 쌓는다 — DOM 순서대로면 아래층이 덮는다 */
     return `<div class="m3-floor${pl.some(({ pts }) => onFl(pts).length) ? '' : ' dim'}" data-fl="${f.label}" style="--i:${fi};z-index:${M3_FLOORS.length - fi}">
-      <img src="assets/img/floor.png?v=202609141656" alt="">
+      <img src="assets/img/floor.png?v=202609141707" alt="">
       ${poly}
       ${pl.map(({ p, pts }) => onFl(pts).map(t => `<span class="map-wp" data-pt="${f.key}-${p.slot}-${t.n}" data-cam="${t.cam}"
           data-hh="${t.hh}" data-x="${t.x}" data-y="${t.y}"
@@ -4045,7 +4064,7 @@ function spreadMapLabels(host, sel) {
 $$('#dtMapSeg button').forEach(b => b.onclick = () => {
   $$('#dtMapSeg button').forEach(x => x.classList.toggle('on', x === b));
   DT.map = b.dataset.m;
-  $('#dtMapImg').src = DT.map === 'map' ? 'assets/img/map.png?v=202609141656' : 'assets/img/floor.png?v=202609141656';
+  $('#dtMapImg').src = DT.map === 'map' ? 'assets/img/map.png?v=202609141707' : 'assets/img/floor.png?v=202609141707';
   $('#dtFloor').hidden = true;                 /* 층 배지는 3D 각 층에 붙는다 */
   renderMap3d(MAP_PATHS_CACHE);
 });
@@ -4700,14 +4719,14 @@ function mvwPaths() {
 }
 function renderMapView() {
   const paths = mvwPaths();
-  const mapImg = DT.map === 'map' ? 'assets/img/map.png?v=202609141656' : 'assets/img/floor.png?v=202609141656';
+  const mapImg = DT.map === 'map' ? 'assets/img/map.png?v=202609141707' : 'assets/img/floor.png?v=202609141707';
   const seg = `<div class="seg"><button class="${DT.map === 'map' ? 'on' : ''}" data-mm="map">지도</button><button class="${DT.map === 'map' ? '' : 'on'}" data-mm="floor">층별</button></div>`;
   /* 사양서 Detail_000_4 · 4-4) : 주변 카메라 / 이동 경로 / 전체 보기
      이동 경로는 **단일 대상일 때 비활성** (그룹·경로비교에서만 사용) */
   const multiObj = !!(DT._tab && (DT._tab.kind === 'group' || DT._tab.kind === 'compare'));
   /* 아이콘은 GUI 상세화면 맵뷰어 툴바에서 추출한 것 */
   const tools = `<div class="tools">
-      <button class="btn-icon${DT.mapTools.includes('cctv') ? ' on' : ''}" data-mvt="cctv" title="주변 카메라"><i class="i i-16 i-tool-cctv"></i></button>
+      <button class="btn-icon${DT.mapTools.includes('cctv') ? ' on' : ''}" data-mvt="cctv" title="주변 카메라 표시"><i class="i i-16 i-tool-cctv"></i></button>
       <span class="sepv"></span>
       <button class="btn-icon" data-mvt="path" title="이동 경로"${multiObj ? '' : ' disabled'}><i class="i i-16 i-tool-path"></i></button>
     </div>`;
@@ -4762,7 +4781,7 @@ function renderMapView() {
   /* 바인딩 */
   $$('#mvwBody [data-mm]').forEach(b => b.onclick = () => {
     DT.map = b.dataset.mm;
-    $('#dtMapImg').src = DT.map === 'map' ? 'assets/img/map.png?v=202609141656' : 'assets/img/floor.png?v=202609141656';
+    $('#dtMapImg').src = DT.map === 'map' ? 'assets/img/map.png?v=202609141707' : 'assets/img/floor.png?v=202609141707';
     $('#dtFloor').hidden = DT.map === 'map';
     renderMapView();
   });
@@ -5229,7 +5248,7 @@ function applyDemo() {
   }
   if (d === 'personmgr') { switchMode('person'); renderPersonGrid(); openPersonMgr(); }
   if (d === 'history')   { HIST.open.add('0-0'); $('#btnHistory').click(); }
-  if (d === 'imagemodal'){ setMode('person'); setPfWay('img'); loadImage('assets/img/obj01.png?v=202609141656'); }
+  if (d === 'imagemodal'){ setMode('person'); setPfWay('img'); loadImage('assets/img/obj01.png?v=202609141707'); }
   if (d === 'person') { setMode('person'); S.selPersons = ['p1', 'p3']; renderPersonGrid(); buildFilters('person'); runSearch(false); }
   if (d === 'algo')   { setMode('algo'); S.algos = ['침입', '배회']; renderAlgoGrid(); buildFilters('algo'); runSearch(false); }
   if (d === 'image')  { setMode('person'); setPfWay('img'); }
@@ -5312,7 +5331,7 @@ function imsBuild() {
 }
 
 function openImgSearch(src) {
-  IMS.src = src || (OBJECTS[0] || {}).img || 'assets/img/video.png?v=202609141656';
+  IMS.src = src || (OBJECTS[0] || {}).img || 'assets/img/video.png?v=202609141707';
   IMS.kind = '전체'; IMS.sel = new Set(); IMS.items = [];
   const img = document.getElementById('imsImg'); if (img) img.src = IMS.src;
   document.getElementById('imsGrid').innerHTML = '';
@@ -5882,7 +5901,7 @@ function csDetailHTML(c) {
           <button class="btn-ghost sm" style="margin-left:auto" data-csmap>전체 보기</button>
         </div>
         <div style="position:relative;height:196px;border-radius:6px;overflow:hidden;background:var(--bg-1);border:1px solid var(--ln-subtle)">
-          <img src="assets/img/map.png?v=202609141656" style="width:100%;height:100%;object-fit:cover;opacity:.85" alt="">
+          <img src="assets/img/map.png?v=202609141707" style="width:100%;height:100%;object-fit:cover;opacity:.85" alt="">
           ${c.path.map((p, i) => {
             const x = 16 + (i * 23) % 68, y = 22 + (i * 17) % 54;
             return `<span style="position:absolute;left:${x}%;top:${y}%;width:9px;height:9px;border-radius:50%;
@@ -7358,13 +7377,14 @@ try {
   const fwd = ctrl.querySelector('[title="배속 앞으로"]'), back = ctrl.querySelector('[title="배속 뒤로"]');
   const paint = () => {
     [fwd, back].forEach(b => { if (b) { b.removeAttribute('data-rate'); b.classList.remove('on'); } });
-    if (DT.rate > 1) { const b = DT.rateDir > 0 ? fwd : back; if (b) { b.dataset.rate = 'x' + DT.rate; b.classList.add('on'); } }
+    if (DT.rate > 1) { const b = DT.rateDir > 0 ? fwd : back; if (b) b.classList.add('on'); }
+    const bd = document.getElementById('dtRateBadge');
+    if (bd) { bd.hidden = DT.rate <= 1; bd.innerHTML = DT.rateDir > 0 ? `x${DT.rate}<i>▶▶</i>` : `<i>◀◀</i>x${DT.rate}`; }
   };
   const step = dir => {
     if (dir !== DT.rateDir) { DT.rateDir = dir; DT.rate = 2; }
     else DT.rate = RATES[(RATES.indexOf(DT.rate) + 1) % RATES.length];
     paint();
-    toast(DT.rate === 1 ? '기본 속도로 재생합니다.' : `${dir > 0 ? '정방향' : '역방향'} x${DT.rate} 배속으로 재생합니다.`);
   };
   if (fwd) fwd.onclick = () => step(1);
   if (back) back.onclick = () => step(-1);
@@ -7383,7 +7403,9 @@ try {
    영상 머리말 도구 — 사양 2-1) 북마크 · 영상 비율 설정 · 전체보기
    버튼에 data-vbm / data-vratio 만 붙이면 어느 영상 패널에서나 동작한다.
    ============================================================ */
-const V_RATIOS = ['원본 비율', '화면 맞춤', '2x', '4x', '6x'];
+/* 사양 v0.8 2-1) 영상 비율 : 원본 비율 · 맞추기 · 자르기 / 확대는 `영상 확대` 버튼으로 분리 */
+const V_RATIOS = ['원본 비율', '맞추기', '자르기'];
+const V_ZOOMS = ['1.0', '2x', '4x', '6x'];
 function vRatioTarget(btn) {
   const box = btn.closest('.cmp-tile, .vw-stage, .dt-video, .pn-video, .pn-body, .mv-tile, .dt-pane');
   const img = (box && box.querySelector('img')) || document.getElementById('dtVideoImg');
@@ -7392,14 +7414,7 @@ function vRatioTarget(btn) {
 function applyVRatio(img, v) {
   if (!img) return;
   img.dataset.ratio = v;
-  const z = /^(\d)x$/.test(v) ? +v[0] : 1;
-  img.style.objectFit = v === '화면 맞춤' ? 'cover' : 'contain';
-  img.dataset.zx = img.dataset.zx || 0; img.dataset.zy = img.dataset.zy || 0;
-  if (z === 1) { img.dataset.zx = img.dataset.zy = 0; }
-  img.style.transformOrigin = 'center center';
-  img.style.transform = z === 1 ? '' : `translate(${img.dataset.zx}px, ${img.dataset.zy}px) scale(${z})`;
-  img.style.cursor = z > 1 ? 'grab' : '';
-  img.classList.toggle('v-zoomed', z > 1);
+  img.style.objectFit = v === '맞추기' ? 'fill' : v === '자르기' ? 'cover' : 'contain';
 }
 document.addEventListener('click', e => {
   /* 북마크 : 저장하면 아이콘 활성, 활성 상태에서 다시 누르면 삭제 */
@@ -7407,7 +7422,7 @@ document.addEventListener('click', e => {
   if (bm) {
     e.stopPropagation();
     const on = bm.classList.toggle('on');
-    toast(on ? '북마크에 저장했습니다.' : '북마크를 삭제했습니다.');
+    toast(on ? '북마크에 저장되었습니다.' : '북마크가 삭제되었습니다.');
     return;
   }
   const rb = e.target.closest('[data-vratio]');
@@ -7425,20 +7440,21 @@ document.addEventListener('click', e => {
   pop.style.top = (r.bottom + 6) + 'px';
   pop.querySelectorAll('[data-vr]').forEach(b => b.onclick = ev => {
     ev.stopPropagation(); applyVRatio(img, b.dataset.vr); pop.hidden = true;
-    rb.classList.toggle('on', b.dataset.vr !== '원본 비율');
+    rb.classList.toggle('on', b.dataset.vr !== '원본 비율');   /* 기본값이 아닐 때만 활성 표시 */
   });
 }, true);
 /* 확대 상태에서는 드래그로 영상 영역을 옮긴다 (사양 2-1) */
 document.addEventListener('pointerdown', e => {
   const img = e.target.closest && e.target.closest('img.v-zoomed'); if (!img || e.button !== 0) return;
   e.preventDefault();
-  const z = +img.dataset.ratio[0], x0 = e.clientX - (+img.dataset.zx), y0 = e.clientY - (+img.dataset.zy);
+  const z = +img.dataset.zoom || 1, x0 = e.clientX - (+img.dataset.zx || 0), y0 = e.clientY - (+img.dataset.zy || 0);
   const box = img.parentElement.getBoundingClientRect();
   const lim = (v, span) => Math.max(-span * (z - 1) / 2, Math.min(span * (z - 1) / 2, v));
   img.style.cursor = 'grabbing';
   const mv = ev => {
     img.dataset.zx = lim(ev.clientX - x0, box.width); img.dataset.zy = lim(ev.clientY - y0, box.height);
     img.style.transform = `translate(${img.dataset.zx}px, ${img.dataset.zy}px) scale(${z})`;
+    vZoomMini(img);
   };
   const up = () => { img.style.cursor = 'grab'; removeEventListener('pointermove', mv); removeEventListener('pointerup', up); };
   addEventListener('pointermove', mv); addEventListener('pointerup', up);
@@ -7582,7 +7598,7 @@ function renderZoneMap(host, pts, color) {
   }
   zm.hidden = false;
   const seq = pts.slice().sort((a, b) => a.n - b.n);
-  zm.innerHTML = `<div class="zm-stage"><img src="assets/img/map.png?v=202609141656" alt="외부 지도" draggable="false">
+  zm.innerHTML = `<div class="zm-stage"><img src="assets/img/map.png?v=202609141707" alt="외부 지도" draggable="false">
       <svg class="zm-path" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${seq.length > 1
         ? `<polyline points="${seq.map(t => `${t.x},${t.y}`).join(' ')}" fill="none" stroke="${color}" stroke-width="2.5"
             stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>` : ''}</svg>
@@ -7656,7 +7672,7 @@ function renderFloorPane(host, pts, color) {
   const fl = last ? m3FloorOf(last.cam) : '1F';
   const mine = pts.filter(t => m3FloorOf(t.cam) === fl).sort((a, b) => a.n - b.n);
   const flb = (M3_FLOORS.find(f => f.key === fl) || {}).label || fl;
-  fp.innerHTML = `<img src="assets/img/floor.png?v=202609141656" alt=""><span class="dt-floor">${flb}</span>
+  fp.innerHTML = `<img src="assets/img/floor.png?v=202609141707" alt=""><span class="dt-floor">${flb}</span>
     <svg class="zp-path" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${mine.length > 1
       ? `<polyline points="${mine.map(t => `${t.x},${t.y}`).join(' ')}" fill="none" stroke="${color}" stroke-width="2" vector-effect="non-scaling-stroke"/>` : ''}</svg>
     ${mine.map(t => `<span class="map-wp" data-cam="${t.cam}" data-hh="${t.hh}" data-x="${t.x}" data-y="${t.y}"
@@ -7869,10 +7885,10 @@ function pipHTML(key, list) {
   const n = list.length, col = PIPS[key];
   return `<div class="pipc${col ? ' col' : ''}" data-pipk="${key}"${col == null ? ' data-auto="1"' : ''}>
     <div class="pip-box">
-      <div class="pip-hd"><b>동시 포착 (${n})</b><button type="button" class="pip-x" data-piptg title="접기">${PIP_X}</button></div>
+      <div class="pip-hd"><b>주변 카메라 (${n})</b><button type="button" class="pip-x" data-piptg title="접기">${PIP_X}</button></div>
       <div class="pip-cams">${list.map((x, i) => `<button type="button" class="pip-cam" data-pipcam="${i}" title="${x.cam}"><img src="${x.img}" alt=""><em>${x.cam}</em></button>`).join('')}</div>
     </div>
-    <button type="button" class="pip-open" data-piptg title="동시 포착 카메라 펼치기">동시 포착 (${n})${PIP_MAX}</button>
+    <button type="button" class="pip-open" data-piptg title="주변 카메라 펼치기">주변 카메라 (${n})${PIP_MAX}</button>
   </div>`;
 }
 /* 자리가 좁으면 처음엔 접힌 버튼으로 (펼친 PIP ≈ 420×110) */
@@ -7941,3 +7957,122 @@ document.addEventListener('click', e => {
   S.cams = []; if (typeof savePrefs === 'function') savePrefs();
   buildFilters(S.mode); if (typeof markDirty === 'function') markDirty();
 }, true);
+
+/* ── 인접 카메라 전환 (사양 v0.8 PTS_DTL_003_1 3) ────────────────────────
+   아이콘을 누르면 메인 영상이 그 카메라로 즉시 바뀐다(재생 시점 유지).
+   분석·뷰어 도구는 비활성, 머리말 왼쪽 `← 이전 영상` 으로 원래 카메라 복귀 */
+function adjSwitch(c) {
+  const im = document.getElementById('dtVideoImg'), lb = document.getElementById('dtCam');
+  if (!im || !c) return;
+  if (!DT.adjPrev) DT.adjPrev = { cam: lb ? lb.textContent : '', img: im.getAttribute('src') };
+  im.src = c.img; if (lb) lb.textContent = c.cam;
+  DT.tools = DT.tools.filter(x => !['heat', 'path', 'cctv'].includes(x));
+  if (typeof applyTools === 'function') applyTools();
+  adjPaint();
+}
+function adjPaint() {
+  const on = !!DT.adjPrev;
+  const bk = document.getElementById('dtAdjBack'); if (bk) bk.hidden = !on;
+  document.querySelectorAll('#dtTools [data-tool="heat"], #dtTools [data-tool="path"], #dtTools [data-tool="cctv"]').forEach(b => b.disabled = on || b.disabled && document.getElementById('dtCtrl').classList.contains('multi-mode'));
+}
+{ const bk = document.getElementById('dtAdjBack');
+  if (bk) bk.onclick = e => {
+    e.stopPropagation(); const p = DT.adjPrev; if (!p) return;
+    const im = document.getElementById('dtVideoImg'), lb = document.getElementById('dtCam');
+    if (im) im.src = p.img; if (lb) lb.textContent = p.cam;
+    DT.adjPrev = null;
+    document.querySelectorAll('#dtTools [data-tool]').forEach(b => { if (['heat', 'path', 'cctv'].includes(b.dataset.tool)) b.disabled = false; });
+    if (typeof applyTools === 'function') applyTools();
+    adjPaint();
+  }; }
+
+/* ── 영상 확대 (사양 v0.8 2-1 · PTS_DTL_004_1 확대 모드) ───────────────────
+   `영상 확대` 버튼 → 1.0 / 2x / 4x / 6x 팝오버. 1.0 보다 크면 확대 모드 :
+   영상 일시정지 · 분석/뷰어 도구 비활성 · 휠로 배율 조절(팝오버 값 연동) · 드래그 이동 ·
+   좌측 하단 전체 썸네일에 현재 보는 부분 표시(드래그로 이동) · ESC 또는 휠 최소 도달 시 1.0 */
+function vZoomTarget(btn) { return vRatioTarget(btn); }
+function vZoomFrame(img) { return img.closest('.cmp-tile, .vw-stage, .dt-video, .mv-tile, .dt-pane') || img.parentElement; }
+function applyVZoom(img, v) {
+  if (!img) return;
+  const z = v === '1.0' ? 1 : parseInt(v, 10);
+  img.dataset.zoom = z; img.dataset.zlabel = v;
+  if (z === 1) { img.dataset.zx = img.dataset.zy = 0; }
+  img.style.transformOrigin = 'center center';
+  img.style.transform = z === 1 ? '' : `translate(${img.dataset.zx || 0}px, ${img.dataset.zy || 0}px) scale(${z})`;
+  img.style.cursor = z > 1 ? 'grab' : '';
+  img.classList.toggle('v-zoomed', z > 1);
+  const frame = vZoomFrame(img);
+  const btn = frame && frame.querySelector('[data-vzoom]'); if (btn) btn.classList.toggle('on', z > 1);
+  if (frame && frame.id === 'dtVideo') {
+    DT.zoomMode = z > 1;
+    /* 확대 모드 : 재생 멈춤 · 분석/뷰어 도구 비활성 */
+    const pl = document.getElementById('dtPlay');
+    if (z > 1 && pl && pl.classList.contains('playing')) pl.click();
+    document.querySelectorAll('#dtTools [data-tool="heat"], #dtTools [data-tool="path"], #dtTools [data-tool="cctv"]').forEach(b => { b.disabled = z > 1 || !!DT.adjPrev; });
+    document.getElementById('dtCtrl').classList.toggle('zoom-mode', z > 1);
+  }
+  vZoomMini(img);
+}
+function vZoomMini(img) {
+  const frame = vZoomFrame(img); if (!frame) return;
+  let mini = frame.querySelector(':scope > .v-zoom-mini');
+  const z = +img.dataset.zoom || 1;
+  if (z <= 1) { if (mini) mini.remove(); return; }
+  if (!mini) {
+    mini = el('div', 'v-zoom-mini', '<img alt=""><i class="vzm-view"></i>');
+    frame.appendChild(mini);
+    mini.addEventListener('pointerdown', e => {
+      e.preventDefault(); e.stopPropagation();
+      const r = mini.getBoundingClientRect();
+      const move = ev => {
+        const zz = +img.dataset.zoom || 1, box = img.parentElement.getBoundingClientRect();
+        const fx = Math.max(0, Math.min(1, (ev.clientX - r.left) / r.width)), fy = Math.max(0, Math.min(1, (ev.clientY - r.top) / r.height));
+        const lim = (v, span) => Math.max(-span * (zz - 1) / 2, Math.min(span * (zz - 1) / 2, v));
+        img.dataset.zx = lim((0.5 - fx) * box.width * zz, box.width); img.dataset.zy = lim((0.5 - fy) * box.height * zz, box.height);
+        img.style.transform = `translate(${img.dataset.zx}px, ${img.dataset.zy}px) scale(${zz})`;
+        vZoomMini(img);
+      };
+      move(e);
+      const up = () => { removeEventListener('pointermove', move); removeEventListener('pointerup', up); };
+      addEventListener('pointermove', move); addEventListener('pointerup', up);
+    });
+  }
+  mini.querySelector('img').src = img.getAttribute('src');
+  const box = img.parentElement.getBoundingClientRect();
+  const w = 100 / z, h = 100 / z;
+  const cx = 50 - (+img.dataset.zx || 0) / (box.width || 1) / z * 100, cy = 50 - (+img.dataset.zy || 0) / (box.height || 1) / z * 100;
+  Object.assign(mini.querySelector('.vzm-view').style, { width: w + '%', height: h + '%', left: (cx - w / 2) + '%', top: (cy - h / 2) + '%' });
+}
+document.addEventListener('click', e => {
+  const zb = e.target.closest('[data-vzoom]');
+  const pop0 = document.getElementById('vZoomPop');
+  if (!zb) { if (pop0 && !e.target.closest('#vZoomPop')) pop0.hidden = true; return; }
+  e.stopPropagation();
+  let pop = pop0;
+  if (!pop) { pop = el('div', 'v-ratio-pop v-zoom-pop'); pop.id = 'vZoomPop'; document.body.appendChild(pop); }
+  if (!pop.hidden && pop._btn === zb) { pop.hidden = true; return; }
+  const img = vZoomTarget(zb), cur = (img && img.dataset.zlabel) || '1.0';
+  pop.innerHTML = V_ZOOMS.map(v => `<button class="${v === cur ? 'on' : ''}" data-vz="${v}">${v}</button>`).join('');
+  pop._btn = zb; pop.hidden = false;
+  const r = zb.getBoundingClientRect();
+  pop.style.left = Math.max(8, Math.min(r.right - pop.offsetWidth, innerWidth - pop.offsetWidth - 8)) + 'px';
+  pop.style.top = (r.bottom + 6) + 'px';
+  pop.querySelectorAll('[data-vz]').forEach(b => b.onclick = ev => { ev.stopPropagation(); applyVZoom(img, b.dataset.vz); pop.hidden = true; });
+}, true);
+/* 확대 모드에서 휠 : 한 단계씩, 팝오버 값과 연동 */
+document.addEventListener('wheel', e => {
+  const img = e.target.closest && e.target.closest('.v-zoomed'); if (!img) return;
+  e.preventDefault();
+  const cur = V_ZOOMS.indexOf(img.dataset.zlabel || '1.0');
+  const next = Math.max(0, Math.min(V_ZOOMS.length - 1, cur + (e.deltaY < 0 ? 1 : -1)));
+  applyVZoom(img, V_ZOOMS[next]);
+  const pop = document.getElementById('vZoomPop');
+  if (pop && !pop.hidden) pop.querySelectorAll('[data-vz]').forEach(b => b.classList.toggle('on', b.dataset.vz === V_ZOOMS[next]));
+}, { passive: false });
+/* ESC : 확대 모드 즉시 해제(1.0) */
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Escape') return;
+  document.querySelectorAll('img.v-zoomed').forEach(img => applyVZoom(img, '1.0'));
+  const pop = document.getElementById('vZoomPop'); if (pop) pop.hidden = true;
+});
+try { S.noAskTabClose = localStorage.getItem('svms.noAskTabClose') === '1'; } catch (_) {}
