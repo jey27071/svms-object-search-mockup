@@ -9,8 +9,8 @@
 <title>SVMS — 동선 추적 검색 (Working Mockup)</title>
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
-<link rel="stylesheet" href="assets/css/icons.css?v=202609141828">
-<link rel="stylesheet" href="assets/css/style.css?v=202609141828">
+<link rel="stylesheet" href="assets/css/icons.css?v=202609141843">
+<link rel="stylesheet" href="assets/css/style.css?v=202609141843">
 </head>
 <body class="booting">
 
@@ -302,7 +302,7 @@
         <!-- 상단 : 1~3단 패널. 각 칸은 영상 또는 맵뷰로 쓰고 좌우로 폭을 조정한다 -->
         <div class="dt-panes" id="dtPanes" data-panes="1">
         <div class="dt-video" id="dtVideo">
-          <img id="dtVideoImg" src="assets/video/v01.jpg?v=202609141828" alt="">
+          <img id="dtVideoImg" src="assets/video/v01.jpg?v=202609141843" alt="">
           <div class="ov ov-heat" id="ovHeat" hidden></div>
           <div class="ov ov-path" id="ovPath" hidden></div>
           <div class="ov ov-cctv" id="ovCctv" hidden></div>
@@ -342,38 +342,38 @@
           </div>
           <div class="dt-ctrl" id="dtCtrl">
             <div class="grp l" id="dtAreaTools">
-              <button class="btn-icon" data-area="shape" title="영역 검색"><i class="i i-18 i-tool-shape"></i></button>
-              <button class="btn-icon" data-area="line" title="가상펜스 검색"><svg viewBox="0 0 16 16" class="ic"><path d="M2 14L14 2M4 11l2 2M7 8l2 2M10 5l2 2" stroke="currentColor" stroke-width="1.3" fill="none"/></svg></button>
+              <button class="btn-icon" data-area="shape" title="영역 검색"><i class="i i-24 i-g-shape"></i></button>
+              <button class="btn-icon" data-area="line" title="가상펜스 검색"><i class="i i-24 i-g-line"></i></button>
             </div>
             <div class="grp c">
               <!-- 시안 5126:58070 : 이전 · 배속뒤로 · 10초뒤로 · 재생(토글) · 10초앞 · 배속앞 · 다음
                    별도 일시정지 버튼은 없다 — 재생 버튼이 토글이다 -->
-              <button class="btn-icon" id="dtPrevClip" title="이전 영상"><i class="i i-18 i-pc-prev"></i></button>
-              <button class="btn-icon" title="배속 뒤로"><i class="i i-18 i-pc-rewind"></i></button>
-              <button class="btn-icon" title="10초 뒤로"><i class="i i-18 i-pc-back10"></i></button>
-              <button class="btn-icon play" id="dtPlay" title="재생"><i class="i i-18 i-pc-play"></i></button>
-              <button class="btn-icon" title="10초 앞으로"><i class="i i-18 i-pc-fwd10"></i></button>
-              <button class="btn-icon" title="배속 앞으로"><i class="i i-18 i-pc-forward"></i></button>
-              <button class="btn-icon" id="dtNextClip" title="다음 영상"><i class="i i-18 i-pc-next"></i></button>
+              <button class="btn-icon" id="dtPrevClip" title="이전 영상"><i class="i i-24 i-g-prev"></i></button>
+              <button class="btn-icon" title="배속 뒤로"><i class="i i-24 i-g-rewind"></i></button>
+              <button class="btn-icon" title="10초 뒤로"><i class="i i-24 i-g-back10"></i></button>
+              <button class="btn-icon play" id="dtPlay" title="재생"><i class="i i-24 i-g-play"></i></button>
+              <button class="btn-icon" title="10초 앞으로"><i class="i i-24 i-g-fwd10"></i></button>
+              <button class="btn-icon" title="배속 앞으로"><i class="i i-24 i-g-forward"></i></button>
+              <button class="btn-icon" id="dtNextClip" title="다음 영상"><i class="i i-24 i-g-next"></i></button>
             </div>
             <div class="grp r" id="dtTools">
               <!-- 사양서 Detail_000_2 · 2-5) 영상 분석 및 뷰어 도구 :
                    히트맵 / 경로 확인 / 주변 카메라 / 단일 영상 view(1X1, Default) / 다중 영상 view(2X2)
                    ※ 대상 바운딩 박스는 2-2)에 따라 상시 표시라 토글 버튼을 두지 않는다 -->
-              <button class="btn-icon" data-tool="heat" title="히트맵"><i class="i i-18 i-tool-heatmap"></i></button>
+              <button class="btn-icon" data-tool="heat" title="히트맵"><i class="i i-24 i-g-heatmap"></i></button>
               <button class="btn-icon" data-tool="path" title="경로 확인"><i class="i i-18 i-tool-path"></i></button>
-              <button class="btn-icon" data-tool="cctv" title="인접 카메라"><i class="i i-18 i-tool-cctv"></i></button>
+              <button class="btn-icon" data-tool="cctv" title="인접 카메라"><i class="i i-24 i-g-camera"></i></button>
               <span class="tb-div"></span>
-              <button class="btn-icon vm1 on" data-tool="single" title="단일 영상 view"><svg class="vmi" viewBox="0 0 24 24" aria-hidden="true"><g class="o"><rect x="3" y="5" width="15" height="11" rx="1.6" fill="none" stroke="currentColor" stroke-width="1.4"/></g><g class="f"><rect x="3" y="5" width="15" height="11" rx="1.6" fill="currentColor"/></g><circle class="cut" cx="18" cy="17" r="5"/><circle cx="18" cy="17" r="3.8" fill="none" stroke="currentColor" stroke-width="1.2"/><text x="18" y="19.1" text-anchor="middle" font-size="5.6" font-weight="700" fill="currentColor">1</text></svg></button>
+              <button class="btn-icon vm1 on" data-tool="single" title="단일 영상 view"><i class="i i-24 i-g-view1"></i></button>
               <!-- 시안 5223:57284 View Mode : [1Viewer] [4Viewer = 아이콘 · 영상 유형 · ▾] — 멀티 뷰 버튼은 하나.
                    아이콘·글자 = 멀티 뷰(2X2) 즉시 전환 / ▾ = 영상 유형(동시 포착 · 이동 경로) 목록 -->
               <div class="vm4" id="dtViewSel" data-value="이동 경로">
-                <button class="vm4-go" data-tool="multi" title="멀티 뷰"><svg class="vmi" viewBox="0 0 24 24" aria-hidden="true"><g class="o" fill="none" stroke="currentColor" stroke-width="1.3"><rect x="3" y="5" width="7" height="5" rx=".8"/><rect x="11.5" y="5" width="7" height="5" rx=".8"/><rect x="3" y="11.5" width="7" height="5" rx=".8"/><rect x="11.5" y="11.5" width="4.5" height="5" rx=".8"/></g><g class="f" fill="currentColor"><rect x="3" y="5" width="7" height="5" rx=".8"/><rect x="11.5" y="5" width="7" height="5" rx=".8"/><rect x="3" y="11.5" width="7" height="5" rx=".8"/><rect x="11.5" y="11.5" width="4.5" height="5" rx=".8"/></g><circle class="cut" cx="18" cy="17" r="5"/><circle cx="18" cy="17" r="3.8" fill="none" stroke="currentColor" stroke-width="1.2"/><text x="18" y="19.1" text-anchor="middle" font-size="5.6" font-weight="700" fill="currentColor">4</text></svg><span class="vm4-lb">이동 경로</span></button>
+                <button class="vm4-go" data-tool="multi" title="멀티 뷰"><i class="i i-24 i-g-view4"></i><span class="vm4-lb">이동 경로</span></button>
                 <button class="vm4-dd" title="영상 유형 선택"><i class="i i-16 i-chevron i-down caret"></i></button>
-                <div class="vm4-menu" hidden><div class="vm4-row" data-sub="type"><span class="k">재생 영상</span><b data-cur="type">이동 경로</b><i class="ar">›</i><div class="vm4-sub"><div data-mt="이동 경로" class="on">이동 경로</div><div data-mt="주변 카메라">주변 카메라</div></div></div><div class="vm4-row" data-sub="split"><span class="k">화면 분할</span><b data-cur="split">4분할</b><i class="ar">›</i><div class="vm4-sub"><div data-ms="2">2분할</div><div data-ms="3">3분할</div><div data-ms="4" class="on">4분할</div></div></div></div>
+                <div class="vm4-menu" hidden><div class="vm4-pane" data-pane="main"><div class="vm4-row" data-sub="type"><i class="i i-16 i-g-pcviewer"></i><span class="k">재생영상</span><b data-cur="type">이동 경로</b><i class="i i-16 i-g-more"></i></div><div class="vm4-row" data-sub="split"><i class="i i-16 i-g-fisheye"></i><span class="k">화면 분할</span><b data-cur="split">4분할</b><i class="i i-16 i-g-more"></i></div></div><div class="vm4-pane" data-pane="type" hidden><div class="vm4-back" data-back><i class="i i-16 i-g-more i-left"></i>재생 영상</div><div class="vm4-opt" data-mt="이동 경로">이동 경로</div><div class="vm4-opt" data-mt="주변 카메라">주변 카메라</div></div><div class="vm4-pane" data-pane="split" hidden><div class="vm4-back" data-back><i class="i i-16 i-g-more i-left"></i>화면 분할</div><div class="vm4-opt" data-ms="2">2분할</div><div class="vm4-opt" data-ms="3">3분할</div><div class="vm4-opt" data-ms="4">4분할</div></div></div>
               </div>
               <!-- 설정 버튼 삭제 (2026-09-11 구두) — 오른쪽 도구는 우측 끝에 붙인다 -->
-              <button class="btn-icon" id="dtFull" title="영상 전체보기"><i class="i i-18 i-tool-expand"></i></button>
+              <button class="btn-icon" id="dtFull" title="영상 전체보기"><i class="i i-24 i-g-full"></i></button>
             </div>
           </div>
           <!-- 참고안 : 재생바 아래 별도 줄 — 편집 도구(연필·분할)와 확대 슬라이더 -->
@@ -482,7 +482,7 @@
             </div>
           </div>
           <div class="dt-map" id="dtMap">
-            <img id="dtMapImg" src="assets/img/floor.png?v=202609141828" alt="">
+            <img id="dtMapImg" src="assets/img/floor.png?v=202609141843" alt="">
             <!-- 층별 : 참고안(검색상세 시안_260903)처럼 층을 비스듬히 쌓아
                  층간 이동을 관통선으로 보여준다 -->
             <div class="map-3d" id="dtMap3d" hidden></div>
@@ -833,10 +833,10 @@
 <div class="toast" id="toast" hidden></div>
 
 <script src="assets/vendor/three.r128.min.js"></script>
-<script src="assets/js/floor-tex.js?v=202609141828"></script>
-<script src="assets/js/data.js?v=202609141828"></script>
-<script src="assets/js/map3d.js?v=202609141828"></script>
-<script src="assets/js/app.js?v=202609141828"></script>
+<script src="assets/js/floor-tex.js?v=202609141843"></script>
+<script src="assets/js/data.js?v=202609141843"></script>
+<script src="assets/js/map3d.js?v=202609141843"></script>
+<script src="assets/js/app.js?v=202609141843"></script>
 <script id="booting-guard">
   /* 앱 스크립트가 실패해도 화면은 나와야 한다 */
   setTimeout(function(){ document.body.classList.remove('booting'); }, 1500);

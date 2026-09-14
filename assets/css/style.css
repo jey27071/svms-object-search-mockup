@@ -6229,3 +6229,49 @@ body.dt-b .dt-sec-head.map-ctl #dtBldg .select-menu div.disabled{opacity:.4;poin
   content:attr(data-tip);position:absolute;left:0;top:calc(100% + 4px);z-index:61;pointer-events:none;
   padding:4px;border-radius:3px;background:var(--primary, #2f7de1);color:#fff;font-size:11px;line-height:13px;white-space:nowrap
 }
+
+/* ── GUI 260914 (5254:69513 Video Control · 5254:69626 팝오버) ──
+   아이콘 24 · 버튼 여백 2 · 좌/우 묶음 간격 8 · 가운데 6. 멀티 뷰는 아이콘만(유형·분할은 팝오버) */
+body.dt-b .dt-ctrl .btn-icon:has(> .i-24){width:28px;height:28px;padding:2px}
+body.dt-b .dt-ctrl .grp.c{gap:6px}
+body.dt-b .dt-ctrl .grp.l,body.dt-b .dt-ctrl .grp.r{gap:8px}
+body.dt-b .dt-ctrl .play svg.ic{width:24px;height:24px}
+body.dt-b .dt-ctrl .vm1{border-radius:4px}
+body.dt-b .dt-ctrl .vm1.on{background:rgba(255,255,255,.1);color:var(--primary)}
+body.dt-b .dt-ctrl .vm4 .vm4-lb,body.dt-b .dt-ctrl .vm4 .vm4-dd{display:none}
+body.dt-b .dt-ctrl .vm4{padding:0;height:28px}
+body.dt-b .dt-ctrl .vm4 .vm4-go{width:28px;height:28px;padding:2px;display:flex;align-items:center;justify-content:center}
+/* 영상비율 설정 · 영상 확대 팝오버 : 140 · 행 28 · 12R */
+.v-ratio-pop{width:140px;min-width:140px;padding:4px 0;background:#1c1d23;border:1px solid #3e4049;border-radius:4px;box-sizing:border-box}
+.v-ratio-pop button{display:flex;align-items:center;width:100%;height:28px;padding:0 12px;font-size:12px;line-height:1.3;color:#b8babf}
+.v-ratio-pop button:hover{background:#24252c;color:#ecedf0}
+.v-ratio-pop button.on{color:#4285e8}
+/* 멀티 뷰 팝오버 (GUI 260914 · 5254:69796) : 기본 160 · 목록 140 · 행 28 · 12R */
+body.dt-b .dt-ctrl .vm4 .vm4-menu{
+  top:auto;bottom:calc(100% + 8px);left:auto;right:0;min-width:0;width:160px;padding:8px 0;
+  background:#1c1d23;border:1px solid #3e4049;border-radius:4px;box-sizing:border-box;overflow:visible;z-index:70
+}
+body.dt-b .dt-ctrl .vm4 .vm4-menu:has(> .vm4-pane:not([hidden]):not([data-pane="main"])){width:140px;padding:4px 0}
+body.dt-b .dt-ctrl .vm4 .vm4-menu .vm4-pane[hidden]{display:none}
+body.dt-b .dt-ctrl .vm4 .vm4-menu .vm4-pane[data-pane="main"]{display:flex;flex-direction:column;gap:6px}
+body.dt-b .dt-ctrl .vm4 .vm4-menu > .vm4-pane > div{height:28px;padding:0 12px;margin:0;display:flex;align-items:center;gap:4px;
+  font-size:12px;line-height:1.3;color:#b8babf;background:none;cursor:pointer;white-space:nowrap}
+body.dt-b .dt-ctrl .vm4 .vm4-menu > .vm4-pane > div::before{content:none}
+body.dt-b .dt-ctrl .vm4 .vm4-menu .vm4-row .k{color:#b8babf}
+body.dt-b .dt-ctrl .vm4 .vm4-menu .vm4-row b{margin-left:auto;font-weight:400;color:#4285e8}
+body.dt-b .dt-ctrl .vm4 .vm4-menu .vm4-row > .i-g-more{margin-left:2px}
+body.dt-b .dt-ctrl .vm4 .vm4-menu .vm4-row:hover,
+body.dt-b .dt-ctrl .vm4 .vm4-menu .vm4-opt:hover{background:#24252c;color:#ecedf0}
+body.dt-b .dt-ctrl .vm4 .vm4-menu .vm4-back{padding:0 8px !important;color:#ecedf0 !important;border-bottom:1px solid #2e2f38;height:29px !important}
+body.dt-b .dt-ctrl .vm4 .vm4-menu .vm4-opt.on{color:#4285e8;background:none}
+/* 예전 `.vm4-menu > div`(높이 30 · 여백 · ✓) 규칙이 목록 묶음(.vm4-pane)까지 눌러 행이 16px 로 줄던 문제 */
+body.dt-b .dt-ctrl .vm4 .vm4-menu > .vm4-pane{height:auto;padding:0;margin:0;background:none;cursor:default;display:flex;flex-direction:column;gap:0}
+body.dt-b .dt-ctrl .vm4 .vm4-menu > .vm4-pane[data-pane="main"]{gap:6px}
+body.dt-b .dt-ctrl .vm4 .vm4-menu > .vm4-pane[hidden]{display:none}
+body.dt-b .dt-ctrl .vm4 .vm4-menu > .vm4-pane::before,
+body.dt-b .dt-ctrl .vm4 .vm4-menu > .vm4-pane.on::before{content:none;display:none}
+body.dt-b .dt-ctrl .vm4 .vm4-menu > .vm4-pane:hover{background:none}
+body.dt-b .dt-ctrl .vm4 .vm4-menu > .vm4-pane > div{flex:0 0 28px}
+body.dt-b .dt-ctrl .vm4 .vm4-menu > .vm4-pane > .vm4-back{flex-basis:29px}
+body.dt-b .dt-ctrl .vm4 .vm4-menu > .vm4-pane{align-items:stretch;justify-content:flex-start;text-align:left}
+body.dt-b .dt-ctrl .vm4 .vm4-menu > .vm4-pane > div{justify-content:flex-start;text-align:left;width:auto}
