@@ -2276,7 +2276,7 @@ function tlHMS(d) {
    라벨 하나에 최소 64px 을 확보한다. */
 function tlStep(spanMs, zoom, px) {
   const w = Math.max((px || 900) * zoom, 240);
-  const maxTicks = Math.max(Math.floor(w / 64), 4);
+  const maxTicks = Math.max(Math.floor(w / 48), 4);   /* GUI 260914 : 1280 폭에서 1시간 눈금(약 50px 간격) */
   const cand = [1, 5, 10, 15, 30, 60, 120, 180, 360, 720];
   const mins = spanMs / 6e4;
   return (cand.find(m => mins / m <= maxTicks) || 1440) * 6e4;
@@ -2346,7 +2346,8 @@ function renderTimeline(host, tracks, opt = {}) {
     const isNewDay = day !== lastDay;
     ticks += `<span class="tk" style="left:${p}%"></span>`;
     /* 맨 끝(다음날 08:00) 라벨은 오른쪽으로 삐져나와 가로 스크롤을 만든다 — 시안도 07:00 까지 */
-    if (p < 99.5) ticks += `<span class="tl-lb" style="left:${p}%">${tlHM(d)}</span>`;
+    /* GUI 260914 : 자정 눈금은 `24:00` 으로 적는다 */
+    if (p < 99.5) ticks += `<span class="tl-lb" style="left:${p}%">${isNewDay && lastDay && tlHM(d) === '00:00' ? '24:00' : tlHM(d)}</span>`;
     /* 날짜가 바뀌는 지점에만 날짜를 적는다 */
     if (isNewDay && lastDay) {
       ticks += `<span class="tl-day" style="left:${p}%">${day}</span>`;
@@ -2415,13 +2416,13 @@ function renderTimeline(host, tracks, opt = {}) {
     <div class="tl-foot">
       <div class="tf-l">
         <!-- ✎ = 경로 편집(영상 선택·추가) / 필름 = 영상 편집(클립 길이) — 2026-09-11 구두로 기능 맞바꿈 -->
-        <button class="btn-icon" data-tledit title="경로 편집"><svg viewBox="0 0 16 16" class="ic" aria-hidden="true"><path d="M3 13l.6-2.6L10.4 3.6a1.1 1.1 0 011.6 0l.4.4a1.1 1.1 0 010 1.6L5.6 12.4z" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><path d="M9.4 4.6l2 2" stroke="currentColor" stroke-width="1.2"/></svg></button>
-        <button class="btn-icon${tlEditOn() ? ' on' : ''}" data-tlvedit title="영상 클립 편집"><svg viewBox="0 0 16 16" class="ic" aria-hidden="true"><circle cx="4" cy="4.5" r="2" fill="none" stroke="currentColor" stroke-width="1.2"/><circle cx="4" cy="11.5" r="2" fill="none" stroke="currentColor" stroke-width="1.2"/><path d="M5.7 5.6L14 12.5M5.7 10.4L14 3.5" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></button>
+        <button class="btn-icon" data-tledit title="경로 편집"><i class="i i-24 i-g-write"></i></button>
+        <button class="btn-icon${tlEditOn() ? ' on' : ''}" data-tlvedit title="영상 클립 편집"><i class="i i-24 i-g-editmovie"></i></button>
       </div>
       <div class="tf-zoom" title="타임라인 확대/축소">
-        <button class="btn-icon zb" data-tlz="out" title="축소"><svg viewBox="0 0 16 16" class="ic" aria-hidden="true"><circle cx="7" cy="7" r="4.6" fill="none" stroke="currentColor" stroke-width="1.2"/><path d="M10.4 10.4L14 14M5 7h4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></button>
+        <button class="btn-icon zb" data-tlz="out" title="축소"><i class="i i-24 i-g-zoomout"></i></button>
         <input type="range" class="tl-zr" min="1" max="8" step="1" value="${TL.zoom}">
-        <button class="btn-icon zb" data-tlz="in" title="확대"><svg viewBox="0 0 16 16" class="ic" aria-hidden="true"><circle cx="7" cy="7" r="4.6" fill="none" stroke="currentColor" stroke-width="1.2"/><path d="M10.4 10.4L14 14M5 7h4M7 5v4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></button>
+        <button class="btn-icon zb" data-tlz="in" title="확대"><i class="i i-24 i-g-zoomin"></i></button>
       </div>
       <div class="tf-r">${opt.edit ? `
         <button class="btn-ghost sm" data-tledcancel>취소</button>
@@ -2993,7 +2994,7 @@ function paneToolsHTML(kind, i) {
 function paneBody(kind, i) {
   if (kind === 'map') {
     return `<div class="pn-map">
-      <img src="assets/img/floor.png?v=202609141848" alt="맵뷰">
+      <img src="assets/img/floor.png?v=202609141850" alt="맵뷰">
       ${PANE.mapTools.includes('path') ? paneMapPathHTML() : ''}
       ${PANE.mapTools.includes('cctv') ? `<div class="pn-cones">${MAP_CCTV.map(c =>
         `<span class="map-cone" style="left:${c.x}%;top:${c.y}%;rotate:${c.deg}deg"><i></i><b></b></span>`).join('')}</div>` : ''}
@@ -3075,7 +3076,7 @@ function renderPanes() {
     if (PANE.kind[0] !== 'map') v.insertAdjacentHTML('beforeend', paneToolsHTML('video', 0));
     if (PANE.kind[0] === 'map') {
       v.insertAdjacentHTML('afterbegin', `<div class="pn-map">
-        <img src="assets/img/floor.png?v=202609141848" alt="맵뷰">
+        <img src="assets/img/floor.png?v=202609141850" alt="맵뷰">
         ${PANE.mapTools.includes('path') ? paneMapPathHTML() : ''}
         ${PANE.mapTools.includes('cctv') ? `<div class="pn-cones">${MAP_CCTV.map(c =>
           `<span class="map-cone" style="left:${c.x}%;top:${c.y}%;rotate:${c.deg}deg"><i></i><b></b></span>`).join('')}</div>` : ''}
@@ -3955,7 +3956,7 @@ function renderMap3d(paths) {
     const poly = polys ? `<svg class="m3-path" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${polys}</svg>` : '';
     /* 위층이 앞(위)에 오도록 쌓는다 — DOM 순서대로면 아래층이 덮는다 */
     return `<div class="m3-floor${pl.some(({ pts }) => onFl(pts).length) ? '' : ' dim'}" data-fl="${f.label}" style="--i:${fi};z-index:${M3_FLOORS.length - fi}">
-      <img src="assets/img/floor.png?v=202609141848" alt="">
+      <img src="assets/img/floor.png?v=202609141850" alt="">
       ${poly}
       ${pl.map(({ p, pts }) => onFl(pts).map(t => `<span class="map-wp" data-pt="${f.key}-${p.slot}-${t.n}" data-cam="${t.cam}"
           data-hh="${t.hh}" data-x="${t.x}" data-y="${t.y}"
@@ -4194,7 +4195,7 @@ function spreadMapLabels(host, sel) {
 $$('#dtMapSeg button').forEach(b => b.onclick = () => {
   $$('#dtMapSeg button').forEach(x => x.classList.toggle('on', x === b));
   DT.map = b.dataset.m;
-  $('#dtMapImg').src = DT.map === 'map' ? 'assets/img/map.png?v=202609141848' : 'assets/img/floor.png?v=202609141848';
+  $('#dtMapImg').src = DT.map === 'map' ? 'assets/img/map.png?v=202609141850' : 'assets/img/floor.png?v=202609141850';
   $('#dtFloor').hidden = true;                 /* 층 배지는 3D 각 층에 붙는다 */
   renderMap3d(MAP_PATHS_CACHE);
 });
@@ -4883,7 +4884,7 @@ function mvwPaths() {
 }
 function renderMapView() {
   const paths = mvwPaths();
-  const mapImg = DT.map === 'map' ? 'assets/img/map.png?v=202609141848' : 'assets/img/floor.png?v=202609141848';
+  const mapImg = DT.map === 'map' ? 'assets/img/map.png?v=202609141850' : 'assets/img/floor.png?v=202609141850';
   const seg = `<div class="seg"><button class="${DT.map === 'map' ? 'on' : ''}" data-mm="map">지도</button><button class="${DT.map === 'map' ? '' : 'on'}" data-mm="floor">층별</button></div>`;
   /* 사양서 Detail_000_4 · 4-4) : 주변 카메라 / 이동 경로 / 전체 보기
      이동 경로는 **단일 대상일 때 비활성** (그룹·경로비교에서만 사용) */
@@ -4945,7 +4946,7 @@ function renderMapView() {
   /* 바인딩 */
   $$('#mvwBody [data-mm]').forEach(b => b.onclick = () => {
     DT.map = b.dataset.mm;
-    $('#dtMapImg').src = DT.map === 'map' ? 'assets/img/map.png?v=202609141848' : 'assets/img/floor.png?v=202609141848';
+    $('#dtMapImg').src = DT.map === 'map' ? 'assets/img/map.png?v=202609141850' : 'assets/img/floor.png?v=202609141850';
     $('#dtFloor').hidden = DT.map === 'map';
     renderMapView();
   });
@@ -6080,7 +6081,7 @@ function csDetailHTML(c) {
           <button class="btn-ghost sm" style="margin-left:auto" data-csmap>전체 보기</button>
         </div>
         <div style="position:relative;height:196px;border-radius:6px;overflow:hidden;background:var(--bg-1);border:1px solid var(--ln-subtle)">
-          <img src="assets/img/map.png?v=202609141848" style="width:100%;height:100%;object-fit:cover;opacity:.85" alt="">
+          <img src="assets/img/map.png?v=202609141850" style="width:100%;height:100%;object-fit:cover;opacity:.85" alt="">
           ${c.path.map((p, i) => {
             const x = 16 + (i * 23) % 68, y = 22 + (i * 17) % 54;
             return `<span style="position:absolute;left:${x}%;top:${y}%;width:9px;height:9px;border-radius:50%;
@@ -7866,7 +7867,7 @@ function renderZoneMap(host, pts, color) {
   /* 경로 비교면 경로 묶음([{ slot, pts, off }])을 받아 인물마다 선·지점을 그린다 */
   const groups = Array.isArray(pts) && pts[0] && pts[0].pts ? pts : [{ slot: '', pts, off: false }];
   const col = g => (g.slot ? slotColor(g.slot) : color);
-  zm.innerHTML = `<div class="zm-stage"><img src="assets/img/map.png?v=202609141848" alt="외부 지도" draggable="false">
+  zm.innerHTML = `<div class="zm-stage"><img src="assets/img/map.png?v=202609141850" alt="외부 지도" draggable="false">
       <svg class="zm-path" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${groups.map(g => {
         const seq = g.pts.slice().sort((a, b) => a.n - b.n);
         return seq.length > 1 ? `<polyline points="${seq.map(t => `${t.x},${t.y}`).join(' ')}" fill="none" stroke="${col(g)}" stroke-width="2.5"
@@ -7945,7 +7946,7 @@ function renderFloorPane(host, pts, color) {
   const fl = last ? m3FloorOf(last.cam) : '1F';
   const mine = pts.filter(t => m3FloorOf(t.cam) === fl).sort((a, b) => a.n - b.n);
   const flb = (M3_FLOORS.find(f => f.key === fl) || {}).label || fl;
-  fp.innerHTML = `<img src="assets/img/floor.png?v=202609141848" alt=""><span class="dt-floor">${flb}</span>
+  fp.innerHTML = `<img src="assets/img/floor.png?v=202609141850" alt=""><span class="dt-floor">${flb}</span>
     <svg class="zp-path" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${mine.length > 1
       ? `<polyline points="${mine.map(t => `${t.x},${t.y}`).join(' ')}" fill="none" stroke="${color}" stroke-width="2" vector-effect="non-scaling-stroke"/>` : ''}</svg>
     ${mine.map(t => `<span class="map-wp" data-cam="${t.cam}" data-hh="${t.hh}" data-x="${t.x}" data-y="${t.y}"
