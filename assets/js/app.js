@@ -2997,7 +2997,7 @@ function paneToolsHTML(kind, i) {
 function paneBody(kind, i) {
   if (kind === 'map') {
     return `<div class="pn-map">
-      <img src="assets/img/floor.png?v=202609142207" alt="맵뷰">
+      <img src="assets/img/floor.png?v=202609142217" alt="맵뷰">
       ${PANE.mapTools.includes('path') ? paneMapPathHTML() : ''}
       ${PANE.mapTools.includes('cctv') ? `<div class="pn-cones">${MAP_CCTV.map(c =>
         `<span class="map-cone" style="left:${c.x}%;top:${c.y}%;rotate:${c.deg - 90}deg"><i></i><b></b></span>`).join('')}</div>` : ''}
@@ -3079,7 +3079,7 @@ function renderPanes() {
     if (PANE.kind[0] !== 'map') v.insertAdjacentHTML('beforeend', paneToolsHTML('video', 0));
     if (PANE.kind[0] === 'map') {
       v.insertAdjacentHTML('afterbegin', `<div class="pn-map">
-        <img src="assets/img/floor.png?v=202609142207" alt="맵뷰">
+        <img src="assets/img/floor.png?v=202609142217" alt="맵뷰">
         ${PANE.mapTools.includes('path') ? paneMapPathHTML() : ''}
         ${PANE.mapTools.includes('cctv') ? `<div class="pn-cones">${MAP_CCTV.map(c =>
           `<span class="map-cone" style="left:${c.x}%;top:${c.y}%;rotate:${c.deg - 90}deg"><i></i><b></b></span>`).join('')}</div>` : ''}
@@ -3680,13 +3680,14 @@ function setAreaTool(mode) {
 /* 사양 §7-3 : 영역/선을 그린 뒤 컨트롤 바.
    선 검색에는 `방향 지정`(Default `In`)이 붙고, 검색 전에는 `재실행`·`검색`,
    검색 뒤에는 `재실행`·`종료` 가 된다. */
-function areaBar(left, top, a) {
-  /* v0.8 : 단일 객체 검출 = 취소 · 확인 / 그 외 = (방향 지정) · 재실행 · 검색 */
-  if (a.single) return `<div class="area-bar" style="left:${left}%;top:${top}">
-    <button data-abcancel>취소</button><button data-abok class="ab-go">확인</button></div>`;
-  return `<div class="area-bar" style="left:${left}%;top:${top}">
-    ${a.mode === 'line' ? `<button data-abdir class="ab-dir${a.dirOn ? ' on' : ''}" title="진행 방향 화살표 표시">방향 지정</button>` : ''}
-    <button data-abreset>${ICON2.reset}재실행</button>
+function areaBar(left, top, a, anchor = 'c') {
+  /* GUI 260914 (5254:70154 · 5255:99022 · 5254:70186)
+     단일 객체 검출 = `취소 | 확인` 한 덩어리(객체 박스 오른쪽 아래) / 그 외 = ↻(28) · 검색(64×28).
+     선 검색의 방향은 선 가운데 방향 원을 눌러 바꾼다 — `방향 지정` 버튼 삭제 */
+  if (a.single) return `<div class="area-bar ab-r" style="left:${left}%;top:${top}">
+    <div class="ab-pair"><button data-abcancel>취소</button><i class="ab-sep"></i><button data-abok class="ab-ok">확인</button></div></div>`;
+  return `<div class="area-bar ab-${anchor}" style="left:${left}%;top:${top}">
+    <button data-abreset class="ab-reset" title="재실행"><i class="i i-16 i-g-clockwise"></i></button>
     <button data-abgo class="ab-go">검색</button>
   </div>`;
 }
@@ -3703,23 +3704,33 @@ function renderArea() {
       <span style="left:-5px;top:-5px"></span><span style="right:-5px;top:-5px"></span>
       <span style="left:-5px;bottom:-5px"></span><span style="right:-5px;bottom:-5px"></span></div>`;
     /* 영역 안 객체가 1개면 그 객체에 바운딩 박스 */
-    if (a.done && a.single) h += `<div class="area-obj" style="left:${x + w * 0.3}%;top:${y + hh * 0.12}%;width:${w * 0.4}%;height:${hh * 0.76}%"></div>`;
-    if (a.done) h += areaBar(x + w - 20, `calc(${y + hh}% + 8px)`, a);
+    if (a.done && a.single) {
+      const ox = x + w * 0.3, oy = y + hh * 0.12, ow = w * 0.4, oh = hh * 0.76;
+      h += `<div class="area-obj" style="left:${ox}%;top:${oy}%;width:${ow}%;height:${oh}%"></div>`;
+      h += areaBar(ox + ow, `calc(${oy + oh}% + 8px)`, a);
+    } else if (a.done) h += areaBar(x + w / 2, `calc(${y + hh}% + 12px)`, a, 'c');
   }
   if (a.mode === 'line' && a.line) {
     const [x1, y1, x2, y2] = a.line;
+    /* GUI 260914 (5254:70190) : 초록 점선 · 빨간 끝점 12 · 가운데 방향 원(36, 누르면 반대 방향) */
     h += `<div class="area-line"><svg viewBox="0 0 100 100" preserveAspectRatio="none">
-      <defs><marker id="lah" markerWidth="5" markerHeight="5" refX="3" refY="2.5" orient="auto"><path d="M0,0 L5,2.5 L0,5 z" fill="#0099ff"/></marker></defs>
-      <path d="M${x1},${y1} L${x2},${y2}" stroke="#0099ff" stroke-width="2.4" stroke-dasharray="5 4" fill="none" marker-end="url(#lah)" vector-effect="non-scaling-stroke"/></svg>
-      <span style="position:absolute;left:${x1}%;top:${y1}%;transform:translate(-50%,-50%);width:13px;height:13px;border-radius:50%;background:#0099ff;border:2px solid #fff" class="fence-pt">1</span>
-      <span style="position:absolute;left:${x2}%;top:${y2}%;transform:translate(-50%,-50%);width:13px;height:13px;border-radius:50%;background:#0099ff;border:2px solid #fff" class="fence-pt">2</span></div>`;
-    if (a.done && a.dirOn) {
+      <path d="M${x1},${y1} L${x2},${y2}" stroke="#0FF000" stroke-width="2" stroke-dasharray="4 4" fill="none" vector-effect="non-scaling-stroke"/></svg>
+      <span class="fence-pt" style="left:${x1}%;top:${y1}%"></span><span class="fence-pt" style="left:${x2}%;top:${y2}%"></span></div>`;
+    if (a.done) {
+      const vb = $('#dtVideo').getBoundingClientRect();
+      const ang = Math.atan2((y2 - y1) * vb.height, (x2 - x1) * vb.width) * 180 / Math.PI + 90 * (a.dir || 1);
+      a.dirOn = true;   /* 방향은 항상 표시 — 기본 한쪽 방향 */
+      h += `<button class="area-dir" data-abarrow title="눌러서 방향 바꾸기" style="left:${(x1 + x2) / 2}%;top:${(y1 + y2) / 2}%"><img src="assets/img/area-direction.svg?v=202609142217" alt="" style="transform:rotate(${ang + 45}deg)"></button>`;
+      const ex = x1 >= x2 ? x1 : x2, ey = x1 >= x2 ? y1 : y2;
+      h += areaBar(ex, `calc(${ey}% + 14px)`, a, 'r');
+    }
+    if (false) {
       /* 방향 화살표 : 선 중앙, 선에 수직. 누르면 반대 방향 */
       const vb = $('#dtVideo').getBoundingClientRect();
       const ang = Math.atan2((y2 - y1) * vb.height, (x2 - x1) * vb.width) * 180 / Math.PI + 90 * (a.dir || 1);
       h += `<button class="area-arrow" data-abarrow title="눌러서 방향 바꾸기" style="left:${(x1 + x2) / 2}%;top:${(y1 + y2) / 2}%;transform:translate(-50%,-50%) rotate(${ang}deg)"><svg viewBox="0 0 24 12" aria-hidden="true"><path d="M1 6h19M15 1.5L21 6l-6 4.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>`;
     }
-    if (a.done) h += areaBar((x1 + x2) / 2 - 4, `${(y1 + y2) / 2 + 4}%`, a);
+
   }
   if (!a.rect && !a.line) h += `<div style="position:absolute;left:50%;top:14px;transform:translateX(-50%);padding:4px 11px;border-radius:12px;background:rgba(10,16,26,.86);border:1px solid rgba(255,255,255,.16);font-size:11px">영상 위에 ${a.mode === 'shape' ? '드래그해 영역을' : '시작점과 종료점을 클릭해 기준선을'} 그려 주세요 (ESC 로 종료)</div>`;
   box.innerHTML = h;
@@ -3959,7 +3970,7 @@ function renderMap3d(paths) {
     const poly = polys ? `<svg class="m3-path" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${polys}</svg>` : '';
     /* 위층이 앞(위)에 오도록 쌓는다 — DOM 순서대로면 아래층이 덮는다 */
     return `<div class="m3-floor${pl.some(({ pts }) => onFl(pts).length) ? '' : ' dim'}" data-fl="${f.label}" style="--i:${fi};z-index:${M3_FLOORS.length - fi}">
-      <img src="assets/img/floor.png?v=202609142207" alt="">
+      <img src="assets/img/floor.png?v=202609142217" alt="">
       ${poly}
       ${pl.map(({ p, pts }) => onFl(pts).map(t => `<span class="map-wp" data-pt="${f.key}-${p.slot}-${t.n}" data-cam="${t.cam}"
           data-hh="${t.hh}" data-x="${t.x}" data-y="${t.y}"
@@ -4198,7 +4209,7 @@ function spreadMapLabels(host, sel) {
 $$('#dtMapSeg button').forEach(b => b.onclick = () => {
   $$('#dtMapSeg button').forEach(x => x.classList.toggle('on', x === b));
   DT.map = b.dataset.m;
-  $('#dtMapImg').src = DT.map === 'map' ? 'assets/img/map.png?v=202609142207' : 'assets/img/floor.png?v=202609142207';
+  $('#dtMapImg').src = DT.map === 'map' ? 'assets/img/map.png?v=202609142217' : 'assets/img/floor.png?v=202609142217';
   $('#dtFloor').hidden = true;                 /* 층 배지는 3D 각 층에 붙는다 */
   renderMap3d(MAP_PATHS_CACHE);
 });
@@ -4887,7 +4898,7 @@ function mvwPaths() {
 }
 function renderMapView() {
   const paths = mvwPaths();
-  const mapImg = DT.map === 'map' ? 'assets/img/map.png?v=202609142207' : 'assets/img/floor.png?v=202609142207';
+  const mapImg = DT.map === 'map' ? 'assets/img/map.png?v=202609142217' : 'assets/img/floor.png?v=202609142217';
   const seg = `<div class="seg"><button class="${DT.map === 'map' ? 'on' : ''}" data-mm="map">지도</button><button class="${DT.map === 'map' ? '' : 'on'}" data-mm="floor">층별</button></div>`;
   /* 사양서 Detail_000_4 · 4-4) : 주변 카메라 / 이동 경로 / 전체 보기
      이동 경로는 **단일 대상일 때 비활성** (그룹·경로비교에서만 사용) */
@@ -4949,7 +4960,7 @@ function renderMapView() {
   /* 바인딩 */
   $$('#mvwBody [data-mm]').forEach(b => b.onclick = () => {
     DT.map = b.dataset.mm;
-    $('#dtMapImg').src = DT.map === 'map' ? 'assets/img/map.png?v=202609142207' : 'assets/img/floor.png?v=202609142207';
+    $('#dtMapImg').src = DT.map === 'map' ? 'assets/img/map.png?v=202609142217' : 'assets/img/floor.png?v=202609142217';
     $('#dtFloor').hidden = DT.map === 'map';
     renderMapView();
   });
@@ -6084,7 +6095,7 @@ function csDetailHTML(c) {
           <button class="btn-ghost sm" style="margin-left:auto" data-csmap>전체 보기</button>
         </div>
         <div style="position:relative;height:196px;border-radius:6px;overflow:hidden;background:var(--bg-1);border:1px solid var(--ln-subtle)">
-          <img src="assets/img/map.png?v=202609142207" style="width:100%;height:100%;object-fit:cover;opacity:.85" alt="">
+          <img src="assets/img/map.png?v=202609142217" style="width:100%;height:100%;object-fit:cover;opacity:.85" alt="">
           ${c.path.map((p, i) => {
             const x = 16 + (i * 23) % 68, y = 22 + (i * 17) % 54;
             return `<span style="position:absolute;left:${x}%;top:${y}%;width:9px;height:9px;border-radius:50%;
@@ -7708,15 +7719,15 @@ function openAreaSearch(a) {
     const render = () => {
       const list = items.filter(x => kind === '전체' || x.kind === kind);
       md.innerHTML = `
-        <div class="md-head"><div><h3>영역 검색</h3><p>영역에서 자동 검출된 인물을 검색할 수 있습니다.</p></div>
-          <button class="btn-icon" data-asclose title="닫기">&#10005;</button></div>
+        <div class="md-head"><div><h3>영역 검색</h3><p>영역에서 자동 추출된 인물을 검색할 수 있습니다.</p></div>
+          <button class="btn-icon" data-asclose title="닫기"><i class="i i-g-close"></i></button></div>
         <div class="md-body">
           <div class="as-pic"><img src="${src}" alt="">${items.map((x, i) => `<i class="as-box" style="left:${a.rect[0] + a.rect[2] * (0.15 + i * 0.16)}%;top:${a.rect[1] + a.rect[3] * 0.18}%;width:${a.rect[2] * 0.12}%;height:${a.rect[3] * 0.6}%"></i>`).join('')}</div>
           <div class="as-filters">${['전체', '얼굴', '외형'].map(k => `<button class="${k === kind ? 'on' : ''}" data-ask="${k}">${k}</button>`).join('')}</div>
           ${list.length ? `<div class="as-grid">${list.map(x => `
-            <button class="as-card${x.id === sel ? ' on' : ''}" data-asid="${x.id}"><img src="${x.img}" alt=""><em class="as-tag">${x.kind}</em>
-              <span>${x.t}</span></button>`).join('')}</div>`
-            : `<div class="as-empty">검출된 인물이 없습니다.</div>`}
+            <button class="as-card${x.id === sel ? ' on' : ''}" data-asid="${x.id}"><span class="as-img"><img src="${x.img}" alt=""></span>
+              <span class="as-wrap"><em class="as-tag${x.kind === '외형' ? ' body' : ''}">${x.kind}</em><span class="as-t">${x.t}</span></span></button>`).join('')}</div>`
+            : `<div class="as-empty">추출된 인물이 없습니다.</div>`}
         </div>
         <div class="md-foot"><button class="btn-ghost" data-asclose>취소</button>
           <button class="btn-primary" id="asGo" ${sel && list.some(x => x.id === sel) ? '' : 'disabled'}>검색</button></div>`;
@@ -7734,32 +7745,67 @@ function openAreaSearch(a) {
   }
   /* v0.8 PTS_DTL_SRC_0001_2 : 기준선을 통과한 이벤트 영상(시간순) → 1개 선택 → 다음 → 인물 선택 */
   const len = Math.hypot(a.line[2] - a.line[0], a.line[3] - a.line[1]);
-  const clips = len < 6 ? [] : OBJECTS.slice(0, 6).slice().sort((x, y) => x.t.localeCompare(y.t));
+  const clips = len < 6 ? [] : OBJECTS.slice(0, 13).slice().sort((x, y) => y.sim - x.sim);
   let sel = (S._fence && S._fence.a === a) ? S._fence.sel : null;
+  const fz = S._fence && S._fence.ui ? S._fence.ui : { cols: 5, view: '썸네일' };
+  md.classList.remove('orig');
   const render = () => {
+    md.classList.toggle('orig', fz.view === '원본');
     md.innerHTML = `
       <div class="md-head"><div><h3>가상펜스 검색</h3><p>가상 선을 통과하는 인물을 검색할 수 있습니다.</p></div>
-        <button class="btn-icon" data-asclose title="닫기">&#10005;</button></div>
+        <button class="btn-icon" data-asclose title="닫기"><i class="i i-g-close"></i></button></div>
       <div class="md-body">
-        <div class="fs-tools"><span class="rc">총 <em class="rc-badge">${clips.length}</em> 건</span><span class="fs-dir">방향 ${a.dirOn ? ((a.dir || 1) > 0 ? '→ 정방향' : '← 역방향') : '양방향'}</span></div>
-        ${clips.length ? `<div class="fs-grid">${clips.map(o => `
-          <button class="fs-card${o.id === sel ? ' on' : ''}" data-fsid="${o.id}"><img src="${srcVideo(o.cam) || o.img}" alt="">
-            <span class="sim ${simCls(o.sim)}">${o.sim}%</span>
-            <span class="fs-meta"><b>가상펜스</b><em>${o.cam}</em><i>${String(o.t).slice(0, 16)}</i></span></button>`).join('')}</div>`
+        <div class="fs-tools"><b class="fs-total">총 ${clips.length}건</b>
+          <div class="fs-right">
+            <span class="fs-size" title="썸네일 크기"><i class="i i-16 i-image"></i><input type="range" min="3" max="6" step="1" value="${8 - fz.cols}" data-fscols><i class="i i-image"></i></span>
+            <span class="fs-sort">유사도순${ICON.caret}</span>
+            <span class="fs-view">${['썸네일', '원본'].map(v => `<button type="button" class="${fz.view === v ? 'on' : ''}" data-fsview="${v}">${v}</button>`).join('')}</span>
+          </div></div>
+        ${clips.length ? `<div class="fs-grid" style="--fs-cols:${fz.cols}">${clips.map(o => `
+          <button class="fs-card${o.id === sel ? ' on' : ''}" data-fsid="${o.id}"><span class="fs-img"><img src="${srcVideo(o.cam) || o.img}" alt="">
+            <span class="sim ${simCls(o.sim)}">${o.sim}%</span></span>
+            <span class="fs-wrap"><b>${o.cam}</b><i>${String(o.t).slice(0, 16)}</i></span></button>`).join('')}</div>`
           : `<div class="as-empty">해당 기준선을 통과한 이벤트 영상이 없습니다.</div>`}
       </div>
       <div class="md-foot"><button class="btn-ghost" data-asclose>취소</button>
         <button class="btn-primary" id="fsNext" ${sel ? '' : 'disabled'}>다음</button></div>`;
     md.querySelectorAll('[data-asclose]').forEach(b => b.onclick = close);
     md.querySelectorAll('[data-fsid]').forEach(b => b.onclick = () => { sel = sel === b.dataset.fsid ? null : b.dataset.fsid; render(); });
+    const zr = md.querySelector('[data-fscols]'); if (zr) zr.oninput = () => { fz.cols = 8 - +zr.value; const g = md.querySelector('.fs-grid'); if (g) g.style.setProperty('--fs-cols', fz.cols); };
+    md.querySelectorAll('[data-fsview]').forEach(b => b.onclick = () => { fz.view = b.dataset.fsview; render(); });
     const nx = md.querySelector('#fsNext');
-    if (nx) nx.onclick = () => {
-      const o = findObj(sel); if (!o) return;
-      S._fence = { a, sel };
-      close();
-      S._imgFrom = 'fence';
-      loadImage(srcVideo(o.cam) || o.img);   /* 인물 선택 팝업 (이미지 검색과 같은 흐름) */
+    if (nx) nx.onclick = () => { const o = findObj(sel); if (!o) return; S._fence = { a, sel, ui: fz }; renderPick(o); };
+  };
+  /* 2단계 : 고른 통과 영상에서 자동 추출된 인물 → 1명 선택 → 검색 (5254:70347 오른쪽 · 이전/검색) */
+  const renderPick = o => {
+    const frame = srcVideo(o.cam) || o.img;
+    const people = [{ id: 'fp0', img: o.img, kind: '외형', t: String(o.t).slice(11, 19), o }];
+    let kind = '전체', pick = people[0].id;
+    const draw = () => {
+      md.classList.remove('orig');
+      const list = people.filter(x => kind === '전체' || x.kind === kind);
+      md.innerHTML = `
+        <div class="md-head"><div><h3>가상펜스 검색</h3><p>선택한 영상에서 자동 추출된 인물을 검색할 수 있습니다.</p></div>
+          <button class="btn-icon" data-asclose title="닫기"><i class="i i-g-close"></i></button></div>
+        <div class="md-body">
+          <div class="as-pic"><img src="${frame}" alt=""><i class="as-box" style="left:73%;top:4%;width:11%;height:46%"></i></div>
+          <div class="as-filters">${['전체', '얼굴', '외형'].map(k => `<button class="${k === kind ? 'on' : ''}" data-ask="${k}">${k}</button>`).join('')}</div>
+          ${list.length ? `<div class="as-grid">${list.map(x => `
+            <button class="as-card${x.id === pick ? ' on' : ''}" data-asid="${x.id}"><span class="as-img"><img src="${x.img}" alt=""></span>
+              <span class="as-wrap"><em class="as-tag${x.kind === '외형' ? ' body' : ''}">${x.kind}</em><span class="as-t">${x.t}</span></span></button>`).join('')}</div>`
+            : `<div class="as-empty">추출된 인물이 없습니다.</div>`}
+        </div>
+        <div class="md-foot"><button class="btn-ghost" data-fsprev>이전</button>
+          <button class="btn-primary" id="fpGo" ${pick && list.some(x => x.id === pick) ? '' : 'disabled'}>검색</button></div>`;
+      md.classList.remove('fence');
+      md.querySelectorAll('[data-asclose]').forEach(b => b.onclick = close);
+      md.querySelectorAll('[data-ask]').forEach(b => b.onclick = () => { kind = b.dataset.ask; draw(); });
+      md.querySelectorAll('[data-asid]').forEach(b => b.onclick = () => { pick = pick === b.dataset.asid ? null : b.dataset.asid; draw(); });
+      md.querySelector('[data-fsprev]').onclick = () => { md.classList.add('fence'); render(); };
+      const go = md.querySelector('#fpGo');
+      if (go) go.onclick = () => { close(); DT.area = null; renderArea(); applyTools(); openReid(o.id); };
     };
+    draw();
   };
   render(); openModal('#mdAreaSearch');
 }
@@ -7872,7 +7918,7 @@ function renderZoneMap(host, pts, color) {
   /* 경로 비교면 경로 묶음([{ slot, pts, off }])을 받아 인물마다 선·지점을 그린다 */
   const groups = Array.isArray(pts) && pts[0] && pts[0].pts ? pts : [{ slot: '', pts, off: false }];
   const col = g => (g.slot ? slotColor(g.slot) : color);
-  zm.innerHTML = `<div class="zm-stage"><img src="assets/img/map.png?v=202609142207" alt="외부 지도" draggable="false">
+  zm.innerHTML = `<div class="zm-stage"><img src="assets/img/map.png?v=202609142217" alt="외부 지도" draggable="false">
       <svg class="zm-path" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${groups.map(g => {
         const seq = g.pts.slice().sort((a, b) => a.n - b.n);
         return seq.length > 1 ? `<polyline points="${seq.map(t => `${t.x},${t.y}`).join(' ')}" fill="none" stroke="${col(g)}" stroke-width="2.5"
@@ -7955,7 +8001,7 @@ function renderFloorPane(host, pts, color) {
   const mine = pts.filter(t => m3FloorOf(t.cam) === fl).sort((a, b) => a.n - b.n);
   const flb = (M3_FLOORS.find(f => f.key === fl) || {}).label || fl;
   /* GUI 260914 : 도면은 원본 비율로 가운데(흰 판) — 좌표는 flatU 로 도면 기준 */
-  fp.innerHTML = `<div class="zp-stage"><img src="assets/img/floor.png?v=202609142207" alt=""><span class="dt-floor">${flb}</span>
+  fp.innerHTML = `<div class="zp-stage"><img src="assets/img/floor.png?v=202609142217" alt=""><span class="dt-floor">${flb}</span>
     <svg class="zp-path" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${mine.length > 1
       ? `<polyline points="${mine.map(t => `${flatU(t.x)},${t.y}`).join(' ')}" fill="none" stroke="${color}" stroke-width="2" vector-effect="non-scaling-stroke"/>` : ''}</svg>
     ${mine.map(t => `<span class="map-wp" data-cam="${t.cam}" data-hh="${t.hh}" data-x="${flatU(t.x)}" data-y="${t.y}"

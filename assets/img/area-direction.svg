@@ -1,0 +1,13 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Direction">
+<circle id="Ellipse 5601" cx="18" cy="18" r="18" fill="#6EFF00"/>
+<g id="arrow_cool_down">
+<mask id="mask0_0_13" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="7" y="8" width="21" height="20">
+<rect id="Bounding box" x="7.65234" y="8" width="20" height="20" fill="#D9D9D9"/>
+</mask>
+<g mask="url(#mask0_0_13)">
+<path id="arrow_cool_down_2" d="M17.6536 26.3327L11.8203 20.4993L12.987 19.3118L16.8203 23.1452V17.166H18.487V23.1452L22.3203 19.3327L23.487 20.4993L17.6536 26.3327ZM16.8203 15.4993V12.9993H18.487V15.4993H16.8203ZM16.8203 11.3327V9.66602H18.487V11.3327H16.8203Z" fill="#1C1B1F"/>
+</g>
+</g>
+</g>
+</svg>
