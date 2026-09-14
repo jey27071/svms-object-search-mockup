@@ -81,11 +81,11 @@ const M3D = (() => {
 
     ov = document.createElement('div'); ov.className = 'm3g-ov'; host.appendChild(ov);
     tip = document.createElement('div'); tip.className = 'm3g-tip';
-    tip.textContent = '마우스를 드래그하여 시점을 변경할 수 있습니다.'; tip.hidden = true;
+    tip.textContent = '마우스를 드래그하여 360° 로\n회전할 수 있습니다.';   /* 시안 줄바꿈 그대로 */ tip.hidden = true;
     hint = document.createElement('div'); hint.className = 'm3g-hint'; hint.textContent = '드래그하여 360° 로 보기';
     btn3d = document.createElement('button'); btn3d.className = 'm3g-3d'; btn3d.type = 'button';
     btn3d.title = '3D 조작'; btn3d.setAttribute('aria-label', '3D 조작');
-    btn3d.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7.5 4.2v9.6L12 21l-7.5-4.2V7.2z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M4.5 7.2L12 11.4l7.5-4.2M12 11.4V21" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>`;
+    btn3d.innerHTML = `<img src="assets/img/ic-3d.svg" alt="">`;
     btn3d.onclick = e => { e.stopPropagation(); rotateOn = !rotateOn; applyVariant(); };
     host.append(tip, hint, btn3d);
 
@@ -222,7 +222,7 @@ const M3D = (() => {
     if (variant() !== '1' || !tip) return;
     tip.hidden = false; tip.classList.remove('out'); moveTip(e);
     clearTimeout(tipT);
-    tipT = setTimeout(() => { tip.classList.add('out'); setTimeout(() => { tip.hidden = true; }, 220); }, 5000);   /* v0.8 : 5초 */
+    tipT = setTimeout(() => { tip.classList.add('out'); setTimeout(() => { tip.hidden = true; }, 220); }, 3000);   /* GUI 260914 : 3초 후 사라짐 (v0.8 은 5초) */
   }
   function moveTip(e) {
     if (!tip || tip.hidden || !host) return;

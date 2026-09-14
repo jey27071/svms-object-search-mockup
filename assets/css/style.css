@@ -6671,3 +6671,49 @@ body.dt-b :is(#dtTl,#cmpTl) .tl-obj .nm .rm .i{width:16px;height:16px;color:#fff
 body.dt-b :is(#dtTl,#cmpTl) .tl-obj .nm:hover em{padding-right:0}
 /* 이름 앞 색 네모(.nm i) 규칙이 ⊗ 아이콘에도 걸려 주황 8px 로 보이던 문제 */
 body.dt-b :is(#dtTl,#cmpTl) .tl-obj .nm .rm i.i{width:16px !important;height:16px !important;flex:0 0 16px;background:#fff !important;border-radius:0;opacity:1 !important;margin:0}
+
+/* ── GUI 260914 반영 10 : 이동경로 리스트 · 경로 비교 추가 팝업 · 지도 다층 뷰 안내 (5254:71091 · 71360) ── */
+/* 이동경로 리스트 : 위치명 12R · 시각/카메라 10R · 층 이동 띠는 회색 바탕 */
+#pnlMovePath{border-radius:6px;background:#1c1d23;border-color:#2e2f38;box-shadow:0 4px 8px rgba(0,0,0,.5);backdrop-filter:blur(5px)}
+#pnlMovePath .flt-head b{font-weight:400}
+#pnlMovePath .flt-head .btn-icon .i{width:16px;height:16px}
+#pnlMovePath .mpl-who{padding:2px 4px 8px;height:auto;border-bottom-color:#2e2f38}
+#pnlMovePath .mpl-row{border-radius:6px}
+#pnlMovePath .mpl-row .nm{font-weight:400;line-height:1.3;color:#ecedf0}
+#pnlMovePath .mpl-row .mt{font-size:10px;line-height:1.4;letter-spacing:.2px;color:#8a8c96}
+#pnlMovePath .mpl-sep{display:block;padding:0 4px;border-radius:2px;background:#2e2f38;font-size:10px;line-height:14px;letter-spacing:.2px;color:#8a8c96}
+#pnlMovePath .mpl-sep::before,#pnlMovePath .mpl-sep::after{display:none}
+/* 경로 비교 추가 팝업 : 440 · 날짜 묶음 · 행 48(사진 48 · 이름 14M + 위치 배지 · 일시 12R) · 오른쪽 체크 18 */
+.md-cmp-add{width:440px;background:#1c1d23;border:1px solid #2e2f38;border-radius:6px}
+.md-cmp-add .md-head{display:flex;justify-content:space-between;align-items:flex-start;padding:12px 16px;border-bottom:1px solid #2e2f38}
+.md-cmp-add .md-head h3{font-size:16px;font-weight:700;line-height:21px;color:#ecedf0;margin:0}
+.md-cmp-add .md-head p{font-size:12px;line-height:16px;color:#8a8c96;margin:2px 0 0}
+.md-cmp-add .md-x{width:20px;height:20px;padding:0;border:0;background:none;color:#b8babf}
+.md-cmp-add .md-x .i{width:20px;height:20px}
+.md-cmp-add .ca-list{max-height:457px;padding:16px;gap:0}
+.md-cmp-add .ca-sec{display:flex;flex-direction:column;gap:12px}
+.md-cmp-add .ca-sec + .ca-sec{margin-top:16px;padding-top:16px;border-top:1px solid #2e2f38}
+.md-cmp-add .ca-date{font-family:inherit;font-size:14px;line-height:18px;color:#8a8c96;padding:0}
+.md-cmp-add .ca-row{gap:12px;padding:0 0 0 10px;border-radius:0;height:48px}
+.md-cmp-add .ca-row:hover{background:none}
+.md-cmp-add .ca-row img{width:48px;height:48px;flex:0 0 48px;border-radius:2px}
+.md-cmp-add .ca-row .bd{flex:1;gap:4px}
+.md-cmp-add .ca-row .nm{gap:10px;font-size:14px}
+.md-cmp-add .ca-row .nm b{font-weight:500;letter-spacing:-.28px;color:#ecedf0}
+.md-cmp-add .ca-row .cnt{display:inline-flex;align-items:center;gap:2px;height:18px;padding:0 4px;border-radius:2px;background:#2e2f38;color:#3070d8;font-size:12px;line-height:1}
+.md-cmp-add .ca-row .cnt .i{width:12px;height:12px;background:#3070d8}
+.md-cmp-add .ca-row .sub{font-family:inherit;font-size:12px;color:#55575f}
+.md-cmp-add .ca-row .ck{order:9;width:18px;height:18px;flex:0 0 18px;margin-left:auto;border-radius:2px;border:1px solid #55575f;box-sizing:border-box}
+.md-cmp-add .ca-row.on .ck{background:#3070d8;border-color:#3070d8}
+.md-cmp-add .ca-row.on .ck::after{left:5px;top:1px}
+.md-cmp-add .ca-row.locked .ck{opacity:1;background:#2e2f38;border-color:#3e4049}
+.md-cmp-add .ca-row.locked .ck::after{border-color:#55575f}
+.md-cmp-add .md-foot{display:flex;justify-content:flex-end;gap:8px;padding:10px 16px;border-top:1px solid #2e2f38}
+/* 다층 뷰 안내 : 호버 툴팁(3초) · 3D 조작 버튼 48 */
+.dt-map .map-gl .m3g-tip{padding:11px;border:1px solid #3e4049;background:#2e2f38;color:#ecedf0;font-size:12px;line-height:1.3;box-shadow:0 4px 8px rgba(0,0,0,.5)}
+.dt-map .map-gl .m3g-3d{right:19px;bottom:24px;width:48px;height:48px;border:0;background:#fff;box-shadow:none;filter:drop-shadow(0 0 2px rgba(0,0,0,.25))}
+.dt-map .map-gl .m3g-3d img{width:24px;height:24px;display:block}
+/* 3D 조작 버튼은 켜져도 흰 원(시안) — 켜짐은 얇은 파란 테두리로만 · 툴팁은 어절 단위 줄바꿈 */
+.dt-map .map-gl .m3g-3d.on{background:#fff;color:#2b2f36;box-shadow:inset 0 0 0 2px #3070d8}
+.dt-map .map-gl .m3g-tip{word-break:keep-all}
+.dt-map .map-gl .m3g-tip{width:auto;white-space:pre-line}
