@@ -6196,3 +6196,36 @@ img[src*="video/p/"]{object-position:50% 18%}
 .map-now.off{opacity:.3}
 /* 경로 비교 멀티 뷰 : 비교 칸 자리에 기준 인물의 멀티 뷰를 채운다 */
 .cmp-stage > #dtMulti.in-cmp{position:relative;inset:auto;flex:1 1 auto;min-height:0;width:100%}
+
+/* ── 맵 뷰 층 이동 드롭다운 (사양 v0.8 PTS_DTL_001_5 4-1 · 4876:149741) ──
+   메뉴가 동 선택 버튼이 아니라 지도 영역 기준으로 잡혀 화면 아래쪽에 넓게 열리던 문제 수정 */
+body.dt-b .dt-sec-head.map-ctl #dtBldg{position:relative}
+body.dt-b .dt-sec-head.map-ctl #dtBldg .select-btn{gap:4px;justify-content:flex-start}
+#dtBldg .select-btn .bl-t{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#dtBldg .select-btn .bl-n{font-style:normal;color:var(--tx-secondary);flex:0 0 auto;font-size:13px}
+#dtBldg .select-btn .caret{margin-left:auto;transition:transform .15s}
+body.dt-b .dt-sec-head.map-ctl #dtBldg.open .select-btn{border-color:var(--ln-border);color:var(--tx-primary)}
+body.dt-b .dt-sec-head.map-ctl #dtBldg.open .select-btn .caret{transform:rotate(-90deg);color:var(--tx-primary)}
+body.dt-b .dt-sec-head.map-ctl #dtBldg .select-menu{
+  left:0;right:auto;top:calc(100% + 4px);min-width:150px;width:max-content;max-width:280px;
+  padding:4px;box-sizing:border-box;background:var(--bg-2, #1c222d);border:1px solid var(--ln-border);border-radius:4px;z-index:60
+}
+body.dt-b .dt-sec-head.map-ctl #dtBldg .select-menu div{
+  position:relative;display:flex;align-items:center;gap:4px;height:28px;padding:0 10px 0 28px;margin:0 0 8px;
+  border-radius:3px;font-size:14px;font-weight:400;letter-spacing:-.28px;color:var(--tx-primary);cursor:pointer
+}
+body.dt-b .dt-sec-head.map-ctl #dtBldg .select-menu div:last-child{margin-bottom:0}
+body.dt-b .dt-sec-head.map-ctl #dtBldg .select-menu div:hover{background:rgba(255,255,255,.06)}
+body.dt-b .dt-sec-head.map-ctl #dtBldg .select-menu div.on{background:rgba(255,255,255,.1);color:var(--tx-primary)}
+body.dt-b .dt-sec-head.map-ctl #dtBldg .select-menu div.on::before{
+  content:'';position:absolute;left:8px;top:6px;width:16px;height:16px;
+  background:center/16px no-repeat url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><path d='M3.5 8.5l3 3 6-7' fill='none' stroke='white' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/></svg>")
+}
+body.dt-b .dt-sec-head.map-ctl #dtBldg .select-menu div em{font-style:normal;color:var(--tx-secondary)}
+body.dt-b .dt-sec-head.map-ctl #dtBldg .select-menu div.disabled{opacity:.4;pointer-events:none}
+/* 구역 이동 버튼 툴팁 : `이전/다음 구역 (구역명)` 파란 말풍선 */
+.zone-nav .zn-btn{position:relative}
+.zone-nav .zn-btn[data-tip]:hover::after{
+  content:attr(data-tip);position:absolute;left:0;top:calc(100% + 4px);z-index:61;pointer-events:none;
+  padding:4px;border-radius:3px;background:var(--primary, #2f7de1);color:#fff;font-size:11px;line-height:13px;white-space:nowrap
+}
