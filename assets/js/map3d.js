@@ -96,7 +96,7 @@ const M3D = (() => {
   function build(paths) {
     const list = (paths || []).filter(p => p && p.pts && p.pts.length);
     if (!list.length) return;
-    const k = JSON.stringify(list.map(p => [p.slot, p.pts.map(t => [t.n, t.cam, t.x, t.y])]));
+    const k = JSON.stringify(list.map(p => [p.slot, !!p.off, p.pts.map(t => [t.n, t.cam, t.x, t.y])]));
     if (k === key) return;
     key = k;
     if (root) scene.remove(root);
@@ -137,7 +137,8 @@ const M3D = (() => {
     /* 경로 비교 : 인물마다 자기 색으로 경로를 그린다 (같은 층 실선 · 층간 점선) */
     const seqs = list.map(p => p.pts.slice().sort((a, b) => a.n - b.n));
     list.forEach((p, pi) => {
-      const mat = new THREE.MeshBasicMaterial({ color: new THREE.Color(cssColor(slotColor(p.slot))) });
+      /* 비활성 인물(경로 비교에서 칩을 끔)은 경로를 흐리게 */
+      const mat = new THREE.MeshBasicMaterial({ color: new THREE.Color(cssColor(slotColor(p.slot))), transparent: !!p.off, opacity: p.off ? 0.25 : 1 });
       const seq = seqs[pi];
       for (let i = 1; i < seq.length; i++) {
         const a = seq[i - 1], b = seq[i];
@@ -151,7 +152,7 @@ const M3D = (() => {
     ov.innerHTML =
       all.map(({ t, p, pi }) => `<span class="map-wp" data-pt="gl-${pi ? p.slot + '-' : ''}${t.n}" data-slot="${p.slot}" data-cam="${t.cam}" data-hh="${t.hh}"
           data-x="${t.x}" data-y="${t.y}" title="${p.label || ''} · ${t.cam} · 이 지점으로 이동"
-          style="background:${slotColor(p.slot)}">${t.n}</span>`).join('') +
+          style="background:${slotColor(p.slot)}${p.off ? ';opacity:.3' : ''}">${t.n}</span>`).join('') +
       order.map(f => `<span class="m3g-tag">${f.label}</span>`).join('');
     const kids = [...ov.children];
     pts = all.map(({ t }, i) => ({ v: pos(t), el: kids[i], floor: m3FloorOf(t.cam) }));

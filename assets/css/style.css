@@ -5850,3 +5850,15 @@ body.dt-b .dt-ctrl .vm1.on .vmi .cut,
 body.dt-b .dt-ctrl .vm4.on .vmi .cut{fill:var(--bg-3)}
 body.dt-b .dt-ctrl .vm1.on .vmi text,
 body.dt-b .dt-ctrl .vm4.on .vmi text{fill:currentColor}
+
+/* ── 경로 비교 인물 활성/비활성 (사양 4759:35111 · 시안 5223:58528) ── */
+body.dt-b :is(#dtTl,#cmpTl) .tl-obj[title]{cursor:pointer}
+body.dt-b :is(#dtTl,#cmpTl) .tl-row.off .tl-obj{border-color:var(--ln-border)}
+body.dt-b :is(#dtTl,#cmpTl) .tl-row.off .tl-obj img{opacity:.35;filter:grayscale(.7)}
+body.dt-b :is(#dtTl,#cmpTl) .tl-row.off .tl-obj .nm{color:var(--tx-helper)}
+body.dt-b :is(#dtTl,#cmpTl) .tl-row.off .tl-obj .nm i{opacity:.35}
+body.dt-b :is(#dtTl,#cmpTl) .tl-row.off .tl-bar,
+body.dt-b :is(#dtTl,#cmpTl) .tl-row.off .tl-th{opacity:.25}
+body.dt-b :is(#dtTl,#cmpTl) .tl-row.off .tl-grip,
+body.dt-b :is(#dtTl,#cmpTl) .tl-row.off .tl-del{display:none}
+.cmp-tile.off::after{content:'';position:absolute;inset:0;background:rgba(0,0,0,.62);z-index:6;pointer-events:none}
