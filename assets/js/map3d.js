@@ -81,7 +81,7 @@ const M3D = (() => {
 
     ov = document.createElement('div'); ov.className = 'm3g-ov'; host.appendChild(ov);
     tip = document.createElement('div'); tip.className = 'm3g-tip';
-    tip.textContent = '마우스를 드래그하여 360° 로 회전할 수 있습니다.'; tip.hidden = true;
+    tip.textContent = '마우스를 드래그하여 시점을 변경할 수 있습니다.'; tip.hidden = true;
     hint = document.createElement('div'); hint.className = 'm3g-hint'; hint.textContent = '드래그하여 360° 로 보기';
     btn3d = document.createElement('button'); btn3d.className = 'm3g-3d'; btn3d.type = 'button';
     btn3d.title = '3D 조작'; btn3d.setAttribute('aria-label', '3D 조작');
@@ -222,7 +222,7 @@ const M3D = (() => {
     if (variant() !== '1' || !tip) return;
     tip.hidden = false; tip.classList.remove('out'); moveTip(e);
     clearTimeout(tipT);
-    tipT = setTimeout(() => { tip.classList.add('out'); setTimeout(() => { tip.hidden = true; }, 220); }, 3000);
+    tipT = setTimeout(() => { tip.classList.add('out'); setTimeout(() => { tip.hidden = true; }, 220); }, 5000);   /* v0.8 : 5초 */
   }
   function moveTip(e) {
     if (!tip || tip.hidden || !host) return;
