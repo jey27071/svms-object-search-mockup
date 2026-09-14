@@ -9,8 +9,8 @@
 <title>SVMS — 동선 추적 검색 (Working Mockup)</title>
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
-<link rel="stylesheet" href="assets/css/icons.css?v=202609141850">
-<link rel="stylesheet" href="assets/css/style.css?v=202609141850">
+<link rel="stylesheet" href="assets/css/icons.css?v=202609141856">
+<link rel="stylesheet" href="assets/css/style.css?v=202609141856">
 </head>
 <body class="booting">
 
@@ -302,7 +302,7 @@
         <!-- 상단 : 1~3단 패널. 각 칸은 영상 또는 맵뷰로 쓰고 좌우로 폭을 조정한다 -->
         <div class="dt-panes" id="dtPanes" data-panes="1">
         <div class="dt-video" id="dtVideo">
-          <img id="dtVideoImg" src="assets/video/v01.jpg?v=202609141850" alt="">
+          <img id="dtVideoImg" src="assets/video/v01.jpg?v=202609141856" alt="">
           <div class="ov ov-heat" id="ovHeat" hidden></div>
           <div class="ov ov-path" id="ovPath" hidden></div>
           <div class="ov ov-cctv" id="ovCctv" hidden></div>
@@ -318,9 +318,9 @@
             <span id="dtRange">2026-06-29 00:52:03 ~ 02:10:11</span>
             <!-- 사양 2-1) 북마크 · 영상 비율 설정 · 전체보기 (시안 우상단) -->
             <span class="vh-ic">
-              <button class="tb" data-vbm title="북마크"><svg viewBox="0 0 16 16" class="ic" aria-hidden="true"><path d="M4 2.5h8v11L8 10.8 4 13.5z" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><path d="M8 4.8l.8 1.6 1.7.2-1.3 1.2.4 1.7L8 8.6l-1.6.9.4-1.7-1.3-1.2 1.7-.2z" fill="currentColor"/></svg></button>
-              <button class="tb" data-vratio title="영상 비율 설정"><svg viewBox="0 0 16 16" class="ic" aria-hidden="true"><rect x="1.8" y="3.2" width="12.4" height="9.6" rx="1.2" fill="none" stroke="currentColor" stroke-width="1.2"/><path d="M4.6 8h6.8M4.6 8l1.6-1.6M4.6 8l1.6 1.6M11.4 8L9.8 6.4M11.4 8L9.8 9.6" stroke="currentColor" stroke-width="1.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-              <button class="tb" data-vzoom title="영상 확대"><svg viewBox="0 0 16 16" class="ic" aria-hidden="true"><circle cx="7" cy="7" r="4.6" fill="none" stroke="currentColor" stroke-width="1.2"/><path d="M10.4 10.4L14 14M5 7h4M7 5v4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></button>
+              <button class="tb" data-vbm title="북마크"><i class="i i-24 i-g-bookmark"></i></button>
+              <button class="tb" data-vratio title="영상 비율 설정"><i class="i i-24 i-g-ratio"></i></button>
+              <button class="tb" data-vzoom title="영상 확대"><i class="i i-24 i-g-zoomin"></i></button>
             </span>
           </div>
           <!-- 사양 v0.8 2-5) 배속 표시 : 영상 상단 중앙 -->
@@ -480,7 +480,7 @@
             </div>
           </div>
           <div class="dt-map" id="dtMap">
-            <img id="dtMapImg" src="assets/img/floor.png?v=202609141850" alt="">
+            <img id="dtMapImg" src="assets/img/floor.png?v=202609141856" alt="">
             <!-- 층별 : 참고안(검색상세 시안_260903)처럼 층을 비스듬히 쌓아
                  층간 이동을 관통선으로 보여준다 -->
             <div class="map-3d" id="dtMap3d" hidden></div>
@@ -761,11 +761,8 @@
 <!-- ============ 영상 조회 (전체보기) ============ -->
 <div class="modal md-full" id="mdVideo" hidden>
   <div class="md-head tight">
-    <span class="hd-ic">
-      <svg viewBox="0 0 16 16" class="ic"><path d="M1.8 4.2h8.4v7.6H1.8z" stroke="currentColor" stroke-width="1.3" fill="none"/><path d="M10.6 7.4l3.6-2.2v5.6l-3.6-2.2z" fill="currentColor"/></svg>
-      <h3>영상 전체보기</h3>
-    </span>
-    <button class="btn-icon md-x" data-close><svg viewBox="0 0 16 16" class="ic"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.3"/></svg></button>
+    <h3>영상 조회</h3>
+    <button class="btn-icon md-x" data-close title="닫기"><i class="i i-g-close"></i></button>
   </div>
   <div class="md-body flush" id="vwBody"></div>
 </div>
@@ -831,10 +828,10 @@
 <div class="toast" id="toast" hidden></div>
 
 <script src="assets/vendor/three.r128.min.js"></script>
-<script src="assets/js/floor-tex.js?v=202609141850"></script>
-<script src="assets/js/data.js?v=202609141850"></script>
-<script src="assets/js/map3d.js?v=202609141850"></script>
-<script src="assets/js/app.js?v=202609141850"></script>
+<script src="assets/js/floor-tex.js?v=202609141856"></script>
+<script src="assets/js/data.js?v=202609141856"></script>
+<script src="assets/js/map3d.js?v=202609141856"></script>
+<script src="assets/js/app.js?v=202609141856"></script>
 <script id="booting-guard">
   /* 앱 스크립트가 실패해도 화면은 나와야 한다 */
   setTimeout(function(){ document.body.classList.remove('booting'); }, 1500);

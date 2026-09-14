@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"><svg x="2.753" y="3" width="18" height="18" viewBox="0 0 18 18" preserveAspectRatio="none" overflow="visible"><g id="Group 1321317706">
+<g id="Rectangle 34626063">
+<mask id="path-1-inside-1_0_327" fill="white">
+<rect width="18" height="18" rx="0.56"/>
+</mask>
+<rect width="18" height="18" rx="0.56" stroke="white" stroke-width="2.24" mask="url(#path-1-inside-1_0_327)"/>
+</g>
+<path id="Vector" d="M2.54801 9.40484L4.76426 11.6211L5.56301 10.8223L4.30301 9.56234L7.12676 9.56234L7.12676 8.43734L4.30301 8.43734L5.56301 7.17734L4.76426 6.37859L2.54801 8.59484C2.33426 8.80859 2.33426 9.17984 2.54801 9.39359L2.54801 9.40484Z" fill="white"/>
+<path id="Vector_2" d="M15.444 8.59516L13.2277 6.37891L12.429 7.17766L13.689 8.43766H10.8652V9.56266H13.689L12.429 10.8227L13.2277 11.6214L15.444 9.40516C15.5452 9.30391 15.6127 9.15766 15.6127 9.01141C15.6127 8.86516 15.5565 8.71891 15.444 8.61766V8.59516Z" fill="white"/>
+</g>
+</svg></svg>

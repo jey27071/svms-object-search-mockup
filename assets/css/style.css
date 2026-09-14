@@ -6322,3 +6322,21 @@ body.dt-b.in-detail .detail > .dt-side{margin-left:8px}
 .tl-foot .tf-l .btn-icon,.tl-foot .tf-zoom .zb{width:28px;height:28px;padding:2px;display:flex;align-items:center;justify-content:center}
 .tl-foot .tf-zoom{gap:2px}
 .tl-foot .tf-zoom .tl-zr{width:96px}
+
+/* ── GUI 260914 반영 2 : 영상 머리말 · 멀티 뷰 칸 · 영상 조회 팝업 (5254:69512 · 69776 · 69729) ── */
+/* 머리말 동작 아이콘 24 · 간격 16 */
+.vh-ic{gap:16px}
+.vh-ic .tb{width:24px;height:24px;padding:0;display:flex;align-items:center;justify-content:center}
+.vh-ic .tb .i-24{width:24px;height:24px}
+/* 멀티 뷰 칸 : 위 80px 어둡게 · `위치명(12M) 현재시각(12R)` 12,12 · ⋯ 24 우상단 12 */
+body.dt-b #dtMulti .mv-tile > .mv-head{top:0;left:0;right:0;height:80px;padding:12px;align-items:flex-start;gap:4px;
+  background:linear-gradient(to bottom,rgba(0,0,0,.55),rgba(0,0,0,0));box-sizing:border-box}
+body.dt-b #dtMulti .mv-head .nm{font-size:12px;font-weight:500;line-height:1.3}
+body.dt-b #dtMulti .mv-head .tm{font-size:12px;font-weight:400;line-height:1.3;color:var(--tx-secondary)}
+body.dt-b #dtMulti .mv-head .mv-ic .mv-more{width:24px;height:24px;margin-top:-4px}
+body.dt-b #dtMulti .mv-head .mv-ic .mv-more .i{width:24px;height:24px}
+/* 영상 조회 팝업 머리 : 14M 제목 · 닫기 20 · 여백 8/12 */
+#mdVideo .md-head.tight{padding:8px 12px;min-height:36px;box-sizing:border-box}
+#mdVideo .md-head.tight h3{font-size:14px;font-weight:500;letter-spacing:-.28px;line-height:1.3}
+#mdVideo .md-head .md-x{width:20px;height:20px;padding:0}
+#mdVideo .md-head .md-x .i{width:20px;height:20px}
