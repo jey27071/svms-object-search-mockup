@@ -3759,8 +3759,8 @@ body.dt-b #dtViewSel{display:none}
 .map-now{
   position:absolute;transform:translate(-50%,-50%);z-index:7;pointer-events:none;
   width:13px;height:13px;border-radius:50%;
-  background:#fff;border:2.5px solid var(--primary);
-  box-shadow:0 0 0 4px rgba(48,112,216,.28), 0 2px 8px rgba(0,0,0,.55);
+  background:#fff;border:2.5px solid var(--now, var(--primary));
+  box-shadow:0 0 0 4px color-mix(in srgb, var(--now, #3070d8) 28%, transparent), 0 2px 8px rgba(0,0,0,.55);
   transition:left .12s linear, top .12s linear
 }
 .map-now[hidden]{display:none}
@@ -6190,3 +6190,9 @@ video.vid-layer{position:absolute;display:block;pointer-events:none;background:#
 #dtVideo > video.vid-layer{z-index:0}
 /* 영상에서 잘라낸 인물 썸네일 : 가로 카드에서도 머리가 잘리지 않게 위쪽 기준 */
 img[src*="video/p/"]{object-position:50% 18%}
+/* 경로 비교 : 커서 시각에 구간이 없는 칸은 영상 레이어(미리 보이던 썸네일)까지 숨긴다 */
+.cmp-tile.noclip video.vid-layer{visibility:hidden !important}
+/* 경로 비교 : 인물별 현재 위치 마커 — 칩으로 끈 인물은 흐리게 */
+.map-now.off{opacity:.3}
+/* 경로 비교 멀티 뷰 : 비교 칸 자리에 기준 인물의 멀티 뷰를 채운다 */
+.cmp-stage > #dtMulti.in-cmp{position:relative;inset:auto;flex:1 1 auto;min-height:0;width:100%}
