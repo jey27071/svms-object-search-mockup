@@ -6374,3 +6374,59 @@ body.dt-b #dtMap > .flat-stage > .dt-floor{left:8px;top:8px}
 /* fixed + width:auto 는 남은 화면 폭만큼 늘어난다 → 내용(인물 칸) 폭으로 */
 #pnlMovePath{width:min-content !important}
 #pnlMovePath .mpl-cols{width:max-content;max-width:calc(100vw - 80px)}
+
+/* ── GUI 260914 반영 4 : 외곽 지도 · 듀얼 지도 · 카메라 표시 (5254:69841~69844) ── */
+/* 카메라 위치 : 부채꼴 아이콘 46 (파랑 = 대상 포착 · 회색 = 미포착 · 빨강 = 현재 재생) — GUI 추출 */
+body.dt-b .map-cone{width:46px;height:46px;background:center/contain no-repeat url("../img/cone-miss.svg")}
+body.dt-b .map-cone.hit{background-image:url("../img/cone-hit.svg")}
+body.dt-b .map-cone.play{background-image:url("../img/cone-play.svg")}
+body.dt-b .map-cone i,body.dt-b .map-cone b{display:none}
+/* 외곽 지점 : 핀 16(흰 테) · 번호 10M, 위에 이름표(반투명 검정 12M), 마지막 지점은 파란 이름표 + 옅은 테 */
+body.dt-b .zone-map .zm-pt{width:16px;height:16px;border:1px solid #fff;font-size:10px;font-weight:500;box-shadow:0 4px 5px rgba(0,0,0,.25);opacity:1;overflow:visible}
+body.dt-b .zone-map .zm-pt .zm-lb{position:absolute;left:50%;bottom:calc(100% + 4px);transform:translateX(-50%);padding:2px 4px;border-radius:4px;
+  background:rgba(0,0,0,.5);color:#fff;font-size:12px;font-weight:500;line-height:1.3;white-space:nowrap;pointer-events:none}
+body.dt-b .zone-map .zm-pt.last{border:4px solid rgba(48,112,216,.4);background-clip:padding-box}
+body.dt-b .zone-map .zm-pt.last .zm-lb{background:#1d6ceb;bottom:calc(100% + 8px)}
+/* 클러스터 : 경로 지점 묶음은 파란 원(40, 1~2개 번호면 28) · 경로와 무관한 카메라 무리는 회색 원 40 — 12R 흰 글씨 */
+body.dt-b .zone-map .zm-cl{width:40px !important;height:40px;min-width:40px;padding:0 4px;border:1px solid #fff;background:#1d6ceb;box-shadow:0 4px 5px rgba(0,0,0,.25);
+  font-size:12px;font-weight:400;box-sizing:border-box}
+body.dt-b .zone-map .zm-cl.sm{width:28px !important;height:28px;min-width:28px}
+body.dt-b .zone-map .zm-gray{position:absolute;transform:translate(-50%,-50%);width:40px;height:40px;border-radius:50%;border:1px solid #fff;background:#757575;
+  color:#fff;font-size:12px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 5px rgba(0,0,0,.25);pointer-events:none;box-sizing:border-box}
+body.dt-b .zone-map.zoomed .zm-gray{display:none}
+/* 듀얼 지도 : 칸마다 왼쪽 위(9,10) 동 선택 140×34 + 이전/다음 34, 오른쪽 위 도구 줄 */
+#dtMapSec{position:relative}
+body.dt-b #dtMapSec.split-on .map-ctl #dtBldg{position:absolute;left:9px;top:54px;z-index:40}
+body.dt-b #dtMapSec.split-on .map-ctl .zone-nav{position:absolute;left:159px;top:54px;z-index:40;margin:0}
+body.dt-b .zone-pane .zp-head{left:9px;top:10px;display:flex;align-items:center;gap:10px}
+body.dt-b .zone-pane .zp-head #dtBldg2{width:140px;height:34px;position:relative}
+body.dt-b .zone-pane .zp-head #dtBldg2 .select-btn{width:100%;height:34px;box-sizing:border-box;display:flex;align-items:center;justify-content:space-between;
+  padding:0 8px 0 16px;border:1px solid var(--ln-border);border-radius:4px;background:var(--bg-2);color:var(--tx-primary);font-size:14px;letter-spacing:-.28px}
+body.dt-b .zone-pane .zp-head #dtBldg2 .select-menu{left:0;right:auto;top:calc(100% + 4px);min-width:150px;padding:4px;background:var(--bg-2);border:1px solid var(--ln-border);border-radius:4px}
+body.dt-b .zone-pane .zp-nav{display:flex;gap:6px}
+body.dt-b .zone-pane .zp-nav .zn-btn{width:34px;height:34px;display:flex;align-items:center;justify-content:center;border:1px solid var(--ln-border);border-radius:4px;background:var(--bg-2);color:var(--tx-secondary);position:relative}
+body.dt-b .zone-pane .zp-nav .zn-btn:disabled{opacity:.4}
+body.dt-b .zone-pane .zp-nav .zn-btn .i{width:20px;height:20px}
+body.dt-b .zone-pane .zp-tools{position:absolute;right:10px;top:10px;z-index:31;display:flex;flex-direction:column;width:34px}
+body.dt-b .zone-pane .zp-tools .btn-icon{width:34px;height:34px;padding:0;display:flex;align-items:center;justify-content:center;background:#1c1d23;border:1px solid #3e4049;color:#b8babf;box-shadow:0 2px 8px rgba(0,0,0,.25);box-sizing:border-box}
+body.dt-b .zone-pane .zp-tools .btn-icon .i{width:20px;height:20px}
+body.dt-b .zone-pane .zp-tools .zt-layers{border-radius:4px;margin-bottom:8px}
+body.dt-b .zone-pane .zp-tools .zt-cctv{border-radius:4px 4px 0 0;border-bottom:0}
+body.dt-b .zone-pane .zp-tools .zt-path{border-radius:0 0 4px 4px;margin-bottom:8px}
+body.dt-b .zone-pane .zp-tools .zt-in{border-radius:4px 4px 0 0;border-bottom:0}
+body.dt-b .zone-pane .zp-tools .zt-out{border-radius:0 0 4px 4px}
+body.dt-b .zone-pane .zp-tools .btn-icon.on{color:#4285e8}
+body.dt-b .zone-pane .zp-zoom{display:none}
+/* 둘째 칸 층 도면도 원본 비율로 가운데(흰 판) */
+body.dt-b .zone-pane .zp-floor{background:#25262d}
+body.dt-b .zone-pane .zp-floor .zp-stage{position:absolute}
+body.dt-b .zone-pane .zp-floor .zp-stage::before{content:'';position:absolute;inset:-2.7% -11.4%;background:#fff;z-index:-1}
+body.dt-b .zone-pane .zp-floor .zp-stage > img{position:absolute;inset:0;width:100%;height:100%;object-fit:fill}
+body.dt-b .zone-pane .zp-floor .zp-stage .dt-floor{left:8px;top:8px;right:auto;bottom:auto}
+/* 묶인 지점이 있는 배율(클러스터 화면) : 낱개 경로 지점도 28 원 · 12R · 이름표 없음 */
+body.dt-b .zone-map.clustered .zm-pt:not(.in-cl){width:28px;height:28px;font-size:12px;font-weight:400;border-width:1px}
+body.dt-b .zone-map.clustered .zm-pt .zm-lb{display:none}
+body.dt-b .zone-map .zm-pt.in-cl .zm-lb{display:none}
+/* 메인 지도(#dtMap)는 도면 핀 규칙(#dtMap .map-wp 16)이 id 우선순위로 외곽 지점까지 눌러 28 원이 안 되던 문제 */
+body.dt-b #dtMap .zone-map.clustered .zm-pt:not(.in-cl){width:28px;height:28px;min-width:28px;font-size:12px;font-weight:400;line-height:26px}
+body.dt-b #dtMap .zone-map .zm-pt.last{border:4px solid rgba(48,112,216,.4)}
