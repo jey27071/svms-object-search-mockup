@@ -5935,3 +5935,41 @@ body.dt-b :is(#dtTl,#cmpTl) .tl-ghost .tl-film{position:absolute;inset:0;backgro
 /* 3D · 적층 뷰 : 인물이 검출되지 않은 층은 50% */
 .m3-floor.dim{opacity:.5}
 .m3g-tag.dim{opacity:.5}
+
+/* ── 이동경로 리스트 팝업 (시안 5223:58721) ── */
+#pnlMovePath{width:auto !important;padding:11px 9px 9px;border-radius:4px;background:var(--bg-2);border:1px solid var(--ln-border);box-shadow:0 8px 20px rgba(0,0,0,.45)}
+#pnlMovePath .flt-head{height:16px;margin-bottom:10px;padding:0}
+#pnlMovePath .flt-head b{font-size:12px;font-weight:500;line-height:16px;color:var(--tx-primary)}
+#pnlMovePath .flt-head .btn-icon{width:16px;height:16px;padding:0}
+#pnlMovePath .flt-head .btn-icon .ic{width:14px;height:14px}
+#pnlMovePath .mpl-cols{display:flex;align-items:flex-start;gap:20px;max-height:min(70vh,560px);overflow-y:auto}
+#pnlMovePath .mpl-col{display:flex;flex-direction:column;width:160px;flex:0 0 160px}
+#pnlMovePath .mpl-who{
+  display:flex;align-items:center;gap:4px;height:27px;box-sizing:border-box;padding:0 4px 9px;margin-bottom:4px;
+  border-bottom:1px solid var(--ln-subtle);font-size:12px;font-weight:500;line-height:16px;color:var(--tx-primary)
+}
+#pnlMovePath .mpl-who i{width:8px;height:8px;flex:0 0 8px;border-radius:2px}
+#pnlMovePath .mpl-list{display:flex;flex-direction:column;gap:0;max-height:none;overflow:visible;padding:0}
+#pnlMovePath .mpl-row{
+  position:relative;display:flex;align-items:flex-start;gap:4px;width:100%;height:48px;box-sizing:border-box;
+  padding:8px 4px;border:0;border-radius:4px;background:none;color:inherit;text-align:left;cursor:pointer
+}
+#pnlMovePath .mpl-row:hover{background:rgba(255,255,255,.05)}
+#pnlMovePath .mpl-row.on{background:rgba(48,112,216,.16)}
+#pnlMovePath .mpl-row .n{flex:0 0 16px;width:16px;height:16px;border-radius:50%;color:#fff;font-size:10px;font-weight:500;line-height:16px;text-align:center}
+#pnlMovePath .mpl-row .bd{display:flex;flex-direction:column;gap:2px;min-width:0}
+#pnlMovePath .mpl-row .nm{font-size:12px;font-weight:500;line-height:16px;color:var(--tx-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#pnlMovePath .mpl-row .mt{display:flex;align-items:center;gap:4px;font-size:11px;line-height:14px;color:var(--tx-helper);white-space:nowrap}
+#pnlMovePath .mpl-row .mt i{width:2px;height:2px;border-radius:50%;background:currentColor;flex:0 0 2px}
+#pnlMovePath .mpl-sep{display:flex;align-items:center;height:14px;padding:0 4px;border-radius:2px;background:rgba(255,255,255,.07);font-size:10px;line-height:14px;color:var(--tx-helper)}
+#pnlMovePath .mpl-sep::before,#pnlMovePath .mpl-sep::after{content:none}
+
+/* ── 영역 전환 : 맵뷰 자리(오른쪽 칸) 영상 조작 바 — 재생 조작 정가운데 · 오른쪽 단일/멀티 뷰 전환 (2026-09-14 구두) ── */
+body.dt-swap .dt-side :is(#dtCtrl,#cmpCtrl){display:grid !important;grid-template-columns:1fr auto 1fr;align-items:center;column-gap:6px}
+body.dt-swap .dt-side :is(#dtCtrl,#cmpCtrl) > .grp.c{grid-column:2;flex:none;justify-content:center}
+body.dt-swap .dt-side #dtCtrl > #dtTools,
+body.dt-swap .dt-side #cmpCtrl > .grp.r{grid-column:3;justify-self:end;display:flex !important;align-items:center;gap:4px;min-width:0}
+body.dt-swap .dt-side #dtCtrl > #dtTools > :is([data-tool="heat"],[data-tool="path"],[data-tool="cctv"],.tb-div,#dtFull){display:none !important}
+body.dt-swap .dt-side #cmpCtrl > .grp.r > .tb-div,
+body.dt-swap .dt-side #cmpCtrl > .grp.r > .tg:first-child{display:none !important}
+body.dt-swap .dt-side :is(#dtCtrl,#cmpCtrl) .vm4 .vm4-lb{display:none}
