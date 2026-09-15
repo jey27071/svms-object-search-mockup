@@ -1356,6 +1356,21 @@ const CARD_DBL = 350;
 let cardClick = { id: null, n: 0, t: null };
 const cardClickReset = () => { clearTimeout(cardClick.t); cardClick = { id: null, n: 0, t: null }; };
 
+/* 첫 클릭이 미리보기로 확정되기까지 350ms 를 기다리는데, 그 뒤에야 영상을 받기 시작하면
+   재생이 눈에 띄게 늦는다. 누른 즉시 같은 mp4 를 떼어 놓은 <video> 로 미리 받아 둔다
+   (vidSync 가 만드는 URL 과 같아 캐시에 걸린다). */
+const PV_WARM = {};
+function pvWarm(id) {
+  const o = findObj(id); if (!o) return;
+  const m = /assets\/video\/(v\d\d)\.jpg/.exec(srcVideo(o.cam) || '');
+  if (!m) return;
+  const src = `assets/video/${m[1]}.mp4`;
+  if (PV_WARM[src]) return;
+  const v = document.createElement('video');
+  v.muted = true; v.preload = 'auto'; v.src = src;
+  PV_WARM[src] = v;
+}
+
 function bindCards(root) {
   $$('.card', root).forEach(c => {
     const id = c.dataset.id;
@@ -1370,6 +1385,7 @@ function bindCards(root) {
       }
       if (e.target.closest('[data-more]')) { openCtx(e, id); return; }
       if (e.target.closest('.cmp')) return;
+      pvWarm(id);   /* 판정을 기다리는 동안 영상부터 받아 둔다 */
       /* 다른 카드를 누르면 앞 카드의 셈은 버린다 */
       if (cardClick.id !== id) cardClickReset();
       cardClick.id = id; cardClick.n++;
@@ -1514,14 +1530,19 @@ function pvClock() {
     const bar = document.getElementById('pvBar'), tc = document.getElementById('pvTime');
     if (!bar || !tc) { clearInterval(PV.timer); PV.timer = null; return; }
     const v = pvVid();
-    if (v) {
-      /* 영상이 붙었으면 **영상이 기준** — 끌어서 옮긴 위치도 그대로 따라온다 */
-      if (PV.seeking) return;
-      PV.dur = v.duration; PV.t = v.currentTime;
-    } else {
-      if (!PV.playing) return;
-      PV.t = (PV.t + 0.1) % PV.dur;
+    if (!v) {
+      /* 영상이 아직 안 붙었다 — 바를 **움직이지 않는다**.
+         종전에는 10초짜리 가짜 루프가 먼저 돌아 타임바만 앞서 가다가,
+         영상이 붙는 순간 값이 튀어(10초 → 60초 기준) 늦게 시작하고 랙 걸린 것처럼 보였다. */
+      bar.style.width = '0%';
+      tc.textContent = '00:00';
+      const du0 = document.getElementById('pvDur'); if (du0) du0.textContent = '/ --:--';
+      return;
     }
+    if (PV.seeking) return;
+    /* 영상이 붙은 첫 프레임은 전환 없이 제자리에 놓는다 (0% 에서 쓸려 가지 않게) */
+    if (!PV.ready) { PV.ready = true; bar.style.transition = 'none'; requestAnimationFrame(() => { bar.style.transition = ''; }); }
+    PV.dur = v.duration; PV.t = v.currentTime;
     bar.style.width = (PV.t / PV.dur * 100) + '%';
     tc.textContent = pvMMSS(PV.t);
     const du = document.getElementById('pvDur');
@@ -1569,6 +1590,9 @@ function bindPv() {
     /* 바를 눌러도 미리보기 더블클릭(상세 이동)으로 번지지 않게 */
     bar.ondblclick = e => e.stopPropagation();
   }
+  /* 영상 <video> 는 MutationObserver 가 30ms 뒤에 붙여 준다 —
+     미리보기는 바로 재생돼야 하니 여기서 한 번 당겨 붙인다(그만큼 일찍 받기 시작한다). */
+  if (typeof vidScan === 'function') vidScan();
   pvClock();
   apply();
 }
@@ -1592,7 +1616,7 @@ function renderPreview() {
   if (!S.preview.length) { box.innerHTML = `<div class="pv-empty">대상 카드를 선택하면<br>원본 영상을 미리 볼 수 있습니다.</div>`; return; }
   /* 펼쳐서 재생할 항목 : 사용자가 고른 것, 없으면 첫 번째 */
   const openUid = (PV.open && S.preview.some(x => x.uid === PV.open)) ? PV.open : (S.preview[0] || {}).uid;
-  if (openUid && PV.id !== openUid) { PV.id = openUid; PV.t = 0; PV.playing = true; }
+  if (openUid && PV.id !== openUid) { PV.id = openUid; PV.t = 0; PV.playing = true; PV.ready = false; }
   S.preview.forEach((p, i) => {
     if (p.uid === openUid) {
       const bm = S.bookmarks.has(p.id);
@@ -3175,7 +3199,7 @@ function paneToolsHTML(kind, i) {
 function paneBody(kind, i) {
   if (kind === 'map') {
     return `<div class="pn-map">
-      <img src="assets/img/floor.png?v=202609151542" alt="맵뷰">
+      <img src="assets/img/floor.png?v=202609151559" alt="맵뷰">
       ${PANE.mapTools.includes('path') ? paneMapPathHTML() : ''}
       ${PANE.mapTools.includes('cctv') ? `<div class="pn-cones">${MAP_CCTV.map(c =>
         `<span class="map-cone" style="left:${c.x}%;top:${c.y}%;rotate:${c.deg - 90}deg"><i></i><b></b></span>`).join('')}</div>` : ''}
@@ -3257,7 +3281,7 @@ function renderPanes() {
     if (PANE.kind[0] !== 'map') v.insertAdjacentHTML('beforeend', paneToolsHTML('video', 0));
     if (PANE.kind[0] === 'map') {
       v.insertAdjacentHTML('afterbegin', `<div class="pn-map">
-        <img src="assets/img/floor.png?v=202609151542" alt="맵뷰">
+        <img src="assets/img/floor.png?v=202609151559" alt="맵뷰">
         ${PANE.mapTools.includes('path') ? paneMapPathHTML() : ''}
         ${PANE.mapTools.includes('cctv') ? `<div class="pn-cones">${MAP_CCTV.map(c =>
           `<span class="map-cone" style="left:${c.x}%;top:${c.y}%;rotate:${c.deg - 90}deg"><i></i><b></b></span>`).join('')}</div>` : ''}
@@ -3901,7 +3925,7 @@ function renderArea() {
       const vb = $('#dtVideo').getBoundingClientRect();
       const ang = Math.atan2((y2 - y1) * vb.height, (x2 - x1) * vb.width) * 180 / Math.PI + 90 * (a.dir || 1);
       a.dirOn = true;   /* 방향은 항상 표시 — 기본 한쪽 방향 */
-      h += `<button class="area-dir" data-abarrow title="눌러서 방향 바꾸기" style="left:${(x1 + x2) / 2}%;top:${(y1 + y2) / 2}%"><img src="assets/img/area-direction.svg?v=202609151542" alt="" style="transform:rotate(${ang + 45}deg)"></button>`;
+      h += `<button class="area-dir" data-abarrow title="눌러서 방향 바꾸기" style="left:${(x1 + x2) / 2}%;top:${(y1 + y2) / 2}%"><img src="assets/img/area-direction.svg?v=202609151559" alt="" style="transform:rotate(${ang + 45}deg)"></button>`;
       const ex = x1 >= x2 ? x1 : x2, ey = x1 >= x2 ? y1 : y2;
       h += areaBar(ex, `calc(${ey}% + 14px)`, a, 'r');
     }
@@ -4151,7 +4175,7 @@ function renderMap3d(paths) {
     const poly = polys ? `<svg class="m3-path" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${polys}</svg>` : '';
     /* 위층이 앞(위)에 오도록 쌓는다 — DOM 순서대로면 아래층이 덮는다 */
     return `<div class="m3-floor${pl.some(({ pts }) => onFl(pts).length) ? '' : ' dim'}" data-fl="${f.label}" style="--i:${fi};z-index:${M3_FLOORS.length - fi}">
-      <img src="assets/img/floor.png?v=202609151542" alt="">
+      <img src="assets/img/floor.png?v=202609151559" alt="">
       ${poly}
       ${pl.map(({ p, pts }) => onFl(pts).map(t => `<span class="map-wp" data-pt="${f.key}-${p.slot}-${t.n}" data-cam="${t.cam}"
           data-hh="${t.hh}" data-x="${t.x}" data-y="${t.y}"
@@ -4390,7 +4414,7 @@ function spreadMapLabels(host, sel) {
 $$('#dtMapSeg button').forEach(b => b.onclick = () => {
   $$('#dtMapSeg button').forEach(x => x.classList.toggle('on', x === b));
   DT.map = b.dataset.m;
-  $('#dtMapImg').src = DT.map === 'map' ? 'assets/img/map.png?v=202609151542' : 'assets/img/floor.png?v=202609151542';
+  $('#dtMapImg').src = DT.map === 'map' ? 'assets/img/map.png?v=202609151559' : 'assets/img/floor.png?v=202609151559';
   $('#dtFloor').hidden = true;                 /* 층 배지는 3D 각 층에 붙는다 */
   renderMap3d(MAP_PATHS_CACHE);
 });
@@ -5081,7 +5105,7 @@ function mvwPaths() {
 }
 function renderMapView() {
   const paths = mvwPaths();
-  const mapImg = DT.map === 'map' ? 'assets/img/map.png?v=202609151542' : 'assets/img/floor.png?v=202609151542';
+  const mapImg = DT.map === 'map' ? 'assets/img/map.png?v=202609151559' : 'assets/img/floor.png?v=202609151559';
   const seg = `<div class="seg"><button class="${DT.map === 'map' ? 'on' : ''}" data-mm="map">지도</button><button class="${DT.map === 'map' ? '' : 'on'}" data-mm="floor">층별</button></div>`;
   /* 사양서 Detail_000_4 · 4-4) : 주변 카메라 / 이동 경로 / 전체 보기
      이동 경로는 **단일 대상일 때 비활성** (그룹·경로비교에서만 사용) */
@@ -5143,7 +5167,7 @@ function renderMapView() {
   /* 바인딩 */
   $$('#mvwBody [data-mm]').forEach(b => b.onclick = () => {
     DT.map = b.dataset.mm;
-    $('#dtMapImg').src = DT.map === 'map' ? 'assets/img/map.png?v=202609151542' : 'assets/img/floor.png?v=202609151542';
+    $('#dtMapImg').src = DT.map === 'map' ? 'assets/img/map.png?v=202609151559' : 'assets/img/floor.png?v=202609151559';
     $('#dtFloor').hidden = DT.map === 'map';
     renderMapView();
   });
@@ -6278,7 +6302,7 @@ function csDetailHTML(c) {
           <button class="btn-ghost sm" style="margin-left:auto" data-csmap>전체 보기</button>
         </div>
         <div style="position:relative;height:196px;border-radius:6px;overflow:hidden;background:var(--bg-1);border:1px solid var(--ln-subtle)">
-          <img src="assets/img/map.png?v=202609151542" style="width:100%;height:100%;object-fit:cover;opacity:.85" alt="">
+          <img src="assets/img/map.png?v=202609151559" style="width:100%;height:100%;object-fit:cover;opacity:.85" alt="">
           ${c.path.map((p, i) => {
             const x = 16 + (i * 23) % 68, y = 22 + (i * 17) % 54;
             return `<span style="position:absolute;left:${x}%;top:${y}%;width:9px;height:9px;border-radius:50%;
@@ -8115,7 +8139,7 @@ function renderZoneMap(host, pts, color) {
   /* 경로 비교면 경로 묶음([{ slot, pts, off }])을 받아 인물마다 선·지점을 그린다 */
   const groups = Array.isArray(pts) && pts[0] && pts[0].pts ? pts : [{ slot: '', pts, off: false }];
   const col = g => (g.slot ? slotColor(g.slot) : color);
-  zm.innerHTML = `<div class="zm-stage"><img src="assets/img/map.png?v=202609151542" alt="외부 지도" draggable="false">
+  zm.innerHTML = `<div class="zm-stage"><img src="assets/img/map.png?v=202609151559" alt="외부 지도" draggable="false">
       <svg class="zm-path" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${groups.map(g => {
         const seq = g.pts.slice().sort((a, b) => a.n - b.n);
         return seq.length > 1 ? `<polyline points="${seq.map(t => `${t.x},${t.y}`).join(' ')}" fill="none" stroke="${col(g)}" stroke-width="2.5"
@@ -8214,7 +8238,7 @@ function renderFloorPane(host, pts, color) {
   const mine = pts.filter(t => m3FloorOf(t.cam) === fl).sort((a, b) => a.n - b.n);
   const flb = (M3_FLOORS.find(f => f.key === fl) || {}).label || fl;
   /* GUI 260914 : 도면은 원본 비율로 가운데(흰 판) — 좌표는 flatU 로 도면 기준 */
-  fp.innerHTML = `<div class="zp-stage"><img src="assets/img/floor.png?v=202609151542" alt=""><span class="dt-floor">${flb}</span>
+  fp.innerHTML = `<div class="zp-stage"><img src="assets/img/floor.png?v=202609151559" alt=""><span class="dt-floor">${flb}</span>
     <svg class="zp-path" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${mine.length > 1
       ? `<polyline points="${mine.map(t => `${flatU(t.x)},${t.y}`).join(' ')}" fill="none" stroke="${color}" stroke-width="2" vector-effect="non-scaling-stroke"/>` : ''}</svg>
     ${mine.map(t => `<span class="map-wp" data-cam="${t.cam}" data-hh="${t.hh}" data-x="${flatU(t.x)}" data-y="${t.y}"
