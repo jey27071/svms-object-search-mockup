@@ -6790,3 +6790,11 @@ body.dt-b .cmp-tile.off > .pipc{visibility:hidden}
 .cmp-tile > .pipc .pip-box{max-width:100%;box-sizing:border-box}
 .cmp-tile > .pipc .pip-cams{min-width:0}
 .cmp-tile > .pipc .pip-cam{flex:1 1 0;min-width:0;width:auto}
+
+/* ── 상세 영상 영역을 탭 바에 붙인다 (2026-09-15 구두 · 시안 5254:69505) ──
+   시안은 탭 줄(30) 바로 아래(y72)에서 영상이 시작하고 타임라인 카드는 y1040 까지 이어진다.
+   .dt-main 의 위아래 10px 여백 때문에 영상이 10px 떠 있었다 — 여백을 없애고 영상이 그만큼 늘어난다. */
+body.dt-b .dt-main{padding-top:0;padding-bottom:0}
+/* 시안은 영상 · 재생 바 · 타임라인이 틈 없이 이어진다(y72~1040) — 사이 10px 간격도 없앤다 (경로 비교 동일) */
+body.dt-b .dt-main,
+body.dt-b #cmpMain{gap:0}
