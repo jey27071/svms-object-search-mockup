@@ -6871,3 +6871,24 @@ body:not(.in-detail) .content-col > .tabbar{padding-right:15px}
 .tl-obj,
 body.dt-b :is(#dtTl,#cmpTl) .tl-obj,
 body.dt-b :is(#dtTl,#cmpTl) .tl-row.off .tl-obj{border:0;box-sizing:border-box}
+
+/* ── 타임라인 인물 칩 상세 정보 (2026-09-15 구두) ─────────────────────
+   칩을 누르면 뜨는 고정 카드. 호버 툴팁(.tl-tip)과 같은 상자를 쓰되
+   항목 줄(라벨↔값)과 닫기(✕)가 더 붙는다. */
+.tl-obj{cursor:pointer}
+.tl-tip.pin{position:fixed;z-index:60;align-items:flex-start;width:286px}
+.tl-tip.pin img{width:64px;height:64px;border-radius:6px;flex:0 0 64px}
+.tl-tip.pin .tt-f{display:flex;gap:8px;font-size:11px;line-height:1.45}
+.tl-tip.pin .tt-f > span{flex:0 0 40px;color:var(--tx-helper)}
+.tl-tip.pin .tt-f em{font-style:normal;color:var(--tx-secondary);font-size:11px;line-height:1.45}
+.tl-tip.pin .tt-cam{
+  margin-top:2px;padding-top:6px;border-top:1px solid var(--ln-subtle);
+  font-size:10.5px;line-height:1.5;color:var(--tx-tertiary)
+}
+.tl-tip.pin .tt-reg{margin-top:6px;align-self:flex-start}
+.tl-tip.pin .tt-x{
+  position:absolute;top:6px;right:6px;width:20px;height:20px;padding:0;
+  display:flex;align-items:center;justify-content:center;
+  background:none;border:0;border-radius:4px;color:var(--tx-tertiary);cursor:pointer
+}
+.tl-tip.pin .tt-x:hover{background:var(--bg-2);color:var(--tx-primary)}
