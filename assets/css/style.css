@@ -6924,6 +6924,14 @@ body:not(.in-detail).side-folded .content-col > .tabbar .tab.tab-search.on > spa
 body:not(.in-detail) .content-col > .tabbar .tab.on::after,
 body:not(.in-detail) .content-col > .tabbar .tab:has(+ .tab.on)::after,
 body:not(.in-detail) .content-col > .tabbar .tab:last-of-type::after{display:none !important}
+
+/* ── 미리보기 진행 바를 끌 수 있게 (2026-09-15 구두) ─────────────────────
+   바가 3px 뿐이라 눌러 잡기 어렵다. 보이는 두께는 그대로 두고
+   위쪽으로 10px 투명 히트 영역을 얹는다. 호버하면 살짝 두꺼워진다. */
+.pv-bar{cursor:pointer;z-index:3}
+.pv-bar::before{content:'';position:absolute;left:0;right:0;bottom:0;height:13px}
+.pv-bar:hover{height:5px}
+.pv-bar:hover i{transition:none}
 /* 검색 홈은 비선택 탭이 투명이라 바탕에 묻혔다 — 같은 규칙을 덮어쓴다 */
 body:not(.in-detail) .content-col > .tabbar .tab:not(.tab-search):not(.on){background:#0a0b0e}
 body:not(.in-detail) .content-col > .tabbar .tab:not(.tab-search):not(.on):hover{background:#141519}
