@@ -6932,6 +6932,11 @@ body:not(.in-detail) .content-col > .tabbar .tab:last-of-type::after{display:non
 .pv-bar::before{content:'';position:absolute;left:0;right:0;bottom:0;height:13px}
 .pv-bar:hover{height:5px}
 .pv-bar:hover i{transition:none}
+
+/* ── GNB(LNB) 카드 배경을 검색 패널과 같은 톤으로 (2026-09-15 구두) ─────────────
+   GNB 는 `--bg-1`(#131418), 검색 패널(초기화·검색 줄이 있는 그 카드)은 `--bg-2`(#1c1d23) 라
+   나란히 놓인 두 카드의 톤이 달랐다. 둘 다 `#0d0e12` 바탕 위의 독립 카드이므로 같은 면으로 둔다. */
+.shell > .lnb{background:var(--bg-2)}
 /* 검색 홈은 비선택 탭이 투명이라 바탕에 묻혔다 — 같은 규칙을 덮어쓴다 */
 body:not(.in-detail) .content-col > .tabbar .tab:not(.tab-search):not(.on){background:#0a0b0e}
 body:not(.in-detail) .content-col > .tabbar .tab:not(.tab-search):not(.on):hover{background:#141519}
