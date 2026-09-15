@@ -3067,7 +3067,7 @@ function paneToolsHTML(kind, i) {
 function paneBody(kind, i) {
   if (kind === 'map') {
     return `<div class="pn-map">
-      <img src="assets/img/floor.png?v=202609151115" alt="맵뷰">
+      <img src="assets/img/floor.png?v=202609151121" alt="맵뷰">
       ${PANE.mapTools.includes('path') ? paneMapPathHTML() : ''}
       ${PANE.mapTools.includes('cctv') ? `<div class="pn-cones">${MAP_CCTV.map(c =>
         `<span class="map-cone" style="left:${c.x}%;top:${c.y}%;rotate:${c.deg - 90}deg"><i></i><b></b></span>`).join('')}</div>` : ''}
@@ -3149,7 +3149,7 @@ function renderPanes() {
     if (PANE.kind[0] !== 'map') v.insertAdjacentHTML('beforeend', paneToolsHTML('video', 0));
     if (PANE.kind[0] === 'map') {
       v.insertAdjacentHTML('afterbegin', `<div class="pn-map">
-        <img src="assets/img/floor.png?v=202609151115" alt="맵뷰">
+        <img src="assets/img/floor.png?v=202609151121" alt="맵뷰">
         ${PANE.mapTools.includes('path') ? paneMapPathHTML() : ''}
         ${PANE.mapTools.includes('cctv') ? `<div class="pn-cones">${MAP_CCTV.map(c =>
           `<span class="map-cone" style="left:${c.x}%;top:${c.y}%;rotate:${c.deg - 90}deg"><i></i><b></b></span>`).join('')}</div>` : ''}
@@ -3793,7 +3793,7 @@ function renderArea() {
       const vb = $('#dtVideo').getBoundingClientRect();
       const ang = Math.atan2((y2 - y1) * vb.height, (x2 - x1) * vb.width) * 180 / Math.PI + 90 * (a.dir || 1);
       a.dirOn = true;   /* 방향은 항상 표시 — 기본 한쪽 방향 */
-      h += `<button class="area-dir" data-abarrow title="눌러서 방향 바꾸기" style="left:${(x1 + x2) / 2}%;top:${(y1 + y2) / 2}%"><img src="assets/img/area-direction.svg?v=202609151115" alt="" style="transform:rotate(${ang + 45}deg)"></button>`;
+      h += `<button class="area-dir" data-abarrow title="눌러서 방향 바꾸기" style="left:${(x1 + x2) / 2}%;top:${(y1 + y2) / 2}%"><img src="assets/img/area-direction.svg?v=202609151121" alt="" style="transform:rotate(${ang + 45}deg)"></button>`;
       const ex = x1 >= x2 ? x1 : x2, ey = x1 >= x2 ? y1 : y2;
       h += areaBar(ex, `calc(${ey}% + 14px)`, a, 'r');
     }
@@ -4043,7 +4043,7 @@ function renderMap3d(paths) {
     const poly = polys ? `<svg class="m3-path" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${polys}</svg>` : '';
     /* 위층이 앞(위)에 오도록 쌓는다 — DOM 순서대로면 아래층이 덮는다 */
     return `<div class="m3-floor${pl.some(({ pts }) => onFl(pts).length) ? '' : ' dim'}" data-fl="${f.label}" style="--i:${fi};z-index:${M3_FLOORS.length - fi}">
-      <img src="assets/img/floor.png?v=202609151115" alt="">
+      <img src="assets/img/floor.png?v=202609151121" alt="">
       ${poly}
       ${pl.map(({ p, pts }) => onFl(pts).map(t => `<span class="map-wp" data-pt="${f.key}-${p.slot}-${t.n}" data-cam="${t.cam}"
           data-hh="${t.hh}" data-x="${t.x}" data-y="${t.y}"
@@ -4282,7 +4282,7 @@ function spreadMapLabels(host, sel) {
 $$('#dtMapSeg button').forEach(b => b.onclick = () => {
   $$('#dtMapSeg button').forEach(x => x.classList.toggle('on', x === b));
   DT.map = b.dataset.m;
-  $('#dtMapImg').src = DT.map === 'map' ? 'assets/img/map.png?v=202609151115' : 'assets/img/floor.png?v=202609151115';
+  $('#dtMapImg').src = DT.map === 'map' ? 'assets/img/map.png?v=202609151121' : 'assets/img/floor.png?v=202609151121';
   $('#dtFloor').hidden = true;                 /* 층 배지는 3D 각 층에 붙는다 */
   renderMap3d(MAP_PATHS_CACHE);
 });
@@ -4973,7 +4973,7 @@ function mvwPaths() {
 }
 function renderMapView() {
   const paths = mvwPaths();
-  const mapImg = DT.map === 'map' ? 'assets/img/map.png?v=202609151115' : 'assets/img/floor.png?v=202609151115';
+  const mapImg = DT.map === 'map' ? 'assets/img/map.png?v=202609151121' : 'assets/img/floor.png?v=202609151121';
   const seg = `<div class="seg"><button class="${DT.map === 'map' ? 'on' : ''}" data-mm="map">지도</button><button class="${DT.map === 'map' ? '' : 'on'}" data-mm="floor">층별</button></div>`;
   /* 사양서 Detail_000_4 · 4-4) : 주변 카메라 / 이동 경로 / 전체 보기
      이동 경로는 **단일 대상일 때 비활성** (그룹·경로비교에서만 사용) */
@@ -5035,7 +5035,7 @@ function renderMapView() {
   /* 바인딩 */
   $$('#mvwBody [data-mm]').forEach(b => b.onclick = () => {
     DT.map = b.dataset.mm;
-    $('#dtMapImg').src = DT.map === 'map' ? 'assets/img/map.png?v=202609151115' : 'assets/img/floor.png?v=202609151115';
+    $('#dtMapImg').src = DT.map === 'map' ? 'assets/img/map.png?v=202609151121' : 'assets/img/floor.png?v=202609151121';
     $('#dtFloor').hidden = DT.map === 'map';
     renderMapView();
   });
@@ -6170,7 +6170,7 @@ function csDetailHTML(c) {
           <button class="btn-ghost sm" style="margin-left:auto" data-csmap>전체 보기</button>
         </div>
         <div style="position:relative;height:196px;border-radius:6px;overflow:hidden;background:var(--bg-1);border:1px solid var(--ln-subtle)">
-          <img src="assets/img/map.png?v=202609151115" style="width:100%;height:100%;object-fit:cover;opacity:.85" alt="">
+          <img src="assets/img/map.png?v=202609151121" style="width:100%;height:100%;object-fit:cover;opacity:.85" alt="">
           ${c.path.map((p, i) => {
             const x = 16 + (i * 23) % 68, y = 22 + (i * 17) % 54;
             return `<span style="position:absolute;left:${x}%;top:${y}%;width:9px;height:9px;border-radius:50%;
@@ -7579,6 +7579,9 @@ window.addEventListener('hashchange', () => location.reload());
     /* B타입 개선안 : 하단 `초기화` 는 검색 조건을 기본값으로 되돌린다 */
     S.sim = 80; S.allResults = false; S.period = '오늘';
     S.top = []; S.bottom = []; S.carTypes = []; S.cams = CAMERAS.slice();
+    /* 입력한 검색어도 비운다 — 조건만 돌아가고 글자는 남아 있었다 (2026-09-15 구두) */
+    S.q = '';
+    { const t = document.getElementById('qText'); if (t) t.value = ''; const x = document.getElementById('qTextClear'); if (x) x.hidden = true; }
     savePrefs(); buildFilters(S.mode);
     if (S.searched) runSearch(true); else syncSearchBtn();
     toast('검색 조건을 초기화했습니다.');
@@ -7971,6 +7974,17 @@ document.addEventListener('click', e => { if (!e.target.closest('.zone-menu')) c
 const ZM_AR = 700 / 636;
 /* GUI 260914 (5254:69841) : 경로와 무관한 주변 카메라 무리 — 회색 원(개수). 확대하면 숨긴다 */
 const ZM_GRAY = [[22, 22, '40'], [78, 52, '50'], [56, 78, '30'], [12, 55, '100+']];
+/* 외부 지도 주변 카메라 (2026-09-15 구두) — 평면 도면 원뿔(MAP_CCTV)은 도면 좌표라 외부 지도에는 없었다.
+   출현 지점마다 그 카메라를 지점 옆에 지점 쪽을 보게 두고, 인물이 안 잡힌 카메라 몇 대를 더한다 */
+const ZM_CAMS_EXTRA = [[32, 10, '외부 정문 CCTV'], [92, 28, '외부 동측 도로'], [8, 88, '외부 후문 CCTV']];
+function zoneCams(groups) {
+  if (!(DT.mapTools || []).includes('cctv')) return [];
+  const seen = new Map();
+  groups.forEach(g => g.pts.forEach(t => { if (!seen.has(t.cam)) seen.set(t.cam, t); }));
+  const at = [...seen.values()].map(t => ({ cam: t.cam, x: Math.min(96, t.x + 4), y: Math.max(4, t.y - 6), tx: t.x, ty: t.y }));
+  const extra = ZM_CAMS_EXTRA.filter(([, , cam]) => !seen.has(cam)).map(([x, y, cam]) => ({ cam, x, y, tx: x + (x > 50 ? -5 : 5), ty: y + (y > 50 ? -6 : 6) }));
+  return at.concat(extra).map(c => ({ ...c, rot: Math.round(Math.atan2(c.ty - c.y, (c.tx - c.x) * ZM_AR) * 180 / Math.PI) - 90 }));
+}
 function renderZoneMap(host, pts, color) {
   let zm = host.querySelector(':scope > .zone-map');
   if (!zm) {
@@ -7979,7 +7993,7 @@ function renderZoneMap(host, pts, color) {
     zm.addEventListener('wheel', e => { e.preventDefault(); zoneMapZoom(host, e.deltaY < 0 ? 1 : -1); }, { passive: false });
     zm.addEventListener('mousedown', e => {
       const st = host._zm;
-      if (e.button !== 0 || st.z <= 1 || e.target.closest('.zm-pt, .zm-cl')) return;
+      if (e.button !== 0 || st.z <= 1 || e.target.closest('.zm-pt, .zm-cl, .map-cone, .cctv-pop')) return;
       e.preventDefault();
       const x0 = e.clientX - st.tx, y0 = e.clientY - st.ty;
       zm.classList.add('grabbing');
@@ -7993,7 +8007,7 @@ function renderZoneMap(host, pts, color) {
   /* 경로 비교면 경로 묶음([{ slot, pts, off }])을 받아 인물마다 선·지점을 그린다 */
   const groups = Array.isArray(pts) && pts[0] && pts[0].pts ? pts : [{ slot: '', pts, off: false }];
   const col = g => (g.slot ? slotColor(g.slot) : color);
-  zm.innerHTML = `<div class="zm-stage"><img src="assets/img/map.png?v=202609151115" alt="외부 지도" draggable="false">
+  zm.innerHTML = `<div class="zm-stage"><img src="assets/img/map.png?v=202609151121" alt="외부 지도" draggable="false">
       <svg class="zm-path" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${groups.map(g => {
         const seq = g.pts.slice().sort((a, b) => a.n - b.n);
         return seq.length > 1 ? `<polyline points="${seq.map(t => `${t.x},${t.y}`).join(' ')}" fill="none" stroke="${col(g)}" stroke-width="2.5"
@@ -8001,7 +8015,23 @@ function renderZoneMap(host, pts, color) {
       ${ZM_GRAY.map(c => `<span class="zm-gray" style="left:${c[0]}%;top:${c[1]}%">${c[2]}</span>`).join('')}
       ${groups.map(g => { const seq = g.pts.slice().sort((a, b) => a.n - b.n); return seq.map((t, i) => `<span class="map-wp zm-pt${i === seq.length - 1 ? ' last' : ''}" data-pt="z-${g.slot || 'A'}-${t.n}" data-slot="${g.slot || ''}"${g.off ? ' data-off="1"' : ''} data-cam="${t.cam}" data-hh="${t.hh}" data-x="${t.x}" data-y="${t.y}"
         title="${t.cam} · 이 지점으로 이동" style="left:${t.x}%;top:${t.y}%;background:${col(g)}${g.off ? ';opacity:.3' : ''}">${t.n}<span class="zm-lb">${String(t.cam).replace(/^외부\s*/, '')}</span></span>`).join(''); }).join('')}
+      ${(zm._cams = zoneCams(groups)).map((c, i) => `<span class="map-cone zm-cone ${coneType(c.cam)}" data-zc="${i}" title="${c.cam}" style="left:${c.x}%;top:${c.y}%;rotate:${c.rot}deg"><i></i><b></b></span>`).join('')}
     </div><div class="zm-cls"></div>`;
+  /* 카메라에 마우스 → 미리보기, 누르면 영상 조회 */
+  zm.querySelectorAll('.zm-cone').forEach(n => {
+    const c = zm._cams[+n.dataset.zc];
+    const img = (typeof srcVideo === 'function' && srcVideo(c.cam)) || '';
+    n.onmouseenter = () => {
+      zm.querySelectorAll('.zm-stage > .cctv-pop').forEach(x => x.remove());
+      const pop = el('div', 'cctv-pop', `<img src="${img}" alt=""><span class="cap">${c.cam}${ICON2.ext}</span>`);
+      pop.style.left = `calc(${Math.min(c.x, 70)}% + 14px)`; pop.style.top = `calc(${c.y}% - 34px)`;
+      pop.onclick = e => { e.stopPropagation(); openVideoView({ cam: c.cam, img }); };
+      pop.onmouseleave = () => pop.remove();
+      zm.querySelector('.zm-stage').appendChild(pop); n._pop = pop;
+    };
+    n.onmouseleave = () => setTimeout(() => { if (n._pop && !n._pop.matches(':hover')) { n._pop.remove(); n._pop = null; } }, 260);
+    n.onclick = e => { e.stopPropagation(); openVideoView({ cam: c.cam, img }); };
+  });
   zoneLayout(host);
 }
 function zoneLayout(host) {
@@ -8076,11 +8106,24 @@ function renderFloorPane(host, pts, color) {
   const mine = pts.filter(t => m3FloorOf(t.cam) === fl).sort((a, b) => a.n - b.n);
   const flb = (M3_FLOORS.find(f => f.key === fl) || {}).label || fl;
   /* GUI 260914 : 도면은 원본 비율로 가운데(흰 판) — 좌표는 flatU 로 도면 기준 */
-  fp.innerHTML = `<div class="zp-stage"><img src="assets/img/floor.png?v=202609151115" alt=""><span class="dt-floor">${flb}</span>
+  fp.innerHTML = `<div class="zp-stage"><img src="assets/img/floor.png?v=202609151121" alt=""><span class="dt-floor">${flb}</span>
     <svg class="zp-path" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${mine.length > 1
       ? `<polyline points="${mine.map(t => `${flatU(t.x)},${t.y}`).join(' ')}" fill="none" stroke="${color}" stroke-width="2" vector-effect="non-scaling-stroke"/>` : ''}</svg>
     ${mine.map(t => `<span class="map-wp" data-cam="${t.cam}" data-hh="${t.hh}" data-x="${flatU(t.x)}" data-y="${t.y}"
-      title="${t.cam} · 이 지점으로 이동" style="left:${flatU(t.x)}%;top:${t.y}%;background:${color}">${t.n}</span>`).join('')}</div>`;
+      title="${t.cam} · 이 지점으로 이동" style="left:${flatU(t.x)}%;top:${t.y}%;background:${color}">${t.n}</span>`).join('')}
+    ${(DT.mapTools || []).includes('cctv') ? MAP_CCTV.map((c, i) => `<span class="map-cone zp-cone ${coneType(c.cam)}" data-zpc="${i}" title="${c.cam}" style="left:${flatU(c.x)}%;top:${c.y}%;rotate:${c.deg - 90}deg"><i></i><b></b></span>`).join('') : ''}</div>`;
+  /* 두 번째 칸 도면에도 주변 카메라 — 켜도 첫 칸에만 나오던 것 (2026-09-15 구두) */
+  fp.querySelectorAll('.zp-cone').forEach(n => {
+    const c = MAP_CCTV[+n.dataset.zpc], stage = fp.querySelector('.zp-stage');
+    n.onmouseenter = () => {
+      stage.querySelectorAll(':scope > .cctv-pop').forEach(x => x.remove());
+      const pop = el('div', 'cctv-pop', `<img src="${c.img}" alt=""><span class="cap">${c.cam}${ICON2.ext}</span>`);
+      pop.style.left = `calc(${Math.min(flatU(c.x), 62)}% + 14px)`; pop.style.top = `calc(${c.y}% - 34px)`;
+      stage.appendChild(pop); n._pop = pop;
+    };
+    n.onmouseleave = () => setTimeout(() => { if (n._pop) { n._pop.remove(); n._pop = null; } }, 200);
+    n.onclick = e => { e.stopPropagation(); openVideoView(c); };
+  });
   const fitZp = () => { const st = fp.querySelector('.zp-stage'); if (!st) return; const W = fp.clientWidth, H = fp.clientHeight; if (!W || !H) return;
     const w = Math.min(W / 1.228, (H / 1.054) * FLAT_IMG.w / FLAT_IMG.h), h = w * FLAT_IMG.h / FLAT_IMG.w;
     Object.assign(st.style, { left: (W - w) / 2 + 'px', top: (H - h) / 2 + 'px', width: w + 'px', height: h + 'px' }); };
