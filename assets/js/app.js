@@ -3231,7 +3231,7 @@ function paneToolsHTML(kind, i) {
 function paneBody(kind, i) {
   if (kind === 'map') {
     return `<div class="pn-map">
-      <img src="assets/img/floor.png?v=202609151746" alt="맵뷰">
+      <img src="assets/img/floor.png?v=202609151752" alt="맵뷰">
       ${PANE.mapTools.includes('path') ? paneMapPathHTML() : ''}
       ${PANE.mapTools.includes('cctv') ? `<div class="pn-cones">${MAP_CCTV.map(c =>
         `<span class="map-cone" style="left:${c.x}%;top:${c.y}%;rotate:${c.deg - 90}deg"><i></i><b></b></span>`).join('')}</div>` : ''}
@@ -3313,7 +3313,7 @@ function renderPanes() {
     if (PANE.kind[0] !== 'map') v.insertAdjacentHTML('beforeend', paneToolsHTML('video', 0));
     if (PANE.kind[0] === 'map') {
       v.insertAdjacentHTML('afterbegin', `<div class="pn-map">
-        <img src="assets/img/floor.png?v=202609151746" alt="맵뷰">
+        <img src="assets/img/floor.png?v=202609151752" alt="맵뷰">
         ${PANE.mapTools.includes('path') ? paneMapPathHTML() : ''}
         ${PANE.mapTools.includes('cctv') ? `<div class="pn-cones">${MAP_CCTV.map(c =>
           `<span class="map-cone" style="left:${c.x}%;top:${c.y}%;rotate:${c.deg - 90}deg"><i></i><b></b></span>`).join('')}</div>` : ''}
@@ -3957,7 +3957,7 @@ function renderArea() {
       const vb = $('#dtVideo').getBoundingClientRect();
       const ang = Math.atan2((y2 - y1) * vb.height, (x2 - x1) * vb.width) * 180 / Math.PI + 90 * (a.dir || 1);
       a.dirOn = true;   /* 방향은 항상 표시 — 기본 한쪽 방향 */
-      h += `<button class="area-dir" data-abarrow title="눌러서 방향 바꾸기" style="left:${(x1 + x2) / 2}%;top:${(y1 + y2) / 2}%"><img src="assets/img/area-direction.svg?v=202609151746" alt="" style="transform:rotate(${ang + 45}deg)"></button>`;
+      h += `<button class="area-dir" data-abarrow title="눌러서 방향 바꾸기" style="left:${(x1 + x2) / 2}%;top:${(y1 + y2) / 2}%"><img src="assets/img/area-direction.svg?v=202609151752" alt="" style="transform:rotate(${ang + 45}deg)"></button>`;
       const ex = x1 >= x2 ? x1 : x2, ey = x1 >= x2 ? y1 : y2;
       h += areaBar(ex, `calc(${ey}% + 14px)`, a, 'r');
     }
@@ -4207,7 +4207,7 @@ function renderMap3d(paths) {
     const poly = polys ? `<svg class="m3-path" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${polys}</svg>` : '';
     /* 위층이 앞(위)에 오도록 쌓는다 — DOM 순서대로면 아래층이 덮는다 */
     return `<div class="m3-floor${pl.some(({ pts }) => onFl(pts).length) ? '' : ' dim'}" data-fl="${f.label}" style="--i:${fi};z-index:${M3_FLOORS.length - fi}">
-      <img src="assets/img/floor.png?v=202609151746" alt="">
+      <img src="assets/img/floor.png?v=202609151752" alt="">
       ${poly}
       ${pl.map(({ p, pts }) => onFl(pts).map(t => `<span class="map-wp" data-pt="${f.key}-${p.slot}-${t.n}" data-cam="${t.cam}"
           data-hh="${t.hh}" data-x="${t.x}" data-y="${t.y}"
@@ -4446,7 +4446,7 @@ function spreadMapLabels(host, sel) {
 $$('#dtMapSeg button').forEach(b => b.onclick = () => {
   $$('#dtMapSeg button').forEach(x => x.classList.toggle('on', x === b));
   DT.map = b.dataset.m;
-  $('#dtMapImg').src = DT.map === 'map' ? 'assets/img/map.png?v=202609151746' : 'assets/img/floor.png?v=202609151746';
+  $('#dtMapImg').src = DT.map === 'map' ? 'assets/img/map.png?v=202609151752' : 'assets/img/floor.png?v=202609151752';
   $('#dtFloor').hidden = true;                 /* 층 배지는 3D 각 층에 붙는다 */
   renderMap3d(MAP_PATHS_CACHE);
 });
@@ -5137,7 +5137,7 @@ function mvwPaths() {
 }
 function renderMapView() {
   const paths = mvwPaths();
-  const mapImg = DT.map === 'map' ? 'assets/img/map.png?v=202609151746' : 'assets/img/floor.png?v=202609151746';
+  const mapImg = DT.map === 'map' ? 'assets/img/map.png?v=202609151752' : 'assets/img/floor.png?v=202609151752';
   const seg = `<div class="seg"><button class="${DT.map === 'map' ? 'on' : ''}" data-mm="map">지도</button><button class="${DT.map === 'map' ? '' : 'on'}" data-mm="floor">층별</button></div>`;
   /* 사양서 Detail_000_4 · 4-4) : 주변 카메라 / 이동 경로 / 전체 보기
      이동 경로는 **단일 대상일 때 비활성** (그룹·경로비교에서만 사용) */
@@ -5199,7 +5199,7 @@ function renderMapView() {
   /* 바인딩 */
   $$('#mvwBody [data-mm]').forEach(b => b.onclick = () => {
     DT.map = b.dataset.mm;
-    $('#dtMapImg').src = DT.map === 'map' ? 'assets/img/map.png?v=202609151746' : 'assets/img/floor.png?v=202609151746';
+    $('#dtMapImg').src = DT.map === 'map' ? 'assets/img/map.png?v=202609151752' : 'assets/img/floor.png?v=202609151752';
     $('#dtFloor').hidden = DT.map === 'map';
     renderMapView();
   });
@@ -6334,7 +6334,7 @@ function csDetailHTML(c) {
           <button class="btn-ghost sm" style="margin-left:auto" data-csmap>전체 보기</button>
         </div>
         <div style="position:relative;height:196px;border-radius:6px;overflow:hidden;background:var(--bg-1);border:1px solid var(--ln-subtle)">
-          <img src="assets/img/map.png?v=202609151746" style="width:100%;height:100%;object-fit:cover;opacity:.85" alt="">
+          <img src="assets/img/map.png?v=202609151752" style="width:100%;height:100%;object-fit:cover;opacity:.85" alt="">
           ${c.path.map((p, i) => {
             const x = 16 + (i * 23) % 68, y = 22 + (i * 17) % 54;
             return `<span style="position:absolute;left:${x}%;top:${y}%;width:9px;height:9px;border-radius:50%;
@@ -7839,13 +7839,36 @@ try {
    영상 머리말 도구 — 사양 2-1) 북마크 · 영상 비율 설정 · 전체보기
    버튼에 data-vbm / data-vratio 만 붙이면 어느 영상 패널에서나 동작한다.
    ============================================================ */
-/* 사양 v0.8 2-1) 영상 비율 : 원본 비율 · 맞추기 · 자르기 / 확대는 `영상 확대` 버튼으로 분리 */
+/* 사양 v0.8 2-1) 영상 비율 : 원본 비율 · 맞추기 · 자르기 / 확대는 `영상 확대` 버튼으로 분리
+   2026-09-15 구두 : **팝오버에서 고르는 방식이 아니라 버튼을 누를 때마다 도는 토글**로 바뀌었다
+   (상세화면 시안 `화면 비율 변경`). 상태마다 아이콘이 다르다. */
 const V_RATIOS = ['원본 비율', '맞추기', '자르기'];
+/* 상태별 아이콘 — 시안에서 받은 SVG 로 교체할 자리.
+   아직 세 상태 모두 기존 `g-ratio` 를 쓴다(아이콘만 받으면 이 표만 고치면 된다). */
+const V_RATIO_IC = { '원본 비율': 'i-g-ratio', '맞추기': 'i-g-ratio', '자르기': 'i-g-ratio' };
+function syncVRatioBtn(btn, v) {
+  if (!btn) return;
+  btn.dataset.ratioState = v;
+  btn.title = '화면 비율 변경 (' + v + ')';
+  btn.classList.toggle('on', v !== V_RATIOS[0]);   /* 기본값이 아닐 때만 활성 표시 */
+  const ic = btn.querySelector('i');
+  if (ic) ic.className = 'i i-24 ' + (V_RATIO_IC[v] || 'i-g-ratio');
+  /* 글자 버튼(조작 바 텍스트형)은 라벨도 함께 바꾼다 */
+  if (!ic && btn.textContent.trim()) btn.textContent = v;
+}
 const V_ZOOMS = ['1.0', '2x', '3x', '4x'];   /* GUI 260914 영상 확대 팝오버 */
 function vRatioTarget(btn) {
   const box = btn.closest('.cmp-tile, .vw-stage, .dt-video, .pn-video, .pn-body, .mv-tile, .dt-pane');
   const img = (box && box.querySelector('img')) || document.getElementById('dtVideoImg');
   return img;
+}
+/* 아직 한 번도 안 바꾼 영상은 `dataset.ratio` 가 비어 있다.
+   그때 무턱대고 `원본 비율` 로 치면 실제로는 자르기(cover)로 보이는데 첫 누름이 한 칸 어긋난다 —
+   화면에 실제로 걸린 object-fit 을 읽어 현재 상태로 삼는다. */
+const FIT_TO_RATIO = { contain: '원본 비율', fill: '맞추기', cover: '자르기' };
+function vRatioCurrent(img) {
+  if (!img) return V_RATIOS[0];
+  return img.dataset.ratio || FIT_TO_RATIO[getComputedStyle(img).objectFit] || V_RATIOS[0];
 }
 function applyVRatio(img, v) {
   if (!img) return;
@@ -7864,9 +7887,23 @@ document.addEventListener('click', e => {
   }
   const rb = e.target.closest('[data-vratio]');
   const pop0 = document.getElementById('vRatioPop');
+  /* 종전 팝오버가 열려 있을 수 있으니(아카이브 코드) 바깥을 누르면 닫는다 */
   if (!rb) { if (pop0 && !e.target.closest('#vRatioPop')) pop0.hidden = true; return; }
   e.stopPropagation();
-  let pop = pop0;
+  if (pop0) pop0.hidden = true;
+  /* 누를 때마다 원본 비율 → 맞추기 → 자르기 → 원본 비율 (2026-09-15 구두) */
+  const img = vRatioTarget(rb);
+  const cur = vRatioCurrent(img);
+  const next = V_RATIOS[(V_RATIOS.indexOf(cur) + 1) % V_RATIOS.length];
+  applyVRatio(img, next);
+  syncVRatioBtn(rb, next);
+}, true);
+
+/* 아카이브 — 종전 `원본 비율 / 맞추기 / 자르기` 팝오버.
+   2026-09-15 에 토글로 바뀌어 호출하지 않지만, 되돌릴 때를 위해 남겨 둔다.
+   (CSS `.v-ratio-pop` 도 그대로 둔다) */
+function openVRatioPop(rb) {
+  let pop = document.getElementById('vRatioPop');
   if (!pop) { pop = el('div', 'v-ratio-pop'); pop.id = 'vRatioPop'; document.body.appendChild(pop); }
   if (!pop.hidden && pop._btn === rb) { pop.hidden = true; return; }
   const img = vRatioTarget(rb), cur = (img && img.dataset.ratio) || '원본 비율';
@@ -7877,9 +7914,9 @@ document.addEventListener('click', e => {
   pop.style.top = (r.bottom + 6) + 'px';
   pop.querySelectorAll('[data-vr]').forEach(b => b.onclick = ev => {
     ev.stopPropagation(); applyVRatio(img, b.dataset.vr); pop.hidden = true;
-    rb.classList.toggle('on', b.dataset.vr !== '원본 비율');   /* 기본값이 아닐 때만 활성 표시 */
+    syncVRatioBtn(rb, b.dataset.vr);
   });
-}, true);
+}
 /* 확대 상태에서는 드래그로 영상 영역을 옮긴다 (사양 2-1) */
 document.addEventListener('pointerdown', e => {
   const img = e.target.closest && e.target.closest('img.v-zoomed'); if (!img || e.button !== 0) return;
@@ -8171,7 +8208,7 @@ function renderZoneMap(host, pts, color) {
   /* 경로 비교면 경로 묶음([{ slot, pts, off }])을 받아 인물마다 선·지점을 그린다 */
   const groups = Array.isArray(pts) && pts[0] && pts[0].pts ? pts : [{ slot: '', pts, off: false }];
   const col = g => (g.slot ? slotColor(g.slot) : color);
-  zm.innerHTML = `<div class="zm-stage"><img src="assets/img/map.png?v=202609151746" alt="외부 지도" draggable="false">
+  zm.innerHTML = `<div class="zm-stage"><img src="assets/img/map.png?v=202609151752" alt="외부 지도" draggable="false">
       <svg class="zm-path" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${groups.map(g => {
         const seq = g.pts.slice().sort((a, b) => a.n - b.n);
         return seq.length > 1 ? `<polyline points="${seq.map(t => `${t.x},${t.y}`).join(' ')}" fill="none" stroke="${col(g)}" stroke-width="2.5"
@@ -8270,7 +8307,7 @@ function renderFloorPane(host, pts, color) {
   const mine = pts.filter(t => m3FloorOf(t.cam) === fl).sort((a, b) => a.n - b.n);
   const flb = (M3_FLOORS.find(f => f.key === fl) || {}).label || fl;
   /* GUI 260914 : 도면은 원본 비율로 가운데(흰 판) — 좌표는 flatU 로 도면 기준 */
-  fp.innerHTML = `<div class="zp-stage"><img src="assets/img/floor.png?v=202609151746" alt=""><span class="dt-floor">${flb}</span>
+  fp.innerHTML = `<div class="zp-stage"><img src="assets/img/floor.png?v=202609151752" alt=""><span class="dt-floor">${flb}</span>
     <svg class="zp-path" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${mine.length > 1
       ? `<polyline points="${mine.map(t => `${flatU(t.x)},${t.y}`).join(' ')}" fill="none" stroke="${color}" stroke-width="2" vector-effect="non-scaling-stroke"/>` : ''}</svg>
     ${mine.map(t => `<span class="map-wp" data-cam="${t.cam}" data-hh="${t.hh}" data-x="${flatU(t.x)}" data-y="${t.y}"
