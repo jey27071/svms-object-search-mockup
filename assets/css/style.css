@@ -6941,3 +6941,59 @@ body:not(.in-detail) .content-col > .tabbar .tab:last-of-type::after{display:non
 body:not(.in-detail) .content-col > .tabbar .tab:not(.tab-search):not(.on){background:#0a0b0e}
 body:not(.in-detail) .content-col > .tabbar .tab:not(.tab-search):not(.on):hover{background:#141519}
 body:not(.in-detail) .content-col > .tabbar .tab:not(.tab-search).on :is(.tt-n,.tt-c){color:var(--tx-primary)}
+
+/* ── 검색 홈 정렬 줄을 시안 5295:84026(Result Title) 에 맞춤 (2026-09-15 구두) ────
+   지적 3건 : ① 위치순 드롭다운 화살표 ② 크기 슬라이더 좌우 삼각형 ③ 우측 버튼 2개.
+   시안의 오른쪽 묶음은 [ic_이미지 18 ─슬라이더─ ic_이미지 24] · [Select 140×34] ·
+   [`썸네일`|`원본` 글자 토글 56×34] 순서이고 묶음 간격은 20px 이다.
+   앞쪽 `.size-slider i`(3408줄)·`.select-btn`(1243줄)·`.view-seg button`(2690줄) 규칙을 덮는다. */
+
+/* ① 크기 슬라이더 — 종전 CSS 테두리 삼각형 → ic_이미지(image.svg) 아이콘 */
+.size-slider{gap:2px}
+.size-slider i.i{
+  width:18px;height:18px;border:0;                /* 삼각형 규칙(width/height:0 + border) 무효화 */
+  color:var(--tx-secondary);                      /* 시안 #b8babf */
+}
+.size-slider i.i.ss-max{width:24px;height:24px}
+/* 트랙 : 왼쪽(작은 쪽)이 채워진다 — 채움 비율은 app.js 의 syncSliderFill 이 --pct 로 넘긴다 */
+.size-slider input[type=range]{width:96px;height:24px}
+.size-slider input[type=range]::-webkit-slider-runnable-track{
+  height:2px;border-radius:9999px;
+  background:linear-gradient(to right,
+    var(--tx-secondary) 0, var(--tx-secondary) var(--pct,50%),
+    var(--ln-subtle) var(--pct,50%), var(--ln-subtle) 100%);
+}
+.size-slider input[type=range]::-webkit-slider-thumb{
+  width:10px;height:10px;margin-top:-4px;
+  background:#c4c4c4;border:1px solid #fff;
+  box-shadow:4px 4px 5px rgba(0,0,0,.25);
+}
+.size-slider input[type=range]:hover::-webkit-slider-thumb{border-color:#fff;background:var(--tx-primary)}
+.size-slider input[type=range]:active::-webkit-slider-thumb{background:var(--primary);border-color:#fff}
+.size-slider input[type=range]::-moz-range-track{height:2px;background:var(--ln-subtle);border-radius:9999px}
+.size-slider input[type=range]::-moz-range-progress{height:2px;background:var(--tx-secondary);border-radius:9999px}
+.size-slider input[type=range]::-moz-range-thumb{
+  width:10px;height:10px;background:#c4c4c4;border:1px solid #fff
+}
+
+/* ② 정렬 Select Box — 시안 140×34 · 14px Regular · 좌 16 / 우 8 · chevron 24 */
+.results-head #sortSelect .select-btn{
+  height:34px;padding:0 8px 0 16px;font-size:14px;font-weight:400;letter-spacing:-.28px;
+}
+.results-head #sortSelect .select-btn .caret{width:24px;height:24px;flex:0 0 24px}
+
+/* ③ 우측 버튼 2개 — 시안은 아이콘이 아니라 `썸네일`/`원본` 글자 토글이고 둘이 붙어 있다 */
+.results-head .view-seg{gap:0}
+.results-head .view-seg button{
+  min-width:56px;height:34px;padding:0 8px;border-radius:0;
+  font-size:14px;font-weight:500;letter-spacing:-.28px;
+  background:var(--bg-2);border:1px solid var(--ln-border);color:var(--tx-secondary);
+}
+.results-head .view-seg button:first-child{border-radius:var(--r) 0 0 var(--r)}
+.results-head .view-seg button:last-child{border-radius:0 var(--r) var(--r) 0;border-left:0}
+.results-head .view-seg button:not(.on):hover{background:var(--bg-3);color:var(--tx-primary)}
+.results-head .view-seg button.on{
+  background:var(--primary);border-color:var(--primary);color:#fff;
+}
+/* 선택된 쪽이 왼쪽이면 오른쪽 칸의 없어진 왼 테두리를 대신한다 */
+.results-head .view-seg button.on + button{border-left:0}
