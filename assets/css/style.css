@@ -6798,3 +6798,33 @@ body.dt-b .dt-main{padding-top:0;padding-bottom:0}
 /* 시안은 영상 · 재생 바 · 타임라인이 틈 없이 이어진다(y72~1040) — 사이 10px 간격도 없앤다 (경로 비교 동일) */
 body.dt-b .dt-main,
 body.dt-b #cmpMain{gap:0}
+
+/* ── 영상 클립 편집 핸들 : 시안(2026-09-15 첨부 · 클립편집 여러명) ─────────────────────
+   편집 중 구간 = 인물 색 **두꺼운 틀**(좌우 12 · 위아래 6, 모서리 4) 안에 영상 띠가 들어가고,
+   좌우 틀 가운데에 흰 막대(3×24, 둥근 끝) 손잡이. 위의 8px 색 막대는 틀과 합쳐져 숨긴다.
+   (이전 : 2px 테두리 + 영상 위에 겹친 흰 막대) */
+body.dt-b :is(#dtTl,#cmpTl).tl-editing .tl-lane .tl-bar{visibility:hidden}
+body.dt-b :is(#dtTl,#cmpTl) .tl-lane .tl-th.edit{
+  top:0 !important;height:65px !important;border:0 !important;border-radius:4px !important;
+  background:var(--bc,var(--primary)) !important;box-shadow:none !important;overflow:hidden;container-type:normal
+}
+body.dt-b :is(#dtTl,#cmpTl) .tl-lane .tl-th.edit .tl-film{inset:6px 12px;border-radius:1px}
+body.dt-b :is(#dtTl,#cmpTl) .tl-lane .tl-th.edit .tl-grip{
+  top:0;bottom:0;height:auto;width:12px;display:flex;align-items:center;justify-content:center;
+  background:transparent;border-radius:0;opacity:1;z-index:3;cursor:ew-resize
+}
+body.dt-b :is(#dtTl,#cmpTl) .tl-lane .tl-th.edit .tl-grip.s{left:0;right:auto}
+body.dt-b :is(#dtTl,#cmpTl) .tl-lane .tl-th.edit .tl-grip.e{right:0;left:auto}
+body.dt-b :is(#dtTl,#cmpTl) .tl-lane .tl-th.edit .tl-grip::before{
+  content:'';display:block !important;width:3px;height:24px;border-radius:2px;background:#fff;box-shadow:none
+}
+body.dt-b :is(#dtTl,#cmpTl) .tl-lane .tl-th.edit .tl-n{left:16px;top:10px}
+body.dt-b :is(#dtTl,#cmpTl) .tl-lane .tl-th.edit .tl-more{top:10px;left:90px}
+/* 좁은 구간(64 미만)은 좌우 틀 12 가 영상을 거의 덮어 막대 두 개가 붙어 보였다 — 틀 7 · 막대 2×20 */
+body.dt-b :is(#dtTl,#cmpTl) .tl-lane .tl-th.edit.narrow .tl-film{inset:6px 7px}
+body.dt-b :is(#dtTl,#cmpTl) .tl-lane .tl-th.edit.narrow .tl-grip{width:7px}
+body.dt-b :is(#dtTl,#cmpTl) .tl-lane .tl-th.edit.narrow .tl-grip::before{width:2px;height:20px}
+body.dt-b :is(#dtTl,#cmpTl) .tl-lane .tl-th.edit.narrow .tl-n{left:9px}
+
+/* 탭 줄 `＋` 새 탭 버튼 — 시안에 없고 탭은 상세 진입으로 생기므로 숨김 (2026-09-15 구두, 코드는 유지) */
+.tabbar #btnTabAdd{display:none !important}
