@@ -7076,3 +7076,21 @@ body.in-detail .content-col > .tabbar .tab:not(.tab-search):not(.on) :is(.tt-n,.
 }
 body.in-detail .content-col > .tabbar .tab:not(.tab-search).on .tt-n{color:var(--tx-primary);font-weight:500}
 body.in-detail .content-col > .tabbar .tab:not(.tab-search).on .tt-c{color:var(--tx-secondary);font-weight:400}
+
+/* ── 결과 목록 하단 자동 로드 줄 (2026-09-15 구두) ─────────────────────────
+   머리 줄의 `결과 더보기 ⓘ` 버튼을 목록 하단 상태 줄로 옮겼다.
+   (버튼 CSS `.rh-more`·`.rh-info` 는 되돌릴 때를 위해 남겨 둔다) */
+.res-foot{
+  grid-column:1/-1;display:flex;align-items:center;justify-content:center;gap:8px;
+  padding:20px 0 8px;font-size:12px;color:var(--tx-tertiary)
+}
+.res-foot.done{color:var(--tx-helper)}
+.res-foot .rf-wait{
+  width:14px;height:14px;border-radius:50%;flex:0 0 14px;
+  border:2px solid rgba(48,112,216,.25);border-top-color:var(--primary);
+  animation:spin .8s linear infinite
+}
+
+/* ── 접힘 상태 탭 줄 : 시안(5329:111727)은 `검색 결과` 탭이 76 에서 시작한다 ────
+   펼침용으로 넣은 `.tabbar{padding-left:8}` 이 접힘일 때도 걸려 탭이 8 밀려 있었다. */
+body:not(.in-detail).side-folded .content-col > .tabbar{padding-left:0}

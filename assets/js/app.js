@@ -620,6 +620,51 @@ new MutationObserver(ms => {
 }).observe(document.documentElement, { childList: true, subtree: true });
 syncAllSliderFills();
 
+/* ── 결과 목록 하단 : 끝에 닿으면 자동으로 더 불러온다 (2026-09-15 구두) ────────
+   종전엔 머리 줄의 `결과 더보기 ⓘ` 를 눌러야 유사도 기준 아래(-15%p) 결과까지 불러왔다.
+   버튼을 없애고 **목록 맨 아래**에 상태 줄을 두고, 스크롤이 끝에 닿으면 알아서 부른다.
+   더 부를 게 남았는지는 종전과 같은 `S.moreLoaded` 한 단계뿐이다. */
+function resMoreState() {
+  if (S.aiMode || S.mode === 'aim') return 'none';
+  if (!S.searched || !S.results.length) return 'none';
+  if (S._moreBusy) return 'loading';
+  return S.moreLoaded ? 'done' : 'idle';
+}
+function renderResMore() {
+  const body = document.getElementById('resultsBody'); if (!body) return;
+  const st = resMoreState();
+  let f = body.querySelector('.res-foot');
+  /* 아직 안 불러온 상태(idle)는 아무것도 보이지 않는다 —
+     스피너는 **실제로 부르는 동안만**, 끝나면 다 불러왔다고 알린다 */
+  if (st === 'none' || st === 'idle') { if (f) f.remove(); return; }
+  if (!f) f = el('div', 'res-foot');
+  body.appendChild(f);                     /* 다시 그려도 항상 목록 맨 아래로 */
+  f.className = 'res-foot ' + st;
+  f.innerHTML = st === 'loading'
+    ? `<i class="rf-wait"></i><span>결과를 더 불러오는 중…</span>`
+    : `<span>모든 결과를 불러왔습니다.</span>`;
+}
+let resMoreCheck = () => {};
+{
+  const near = b => b.scrollTop + b.clientHeight >= b.scrollHeight - 160;
+  const tryMore = () => {
+    const b = document.getElementById('resultsBody');
+    if (!b || resMoreState() !== 'idle') return;
+    /* 스크롤이 아예 생기지 않을 만큼 결과가 적으면 기다릴 것 없이 바로 채운다 */
+    const scrollable = b.scrollHeight > b.clientHeight + 4;
+    if (scrollable && !near(b)) return;
+    S._moreBusy = true; renderResMore();
+    /* 실제 서버라면 응답을 기다리는 구간 — 목업은 잠깐 뒤에 채운다 */
+    setTimeout(() => { S._moreBusy = false; S.moreLoaded = true; runSearch(true); }, 400);
+  };
+  document.addEventListener('scroll', e => {
+    if (e.target && e.target.id === 'resultsBody') tryMore();
+  }, true);
+  window.addEventListener('resize', tryMore);
+  /* 결과를 새로 그린 직후에도 한 번 본다(첫 화면이 이미 끝까지 차 있는 경우) */
+  resMoreCheck = tryMore;
+}
+
 /* ===================== 검색 실행 ===================== */
 function matchFilters(o) {
   if (o.sim < S.sim - (S.moreLoaded ? 15 : 0)) return false;
@@ -789,14 +834,10 @@ function renderResults() {
   /* AI 대화(우측 에이전트 · 좌측 AI 검색) 결과도 가운데 목록에 싣는다 */
   const aiOn = (S.aiMode || S.mode === 'aim');
   const aiList = (S.aiResults && S.aiResults.length) ? S.aiResults : AI_RESULT;
-  $('#resCount').innerHTML = `총 <em class="rc-badge">${(aiOn && S.aiStage === 'done' ? aiList.length : S.results.length)}</em> 건`
-    /* 와이어프레임 : 건수 옆 `결과 더보기 ⓘ` — 유사도 기준 아래 결과까지 더 불러오고 다시 정렬한다 */
-    + (!aiOn && S.searched && S.results.length
-      ? `<button type="button" class="rh-more" id="btnResMore" ${S.moreLoaded ? 'disabled' : ''}>결과 더보기<i class="rh-info" data-tip="더보기 시 순서가 조정될 수 있습니다.">i</i></button>` : '');
-  { const mb = $('#btnResMore'); if (mb) mb.onclick = e => {
-      if (e.target.closest('.rh-info')) return;
-      S.moreLoaded = true; runSearch(true); toast('결과를 더 불러왔습니다. 순서가 조정될 수 있습니다.');
-    }; }
+  /* 2026-09-15 구두 : 머리 줄의 `결과 더보기 ⓘ` 버튼을 빼고, 목록 **하단**에서
+     끝에 닿으면 자동으로 더 불러온다(renderResMore · #resultsBody 스크롤).
+     버튼 CSS(.rh-more · .rh-info)는 되돌릴 때를 위해 남겨 둔다. */
+  $('#resCount').innerHTML = `총 <em class="rc-badge">${(aiOn && S.aiStage === 'done' ? aiList.length : S.results.length)}</em> 건`;
   renderSortMenu();
 
   /* AI 모드 */
@@ -823,7 +864,10 @@ function renderResults() {
       S.resClosed.has(k) ? S.resClosed.delete(k) : S.resClosed.add(k);
       renderResults();
     });
-    bindCards(body); applyView(); return;
+    bindCards(body); applyView(); renderResMore();
+    /* 첫 화면이 이미 끝까지 차 있으면 스크롤 없이도 다음 것을 부른다 */
+    requestAnimationFrame(resMoreCheck);
+    return;
   }
 
   /* ---- 유사 대상별 보기 (B안: 대표 카드 압축) ---- */
@@ -3231,7 +3275,7 @@ function paneToolsHTML(kind, i) {
 function paneBody(kind, i) {
   if (kind === 'map') {
     return `<div class="pn-map">
-      <img src="assets/img/floor.png?v=202609151752" alt="맵뷰">
+      <img src="assets/img/floor.png?v=202609151835" alt="맵뷰">
       ${PANE.mapTools.includes('path') ? paneMapPathHTML() : ''}
       ${PANE.mapTools.includes('cctv') ? `<div class="pn-cones">${MAP_CCTV.map(c =>
         `<span class="map-cone" style="left:${c.x}%;top:${c.y}%;rotate:${c.deg - 90}deg"><i></i><b></b></span>`).join('')}</div>` : ''}
@@ -3313,7 +3357,7 @@ function renderPanes() {
     if (PANE.kind[0] !== 'map') v.insertAdjacentHTML('beforeend', paneToolsHTML('video', 0));
     if (PANE.kind[0] === 'map') {
       v.insertAdjacentHTML('afterbegin', `<div class="pn-map">
-        <img src="assets/img/floor.png?v=202609151752" alt="맵뷰">
+        <img src="assets/img/floor.png?v=202609151835" alt="맵뷰">
         ${PANE.mapTools.includes('path') ? paneMapPathHTML() : ''}
         ${PANE.mapTools.includes('cctv') ? `<div class="pn-cones">${MAP_CCTV.map(c =>
           `<span class="map-cone" style="left:${c.x}%;top:${c.y}%;rotate:${c.deg - 90}deg"><i></i><b></b></span>`).join('')}</div>` : ''}
@@ -3957,7 +4001,7 @@ function renderArea() {
       const vb = $('#dtVideo').getBoundingClientRect();
       const ang = Math.atan2((y2 - y1) * vb.height, (x2 - x1) * vb.width) * 180 / Math.PI + 90 * (a.dir || 1);
       a.dirOn = true;   /* 방향은 항상 표시 — 기본 한쪽 방향 */
-      h += `<button class="area-dir" data-abarrow title="눌러서 방향 바꾸기" style="left:${(x1 + x2) / 2}%;top:${(y1 + y2) / 2}%"><img src="assets/img/area-direction.svg?v=202609151752" alt="" style="transform:rotate(${ang + 45}deg)"></button>`;
+      h += `<button class="area-dir" data-abarrow title="눌러서 방향 바꾸기" style="left:${(x1 + x2) / 2}%;top:${(y1 + y2) / 2}%"><img src="assets/img/area-direction.svg?v=202609151835" alt="" style="transform:rotate(${ang + 45}deg)"></button>`;
       const ex = x1 >= x2 ? x1 : x2, ey = x1 >= x2 ? y1 : y2;
       h += areaBar(ex, `calc(${ey}% + 14px)`, a, 'r');
     }
@@ -4207,7 +4251,7 @@ function renderMap3d(paths) {
     const poly = polys ? `<svg class="m3-path" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${polys}</svg>` : '';
     /* 위층이 앞(위)에 오도록 쌓는다 — DOM 순서대로면 아래층이 덮는다 */
     return `<div class="m3-floor${pl.some(({ pts }) => onFl(pts).length) ? '' : ' dim'}" data-fl="${f.label}" style="--i:${fi};z-index:${M3_FLOORS.length - fi}">
-      <img src="assets/img/floor.png?v=202609151752" alt="">
+      <img src="assets/img/floor.png?v=202609151835" alt="">
       ${poly}
       ${pl.map(({ p, pts }) => onFl(pts).map(t => `<span class="map-wp" data-pt="${f.key}-${p.slot}-${t.n}" data-cam="${t.cam}"
           data-hh="${t.hh}" data-x="${t.x}" data-y="${t.y}"
@@ -4446,7 +4490,7 @@ function spreadMapLabels(host, sel) {
 $$('#dtMapSeg button').forEach(b => b.onclick = () => {
   $$('#dtMapSeg button').forEach(x => x.classList.toggle('on', x === b));
   DT.map = b.dataset.m;
-  $('#dtMapImg').src = DT.map === 'map' ? 'assets/img/map.png?v=202609151752' : 'assets/img/floor.png?v=202609151752';
+  $('#dtMapImg').src = DT.map === 'map' ? 'assets/img/map.png?v=202609151835' : 'assets/img/floor.png?v=202609151835';
   $('#dtFloor').hidden = true;                 /* 층 배지는 3D 각 층에 붙는다 */
   renderMap3d(MAP_PATHS_CACHE);
 });
@@ -5137,7 +5181,7 @@ function mvwPaths() {
 }
 function renderMapView() {
   const paths = mvwPaths();
-  const mapImg = DT.map === 'map' ? 'assets/img/map.png?v=202609151752' : 'assets/img/floor.png?v=202609151752';
+  const mapImg = DT.map === 'map' ? 'assets/img/map.png?v=202609151835' : 'assets/img/floor.png?v=202609151835';
   const seg = `<div class="seg"><button class="${DT.map === 'map' ? 'on' : ''}" data-mm="map">지도</button><button class="${DT.map === 'map' ? '' : 'on'}" data-mm="floor">층별</button></div>`;
   /* 사양서 Detail_000_4 · 4-4) : 주변 카메라 / 이동 경로 / 전체 보기
      이동 경로는 **단일 대상일 때 비활성** (그룹·경로비교에서만 사용) */
@@ -5199,7 +5243,7 @@ function renderMapView() {
   /* 바인딩 */
   $$('#mvwBody [data-mm]').forEach(b => b.onclick = () => {
     DT.map = b.dataset.mm;
-    $('#dtMapImg').src = DT.map === 'map' ? 'assets/img/map.png?v=202609151752' : 'assets/img/floor.png?v=202609151752';
+    $('#dtMapImg').src = DT.map === 'map' ? 'assets/img/map.png?v=202609151835' : 'assets/img/floor.png?v=202609151835';
     $('#dtFloor').hidden = DT.map === 'map';
     renderMapView();
   });
@@ -6334,7 +6378,7 @@ function csDetailHTML(c) {
           <button class="btn-ghost sm" style="margin-left:auto" data-csmap>전체 보기</button>
         </div>
         <div style="position:relative;height:196px;border-radius:6px;overflow:hidden;background:var(--bg-1);border:1px solid var(--ln-subtle)">
-          <img src="assets/img/map.png?v=202609151752" style="width:100%;height:100%;object-fit:cover;opacity:.85" alt="">
+          <img src="assets/img/map.png?v=202609151835" style="width:100%;height:100%;object-fit:cover;opacity:.85" alt="">
           ${c.path.map((p, i) => {
             const x = 16 + (i * 23) % 68, y = 22 + (i * 17) % 54;
             return `<span style="position:absolute;left:${x}%;top:${y}%;width:9px;height:9px;border-radius:50%;
@@ -8208,7 +8252,7 @@ function renderZoneMap(host, pts, color) {
   /* 경로 비교면 경로 묶음([{ slot, pts, off }])을 받아 인물마다 선·지점을 그린다 */
   const groups = Array.isArray(pts) && pts[0] && pts[0].pts ? pts : [{ slot: '', pts, off: false }];
   const col = g => (g.slot ? slotColor(g.slot) : color);
-  zm.innerHTML = `<div class="zm-stage"><img src="assets/img/map.png?v=202609151752" alt="외부 지도" draggable="false">
+  zm.innerHTML = `<div class="zm-stage"><img src="assets/img/map.png?v=202609151835" alt="외부 지도" draggable="false">
       <svg class="zm-path" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${groups.map(g => {
         const seq = g.pts.slice().sort((a, b) => a.n - b.n);
         return seq.length > 1 ? `<polyline points="${seq.map(t => `${t.x},${t.y}`).join(' ')}" fill="none" stroke="${col(g)}" stroke-width="2.5"
@@ -8307,7 +8351,7 @@ function renderFloorPane(host, pts, color) {
   const mine = pts.filter(t => m3FloorOf(t.cam) === fl).sort((a, b) => a.n - b.n);
   const flb = (M3_FLOORS.find(f => f.key === fl) || {}).label || fl;
   /* GUI 260914 : 도면은 원본 비율로 가운데(흰 판) — 좌표는 flatU 로 도면 기준 */
-  fp.innerHTML = `<div class="zp-stage"><img src="assets/img/floor.png?v=202609151752" alt=""><span class="dt-floor">${flb}</span>
+  fp.innerHTML = `<div class="zp-stage"><img src="assets/img/floor.png?v=202609151835" alt=""><span class="dt-floor">${flb}</span>
     <svg class="zp-path" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${mine.length > 1
       ? `<polyline points="${mine.map(t => `${flatU(t.x)},${t.y}`).join(' ')}" fill="none" stroke="${color}" stroke-width="2" vector-effect="non-scaling-stroke"/>` : ''}</svg>
     ${mine.map(t => `<span class="map-wp" data-cam="${t.cam}" data-hh="${t.hh}" data-x="${flatU(t.x)}" data-y="${t.y}"
