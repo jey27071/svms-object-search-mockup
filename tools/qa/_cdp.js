@@ -119,6 +119,21 @@ async function open({ width = 1920, height = 1000, scale = 2, port = 9333, gl = 
                                  for(const p of ${JSON.stringify(props)}) o[p]=cs.getPropertyValue(p);
                                  return o;`),
     errors: () => evalJS('return window.__err||[]'),
+    /* 진짜 마우스 — range 끌기처럼 DOM click 으로는 재현이 안 되는 조작용
+       p.drag(x1,y1,x2,y2) / p.mouse('mousePressed',x,y) */
+    mouse: (type, x, y, extra = {}) => S('Input.dispatchMouseEvent', {
+      type, x, y, button: 'left', clickCount: 1, buttons: type === 'mouseReleased' ? 0 : 1, ...extra,
+    }),
+    async drag(x1, y1, x2, y2, steps = 8) {
+      const m = (t, x, y, ex) => S('Input.dispatchMouseEvent', { type: t, x, y, button: 'left', clickCount: 1, buttons: t === 'mouseReleased' ? 0 : 1, ...ex });
+      await m('mouseMoved', x1, y1, { buttons: 0 });
+      await m('mousePressed', x1, y1);
+      for (let i = 1; i <= steps; i++) {
+        await m('mouseMoved', Math.round(x1 + (x2 - x1) * i / steps), Math.round(y1 + (y2 - y1) * i / steps));
+        await sleep(16);
+      }
+      await m('mouseReleased', x2, y2);
+    },
     async shot(file, clip) {
       const p = { format: 'png', captureBeyondViewport: false };
       if (clip) p.clip = { x: clip.x, y: clip.y, width: clip.width, height: clip.height, scale: 1 };

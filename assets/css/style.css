@@ -7028,3 +7028,51 @@ body:not(.in-detail) #resultsBody .group-body .grid{gap:8px}
 body:not(.in-detail) .shell > .side .mode-chips{padding-left:8px;padding-right:8px;gap:4px}
 body:not(.in-detail) .shell > .side .mode-panel{padding-left:8px;padding-right:8px}
 body:not(.in-detail) .shell > .side .mode-panel .filters{margin-left:4px;margin-right:4px}
+
+/* ══ 검색 홈 후속 보정 4건 (2026-09-15 구두) ══════════════════════════════
+   ① 구분선이 탭 줄 끝(패널 카드 오른쪽 모서리)과 10px 어긋나 있었다.
+      시안은 **패널 카드가 386 에서 끝나고** 구분선도 386, 탭은 394 부터다.
+      (시안 y=57 을 가로로 훑으면 386~394 가 바탕색 #0d0e12 다)
+   ② 카메라 트리 영역에 배경이 없었다 — 시안은 #131418 박스.
+   ③ 하단 초기화/검색 줄 배경이 #131418 이었다 — 시안은 카드와 같은 #1c1d23.
+   ④ 원본 보기에서 render() 가 돌면 `.zoomed` 가 붙는데,
+      `.results-body.zoomed .grid{--thumb-w:320px}` 가 **.grid 에 직접** 변수를 박아
+      #resultsBody 의 인라인 값을 이겨 **썸네일 크기 슬라이더가 죽었다.** */
+
+/* ① 패널 카드 320 → 310 (76~386) · 구분선을 카드 경계로 · 결과 내용 397~1904 */
+body:not(.in-detail) .shell > .side{width:310px;flex:0 0 310px;padding-right:10px}
+body:not(.in-detail):not(.side-folded) #results::before{left:0}
+body:not(.in-detail) #results .results-head{padding:17px 8px 0 11px}
+body:not(.in-detail) #resultsBody{padding:12px 8px 20px 11px}
+body:not(.in-detail) .content-col > .tabbar{padding-left:8px}
+/* 패널 안쪽 : 칩·입력 84~376(292) · 아코디언 88~372(284) — 오른쪽 여백은 카드가 갖는다 */
+body:not(.in-detail) .shell > .side .mode-chips{padding-right:0}
+body:not(.in-detail) .shell > .side .mode-panel{padding-right:0}
+body:not(.in-detail) .shell > .side .side-head{padding-right:0}
+
+/* ② 카메라 트리 영역 — 시안 select 프레임(284×314, 안쪽 여백 10) */
+body:not(.in-detail) .shell > .side .acc[data-acc="cam"] .acc-body{
+  background:var(--bg-1);border-radius:var(--r);padding:10px
+}
+
+/* ③ 하단 버튼 줄 — 배경은 카드와 같게, 버튼은 시안 142×34 두 개(간격 8, 84~376) */
+body:not(.in-detail) .shell > .side .side-foot{
+  background:transparent;padding:10px 0 11px 8px
+}
+body:not(.in-detail) .shell > .side .side-foot :is(#btnSearchReset,#btnSearchGo,.sf-reset,.sf-go){
+  height:34px;border-radius:var(--r);font-size:14px;font-weight:500
+}
+
+/* ④ 슬라이더가 죽던 원인 제거 — 크기는 슬라이더가, 비율은 썸네일/원본 토글이 맡는다.
+   (종전 `.zoomed` 의 --thumb-w 고정 두 줄은 남겨 두되 값만 상속으로 되돌린다) */
+body:not(.in-detail) #resultsBody.zoomed .grid,
+body:not(.in-detail) #resultsBody.zoomed .group-body .grid{--thumb-w:inherit}
+
+/* ⑤ 상세 탭 : 선택/비선택 글자색이 같았다.
+   6775·6776 행의 `body.in-detail … .tt-n` 이 `.on` 구분보다 세서 덮고 있었다.
+   9/15 확정(선택 #ecedf0 Medium ↔ 비선택 #8a8c96)을 되살린다. */
+body.in-detail .content-col > .tabbar .tab:not(.tab-search):not(.on) :is(.tt-n,.tt-c){
+  color:var(--tx-tertiary);font-weight:400
+}
+body.in-detail .content-col > .tabbar .tab:not(.tab-search).on .tt-n{color:var(--tx-primary);font-weight:500}
+body.in-detail .content-col > .tabbar .tab:not(.tab-search).on .tt-c{color:var(--tx-secondary);font-weight:400}
