@@ -6847,3 +6847,19 @@ body.dt-b .zone-pane .zp-stage > .cctv-pop{position:absolute;z-index:6;height:au
 body.dt-b .zone-map .zm-stage > .cctv-pop img,
 body.dt-b .zone-pane .zp-stage > .cctv-pop img{position:static;inset:auto;width:100%;height:90px;object-fit:cover}
 body.dt-b .zone-pane .zp-stage .zp-cone{width:34px;height:34px;z-index:4;position:absolute;transform:translate(-50%,-50%)}
+
+/* ── 검색 홈 줄 맞춤 (2026-09-15 구두 · 시안 4965:30876 : 검색 유형 칩 줄과 `검색 결과(총 N 건)` 줄이 같은 높이 y≈100) ──
+   칩 줄 중심 108 · 결과 머리 중심 97 로 11px 어긋나 있었다 → 칩 위 여백 8 줄이고 결과 머리를 3 내린다 */
+body:not(.in-detail) #bIntro{height:4px !important;min-height:0;padding:0;margin:0}
+body:not(.in-detail) #results .results-head{padding-top:17px}
+/* `7개 선택 ✕ ⓘ` 선택 요약 칩 : 글자·✕·ⓘ 가 한 줄 가운데로 (중심이 1~2px 씩 어긋나 있었다) */
+.acc-head .acc-sum{display:inline-flex;align-items:center;gap:4px;height:20px;box-sizing:border-box;padding:0 6px;line-height:1}
+.acc-head .acc-sum .acc-x{display:inline-flex;align-items:center;justify-content:center;width:10px;height:10px;margin:0;font-size:9px;line-height:1;font-style:normal}
+.acc-head .acc-sum .acc-warn{display:inline-flex;align-items:center;justify-content:center;width:12px;height:12px;margin:0;line-height:1;font-style:normal}
+/* 히스토리 버튼 오른쪽 끝을 아래 원본 영상 카드의 오른쪽 끝(패널 안쪽 15)에 맞춘다 — 패널 끝에 4px 로 붙어 있었다 */
+body:not(.in-detail) .content-col > .tabbar{padding-right:15px}
+/* 위 규칙이 `.acc.open[data-acc="cam"] > .acc-head .acc-sum{display:inline-block}`(더 셈)에 눌려 가운데 정렬·간격이 안 먹었다 */
+.acc:not(.open) > .acc-head .acc-sum,
+.acc.open[data-acc="cam"] > .acc-head .acc-sum{display:inline-flex;align-items:center;gap:4px}
+.acc > .acc-head .acc-sum .acc-x,
+.acc > .acc-head .acc-sum .acc-warn{position:static;top:auto;transform:none;vertical-align:middle;margin:0;align-self:center}
