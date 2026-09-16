@@ -7599,3 +7599,26 @@ body.dt-swap #dtMapSec > #dtCtrl{position:absolute;left:0;right:0;bottom:0;displ
 .md-vsel .vs-filter .radio.sm{height:32px;padding:0;gap:8px}
 /* 재검색 : 상자 좌우 10 을 뺀 180 · 높이 28 · 맨 아래 고정 */
 .md-vsel .vs-filter .vf-go{flex:0 0 28px;width:auto;margin:10px 10px 0;box-sizing:border-box}
+
+/* ── 영상 선택 팝업 우측·하단을 시안(5402:189712) 대로 (2026-09-16 구두) ────────────
+   1) 건수는 파란 배지가 아니라 **평문**(시안 5402:189762 `총 13건` 42x18)
+   2) 오른쪽 묶음 순서 : 슬라이더 -> 정렬 -> 썸네일/원본 (구분선은 시안에서 숨김)
+   3) 목록 맨 위 `전체 선택` 체크박스 (시안 5402:189781)
+   4) 아무것도 고르지 않았을 때 하단은 제목도 점선 상자도 없이 가운데 한 줄 */
+.md-vsel .vs-count{
+  padding:0;border:0;background:none;
+  color:var(--tx-primary);font-family:inherit;font-size:14px;font-weight:500;letter-spacing:-.28px
+}
+.md-vsel .vs-sep{display:none}
+.md-vsel .vs-all{
+  display:flex;align-items:center;gap:8px;height:18px;margin:0 0 10px;
+  font-size:12px;color:var(--tx-secondary)
+}
+/* 빈 미리보기 : 점선 상자 없이 영역 가운데 한 줄 (시안 Timeline 1280x172) */
+.md-vsel .vs-preview .cp-empty{
+  margin:0;height:100%;min-height:100px;border:0;border-radius:0;
+  font-size:13px;color:var(--tx-helper)
+}
+.md-vsel .vs-preview:has(.cp-empty){display:flex;align-items:center;justify-content:center;padding:0 16px}
+/* 빈 상태 높이도 시안(Timeline 1280x172)에 맞춘다 — 그만큼 위 목록이 줄어든다 */
+.md-vsel .vs-preview:has(.cp-empty){flex:0 0 172px;height:172px;box-sizing:border-box}
