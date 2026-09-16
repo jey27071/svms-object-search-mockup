@@ -7158,3 +7158,12 @@ body.dt-b #dtAreaTools > [data-tool="heat"],
 body.dt-b #dtAreaTools > [data-tool="cctv"]{display:flex}
 /* 영상 위치 전환(dt-swap)에서는 종전처럼 함께 숨긴다 */
 body.dt-swap .dt-side #dtCtrl > #dtAreaTools > :is([data-tool="heat"],[data-tool="cctv"]){display:none !important}
+
+/* ── 영상 선택 카드 비율을 시안 실측으로 (2026-09-16 구두 · 시안 5329:111961) ─────
+   시안 팝업 썸네일 = 194.6 × 228, 그 안의 이미지 = 194.6 × 176 (가로가 살짝 긴 1.106:1).
+   구현은 `aspect-ratio:3/4`(0.75:1) 라 세로로 길어 카드가 훨씬 커 보였다.
+   캡션도 시안 값(제목 14M · 부제 12R · 안쪽 여백 8/4/8/10)으로 맞춘다. */
+.reid-card .rc-th{aspect-ratio:194.6 / 176}
+.reid-card .rc-meta{padding:8px 4px 8px 10px}
+.reid-card .rc-lead{font-size:14px;font-weight:500;letter-spacing:-.28px;line-height:1.3}
+.reid-card .rc-sub{font-size:12px;font-family:inherit;line-height:1.3}
