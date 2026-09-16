@@ -7206,12 +7206,10 @@ body.dt-b #dtTools > .tb-div{display:none !important}
 body.dt-b #dtTools{display:flex;align-items:center;gap:8px}
 #dtCtrl .vm-type{margin:0;min-width:96px}
 
-/* ── 재생 영상 콤보박스 화살표를 위·아래 양방향으로 (2026-09-16 구두) ─────────────
-   디자인 시스템의 chevron 하나를 위/아래로 겹쳐 쓴다(새 글리프를 그리지 않는다). */
-#dtCtrl .vm-type .caret2{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;margin-left:4px}
-#dtCtrl .vm-type .caret2 .i{width:10px;height:10px;display:block}
-#dtCtrl .vm-type .caret2 .i:first-child{transform:rotate(180deg)}
-#dtCtrl .vm-type.open .select-btn .caret2{color:var(--accent)}
+/* ── 재생 영상 콤보박스 화살표 : 상태에 따라 하나만 (2026-09-16 구두) ─────────────
+   메뉴가 **위로** 펼쳐지므로 닫힘 = 위 방향, 열림 = 아래 방향으로 뒤집는다. */
+#dtCtrl .vm-type .select-btn .caret{width:16px;height:16px;transform:rotate(180deg);transition:transform .12s}
+#dtCtrl .vm-type.open .select-btn .caret{transform:rotate(0deg)}
 
 /* ── 이동 경로 보기 : 칸 머리말 카메라명 **앞**에 순번 (2026-09-16 구두) ─────────
    종전에는 칸 좌하단에만 있었다. 머리말에서 순서를 바로 읽을 수 있게 앞으로 옮긴다. */
