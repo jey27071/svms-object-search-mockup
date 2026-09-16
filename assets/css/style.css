@@ -7424,3 +7424,18 @@ body.dt-b #dtMulti .mv-no{display:none}
 /* 돋보기 세로 중앙 — 다른 규칙에 눌리지 않게 여기서 확실히 */
 .cam-wrap .ct-search{display:flex !important;align-items:center !important}
 .cam-wrap .ct-search > .i{align-self:center !important;margin:0 !important;position:relative;top:0}
+
+/* ── 칸 머리말은 북마크만, 호버 때만 (2026-09-16 구두) ─────────────────────────
+   비율·확대는 하단 공통 제어바로 옮겼다. 칸 머리말의 확대(돋보기)는 삭제 —
+   확대/축소는 **휠**로만 한다. 마크업·코드는 남기고 표시만 끈다. */
+body.dt-b #dtMulti .mv-head [data-vzoom],
+#cmpGrid .cmp-head [data-vzoom],
+body.dt-b #dtMulti .mv-head [data-vratio],
+#cmpGrid .cmp-head [data-vratio]{display:none !important}
+/* 북마크는 칸에 마우스를 올렸을 때만 */
+body.dt-b #dtMulti .mv-head [data-vbm],
+#cmpGrid .cmp-head [data-vbm]{opacity:0;transition:opacity .12s}
+body.dt-b #dtMulti .mv-tile:hover .mv-head [data-vbm],
+#cmpGrid .cmp-tile:hover .cmp-head [data-vbm]{opacity:1}
+/* 공통 제어바의 비율 버튼 — 확대 왼쪽 */
+#dtCtrl #dtRatioAll{flex:0 0 auto}
