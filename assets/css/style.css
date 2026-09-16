@@ -7119,7 +7119,7 @@ body.dt-b #dtMulti .mv-head .mv-ic .mv-more{display:none}
 }
 #dtCtrl .vm-cycle.on .vm-n{background:var(--primary);color:#fff}
 /* 재생 영상 콤보박스 — 분할 버튼 옆 */
-#dtCtrl .vm-type{margin-left:6px;min-width:96px}
+#dtCtrl .vm-type{margin-right:6px;min-width:96px}
 #dtCtrl .vm-type.off{opacity:.45;pointer-events:none}
 
 /* ── 재생 영상 콤보박스는 **위로** 펼친다 (2026-09-16 구두) ─────────────────────
@@ -7167,3 +7167,33 @@ body.dt-swap .dt-side #dtCtrl > #dtAreaTools > :is([data-tool="heat"],[data-tool
 .reid-card .rc-meta{padding:8px 4px 8px 10px}
 .reid-card .rc-lead{font-size:14px;font-weight:500;letter-spacing:-.28px;line-height:1.3}
 .reid-card .rc-sub{font-size:12px;font-family:inherit;line-height:1.3}
+
+/* ── `총 N 건` 숫자 : 파란 테두리·파란 글자 없이 (2026-09-16 구두 · 시안) ─────────
+   시안은 건수를 그냥 본문 글자로 둔다. 배지 틀(테두리·색·모노 폰트)을 푼다. */
+.results-head .rc-badge,
+#resCount .rc-badge{
+  border:0;background:none;color:var(--tx-primary);
+  font-family:inherit;font-size:inherit;font-weight:500;
+  padding:0;margin:0 3px;height:auto
+}
+
+/* ── 영상 선택 하단 미리보기 확대/축소 : 타임라인 슬라이더와 같은 모양으로 ─────────
+   (2026-09-16 구두) 종전에는 `accent-color` 만 줘서 브라우저 기본 굵은 파란 막대로 보였다.
+   상세 타임라인(.tl-zoom .tl-zr)과 같은 규격 — 트랙 3px · 손잡이 11px 흰 원. */
+#clipsPreview .cp-zoom{gap:7px}
+#clipsPreview .cp-zr{
+  width:88px;height:3px;-webkit-appearance:none;appearance:none;accent-color:auto;
+  background:var(--ln-border);border-radius:2px;outline:none
+}
+#clipsPreview .cp-zr::-webkit-slider-thumb{
+  -webkit-appearance:none;width:11px;height:11px;border-radius:50%;
+  background:var(--tx-primary);border:0;cursor:pointer
+}
+#clipsPreview .cp-zr::-moz-range-track{height:3px;background:var(--ln-border);border-radius:2px}
+#clipsPreview .cp-zr::-moz-range-thumb{width:11px;height:11px;border:0;border-radius:50%;background:var(--tx-primary)}
+
+/* ── 확대하면 미리보기 썸네일도 함께 커진다 (2026-09-16 구두) ─────────────────────
+   종전에는 구간(간격)만 벌어지고 썸네일은 그대로였다.
+   `--cpz` 는 fitClipPreview 가 현재 배율로 넣어 준다. */
+#clipsPreview .cp-node{width:calc(72px * var(--cpz, 1))}
+#clipsPreview .cp-node img{width:calc(72px * var(--cpz, 1));height:calc(46px * var(--cpz, 1))}
