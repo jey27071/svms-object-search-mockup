@@ -4739,7 +4739,7 @@ body.booting::after{
 /* ══ 영상 선택 : 시안 4656:44120 ═══════════════════════════════════════
    좌 기준 대상 / 우 날짜별 그리드 / 하 선택 미리보기 */
 .modal.md-vsel{
-  width:min(1138px, calc(100vw - 96px));
+  width:min(1282px, calc(100vw - 96px));
   height:min(953px, calc(100vh - 60px));
   display:flex;flex-direction:column
 }
@@ -7197,3 +7197,30 @@ body.dt-swap .dt-side #dtCtrl > #dtAreaTools > :is([data-tool="heat"],[data-tool
    `--cpz` 는 fitClipPreview 가 현재 배율로 넣어 준다. */
 #clipsPreview .cp-node{width:calc(72px * var(--cpz, 1))}
 #clipsPreview .cp-node img{width:calc(72px * var(--cpz, 1));height:calc(46px * var(--cpz, 1))}
+
+/* ── 미리보기 패널은 검색 홈 전용 (2026-09-16 구두 오류) ─────────────────────────
+   상세에서 renderPreview 가 불려도 우측에 튀어나오지 않게 CSS 로도 막아 둔다. */
+body.in-detail #preview{display:none !important}
+
+/* ── 조작 바 오른쪽 : 왼쪽 구분선 빼고 요소 간격 통일 (2026-09-16 구두) ─────────
+   순서는 콤보박스 · 뷰 모드 · 확대(전체보기). 요소 사이는 8px 한 값으로 맞춘다. */
+body.dt-b #dtTools > .tb-div{display:none !important}
+body.dt-b #dtTools{display:flex;align-items:center;gap:8px}
+#dtCtrl .vm-type{margin:0;min-width:96px}
+
+/* ── 재생 영상 콤보박스 화살표를 위·아래 양방향으로 (2026-09-16 구두) ─────────────
+   디자인 시스템의 chevron 하나를 위/아래로 겹쳐 쓴다(새 글리프를 그리지 않는다). */
+#dtCtrl .vm-type .caret2{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;margin-left:4px}
+#dtCtrl .vm-type .caret2 .i{width:10px;height:10px;display:block}
+#dtCtrl .vm-type .caret2 .i:first-child{transform:rotate(180deg)}
+#dtCtrl .vm-type.open .select-btn .caret2{color:var(--accent)}
+
+/* ── 이동 경로 보기 : 칸 머리말 카메라명 **앞**에 순번 (2026-09-16 구두) ─────────
+   종전에는 칸 좌하단에만 있었다. 머리말에서 순서를 바로 읽을 수 있게 앞으로 옮긴다. */
+body.dt-b #dtMulti .mv-head .mv-hn{
+  flex:0 0 auto;min-width:18px;height:18px;padding:0 5px;box-sizing:border-box;margin-right:6px;
+  border:1px solid #fff;border-radius:9px;color:#fff;
+  font-size:11px;font-weight:600;line-height:16px;text-align:center
+}
+/* 머리말로 옮겼으니 좌하단 배지는 감춘다 (코드는 남겨 둔다) */
+body.dt-b #dtMulti .mv-no{display:none}
