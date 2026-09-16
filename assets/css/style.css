@@ -7518,3 +7518,13 @@ body.dt-b #dtMulti .mv-tile:hover .mv-head [data-vbm],
 .mode-panel[data-panel="car"] #qCar{
   line-height:20px !important;padding:12px 12px 0 !important;height:44px;box-sizing:border-box
 }
+
+/* ── 영상 선택 팝업 좌측 : 내용이 늘면 **스크롤** (2026-09-16 구두) ─────────────
+   `날짜 지정` 을 고르면 입력 두 줄이 늘어나는데, 열이 그대로 늘어나며
+   위쪽 인물 사진이 눌려 찌그러졌다. 사진 크기는 고정하고 넘치면 스크롤시킨다. */
+.md-vsel .vs-side{overflow-y:auto;min-height:0}
+.md-vsel .vs-side > *{flex:0 0 auto}
+.md-vsel .vs-obj{flex:0 0 auto}
+.md-vsel .vs-side::-webkit-scrollbar{width:6px}
+.md-vsel .vs-side::-webkit-scrollbar-track{background:transparent}
+.md-vsel .vs-side::-webkit-scrollbar-thumb{background:rgba(255,255,255,.18);border-radius:3px}
