@@ -3437,7 +3437,7 @@ function paneToolsHTML(kind, i) {
 function paneBody(kind, i) {
   if (kind === 'map') {
     return `<div class="pn-map">
-      <img src="assets/img/floor.png?v=202609161448" alt="맵뷰">
+      <img src="assets/img/floor.png?v=202609161455" alt="맵뷰">
       ${PANE.mapTools.includes('path') ? paneMapPathHTML() : ''}
       ${PANE.mapTools.includes('cctv') ? `<div class="pn-cones">${MAP_CCTV.map(c =>
         `<span class="map-cone" style="left:${c.x}%;top:${c.y}%;rotate:${c.deg - 90}deg"><i></i><b></b></span>`).join('')}</div>` : ''}
@@ -3519,7 +3519,7 @@ function renderPanes() {
     if (PANE.kind[0] !== 'map') v.insertAdjacentHTML('beforeend', paneToolsHTML('video', 0));
     if (PANE.kind[0] === 'map') {
       v.insertAdjacentHTML('afterbegin', `<div class="pn-map">
-        <img src="assets/img/floor.png?v=202609161448" alt="맵뷰">
+        <img src="assets/img/floor.png?v=202609161455" alt="맵뷰">
         ${PANE.mapTools.includes('path') ? paneMapPathHTML() : ''}
         ${PANE.mapTools.includes('cctv') ? `<div class="pn-cones">${MAP_CCTV.map(c =>
           `<span class="map-cone" style="left:${c.x}%;top:${c.y}%;rotate:${c.deg - 90}deg"><i></i><b></b></span>`).join('')}</div>` : ''}
@@ -4176,7 +4176,7 @@ function renderArea() {
       const vb = $('#dtVideo').getBoundingClientRect();
       const ang = Math.atan2((y2 - y1) * vb.height, (x2 - x1) * vb.width) * 180 / Math.PI + 90 * (a.dir || 1);
       a.dirOn = true;   /* 방향은 항상 표시 — 기본 한쪽 방향 */
-      h += `<button class="area-dir" data-abarrow title="눌러서 방향 바꾸기" style="left:${(x1 + x2) / 2}%;top:${(y1 + y2) / 2}%"><img src="assets/img/area-direction.svg?v=202609161448" alt="" style="transform:rotate(${ang + 45}deg)"></button>`;
+      h += `<button class="area-dir" data-abarrow title="눌러서 방향 바꾸기" style="left:${(x1 + x2) / 2}%;top:${(y1 + y2) / 2}%"><img src="assets/img/area-direction.svg?v=202609161455" alt="" style="transform:rotate(${ang + 45}deg)"></button>`;
       const ex = x1 >= x2 ? x1 : x2, ey = x1 >= x2 ? y1 : y2;
       h += areaBar(ex, `calc(${ey}% + 14px)`, a, 'r');
     }
@@ -4426,7 +4426,7 @@ function renderMap3d(paths) {
     const poly = polys ? `<svg class="m3-path" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${polys}</svg>` : '';
     /* 위층이 앞(위)에 오도록 쌓는다 — DOM 순서대로면 아래층이 덮는다 */
     return `<div class="m3-floor${pl.some(({ pts }) => onFl(pts).length) ? '' : ' dim'}" data-fl="${f.label}" style="--i:${fi};z-index:${M3_FLOORS.length - fi}">
-      <img src="assets/img/floor.png?v=202609161448" alt="">
+      <img src="assets/img/floor.png?v=202609161455" alt="">
       ${poly}
       ${pl.map(({ p, pts }) => onFl(pts).map(t => `<span class="map-wp" data-pt="${f.key}-${p.slot}-${t.n}" data-cam="${t.cam}"
           data-hh="${t.hh}" data-x="${t.x}" data-y="${t.y}"
@@ -4665,7 +4665,7 @@ function spreadMapLabels(host, sel) {
 $$('#dtMapSeg button').forEach(b => b.onclick = () => {
   $$('#dtMapSeg button').forEach(x => x.classList.toggle('on', x === b));
   DT.map = b.dataset.m;
-  $('#dtMapImg').src = DT.map === 'map' ? 'assets/img/map.png?v=202609161448' : 'assets/img/floor.png?v=202609161448';
+  $('#dtMapImg').src = DT.map === 'map' ? 'assets/img/map.png?v=202609161455' : 'assets/img/floor.png?v=202609161455';
   $('#dtFloor').hidden = true;                 /* 층 배지는 3D 각 층에 붙는다 */
   renderMap3d(MAP_PATHS_CACHE);
 });
@@ -5440,7 +5440,7 @@ function mvwPaths() {
 }
 function renderMapView() {
   const paths = mvwPaths();
-  const mapImg = DT.map === 'map' ? 'assets/img/map.png?v=202609161448' : 'assets/img/floor.png?v=202609161448';
+  const mapImg = DT.map === 'map' ? 'assets/img/map.png?v=202609161455' : 'assets/img/floor.png?v=202609161455';
   const seg = `<div class="seg"><button class="${DT.map === 'map' ? 'on' : ''}" data-mm="map">지도</button><button class="${DT.map === 'map' ? '' : 'on'}" data-mm="floor">층별</button></div>`;
   /* 사양서 Detail_000_4 · 4-4) : 주변 카메라 / 이동 경로 / 전체 보기
      이동 경로는 **단일 대상일 때 비활성** (그룹·경로비교에서만 사용) */
@@ -5502,7 +5502,7 @@ function renderMapView() {
   /* 바인딩 */
   $$('#mvwBody [data-mm]').forEach(b => b.onclick = () => {
     DT.map = b.dataset.mm;
-    $('#dtMapImg').src = DT.map === 'map' ? 'assets/img/map.png?v=202609161448' : 'assets/img/floor.png?v=202609161448';
+    $('#dtMapImg').src = DT.map === 'map' ? 'assets/img/map.png?v=202609161455' : 'assets/img/floor.png?v=202609161455';
     $('#dtFloor').hidden = DT.map === 'map';
     renderMapView();
   });
@@ -6637,7 +6637,7 @@ function csDetailHTML(c) {
           <button class="btn-ghost sm" style="margin-left:auto" data-csmap>전체 보기</button>
         </div>
         <div style="position:relative;height:196px;border-radius:6px;overflow:hidden;background:var(--bg-1);border:1px solid var(--ln-subtle)">
-          <img src="assets/img/map.png?v=202609161448" style="width:100%;height:100%;object-fit:cover;opacity:.85" alt="">
+          <img src="assets/img/map.png?v=202609161455" style="width:100%;height:100%;object-fit:cover;opacity:.85" alt="">
           ${c.path.map((p, i) => {
             const x = 16 + (i * 23) % 68, y = 22 + (i * 17) % 54;
             return `<span style="position:absolute;left:${x}%;top:${y}%;width:9px;height:9px;border-radius:50%;
@@ -8200,7 +8200,6 @@ document.addEventListener('click', e => {
   const next = V_RATIOS[(V_RATIOS.indexOf(cur) + 1) % V_RATIOS.length];
   imgs.forEach(im => applyVRatio(im, next));
   syncVRatioBtn(b, next);
-  toast(`화면 비율을 ${next} 로 바꿨습니다.`);
 }, true);
 
 /* 화면에 떠 있는 비율 버튼을 **실제 영상 상태**에 맞춘다.
@@ -8550,7 +8549,7 @@ function renderZoneMap(host, pts, color) {
   /* 경로 비교면 경로 묶음([{ slot, pts, off }])을 받아 인물마다 선·지점을 그린다 */
   const groups = Array.isArray(pts) && pts[0] && pts[0].pts ? pts : [{ slot: '', pts, off: false }];
   const col = g => (g.slot ? slotColor(g.slot) : color);
-  zm.innerHTML = `<div class="zm-stage"><img src="assets/img/map.png?v=202609161448" alt="외부 지도" draggable="false">
+  zm.innerHTML = `<div class="zm-stage"><img src="assets/img/map.png?v=202609161455" alt="외부 지도" draggable="false">
       <svg class="zm-path" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${groups.map(g => {
         const seq = g.pts.slice().sort((a, b) => a.n - b.n);
         return seq.length > 1 ? `<polyline points="${seq.map(t => `${t.x},${t.y}`).join(' ')}" fill="none" stroke="${col(g)}" stroke-width="2.5"
@@ -8649,7 +8648,7 @@ function renderFloorPane(host, pts, color) {
   const mine = pts.filter(t => m3FloorOf(t.cam) === fl).sort((a, b) => a.n - b.n);
   const flb = (M3_FLOORS.find(f => f.key === fl) || {}).label || fl;
   /* GUI 260914 : 도면은 원본 비율로 가운데(흰 판) — 좌표는 flatU 로 도면 기준 */
-  fp.innerHTML = `<div class="zp-stage"><img src="assets/img/floor.png?v=202609161448" alt=""><span class="dt-floor">${flb}</span>
+  fp.innerHTML = `<div class="zp-stage"><img src="assets/img/floor.png?v=202609161455" alt=""><span class="dt-floor">${flb}</span>
     <svg class="zp-path" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${mine.length > 1
       ? `<polyline points="${mine.map(t => `${flatU(t.x)},${t.y}`).join(' ')}" fill="none" stroke="${color}" stroke-width="2" vector-effect="non-scaling-stroke"/>` : ''}</svg>
     ${mine.map(t => `<span class="map-wp" data-cam="${t.cam}" data-hh="${t.hh}" data-x="${flatU(t.x)}" data-y="${t.y}"
@@ -9379,6 +9378,20 @@ function vidStop() {
   const pl = document.querySelector('#dtPlay.playing, [data-playtg].playing');
   if (pl) pl.click(); else VID.playing = false;
 }
+/* 스페이스바 = 재생 / 멈춤 (2026-09-16 구두).
+   화면에 보이는 재생 버튼을 눌러 주므로 아이콘·상태 동기화는 기존 흐름을 그대로 탄다.
+   글자를 입력하는 중이거나 버튼에 포커스가 있으면 그쪽이 우선이라 건너뛴다. */
+document.addEventListener('keydown', e => {
+  if (e.code !== 'Space' && e.key !== ' ') return;
+  if (e.ctrlKey || e.altKey || e.metaKey) return;
+  const t = e.target;
+  if (t && t.closest && t.closest('input, textarea, select, button, [contenteditable="true"]')) return;
+  const btn = [...document.querySelectorAll('#dtPlay, [data-playtg]')].filter(b => b.getClientRects().length)[0];
+  if (!btn) return;
+  e.preventDefault();   /* 스페이스로 화면이 스크롤되지 않게 */
+  btn.click();
+}, true);
+
 /* 재생 / 일시정지 — 상세 · 비교 · 팝업의 재생 버튼 공통, 상태는 하나 */
 document.addEventListener('click', e => {
   const b = e.target.closest('#dtPlay, [data-playtg]'); if (!b) return;

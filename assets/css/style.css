@@ -7469,7 +7469,9 @@ body.dt-b #dtMulti .mv-tile:hover .mv-head [data-vbm],
 #mdVideo .vw-stage.vw-grid[data-n="3"]{grid-template-columns:repeat(3,1fr);grid-template-rows:1fr}
 #mdVideo .vw-stage.vw-grid[data-n="4"]{grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr}
 /* 공통 제어의 영상 보기 모드 버튼 — 우측 하단 */
-#mdVideo .vw-ctrl .grp.r{margin-left:auto;display:flex;align-items:center;gap:8px;padding-right:8px}
+/* 우측 버튼은 그 영역 **오른쪽 끝**에 (우측 여백 12) — flex:1 인데 내용이 왼쪽 정렬이라
+   재생 버튼 바로 옆에 붙어 있었다 (2026-09-16 구두) */
+#mdVideo .vw-ctrl .grp.r{display:flex;align-items:center;justify-content:flex-end;gap:8px;padding-right:12px}
 
 /* ── 텍스트 ↔ 차량번호 탭 간격 통일 (2026-09-16 구두) ─────────────────────────
    칩 줄 ↔ 입력창 간격이 텍스트 24 / 차량번호 16 이라 탭을 바꾸면 화면이 8px 움직였다.
