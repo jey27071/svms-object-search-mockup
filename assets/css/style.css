@@ -3482,7 +3482,7 @@ body.dt-b .dt-side > .dt-sec + .dt-sec{border-top:1px solid var(--ln-subtle);pad
 .mode-panel[data-panel="text"] .textarea-wrap.rc-open{
   border-color:var(--primary);border-bottom-left-radius:0;border-bottom-right-radius:0
 }
-#recentBlk{
+:is(#recentBlk,#carRecentBlk){
   margin:0;                       /* .recent-blk 의 상단 마진 상쇄 */
   position:absolute;left:-1px;right:-1px;top:100%;z-index:40;
   background:var(--bg-1);
@@ -3491,20 +3491,20 @@ body.dt-b .dt-side > .dt-sec + .dt-sec{border-top:1px solid var(--ln-subtle);pad
   padding:10px 12px 12px;
   box-shadow:0 12px 28px rgba(0,0,0,.55)
 }
-#recentBlk[hidden]{display:none}
-#recentBlk .rb-lb{font-size:10.5px;color:var(--tx-helper);margin:0 0 6px}
-#recentBlk .rb-list{display:flex;flex-direction:column;gap:0;align-items:stretch}
-#recentBlk .rb-li{
+:is(#recentBlk,#carRecentBlk)[hidden]{display:none}
+:is(#recentBlk,#carRecentBlk) .rb-lb{font-size:10.5px;color:var(--tx-helper);margin:0 0 6px}
+:is(#recentBlk,#carRecentBlk) .rb-list{display:flex;flex-direction:column;gap:0;align-items:stretch}
+:is(#recentBlk,#carRecentBlk) .rb-li{
   display:flex;align-items:center;gap:8px;height:30px;padding:0 4px;border-radius:4px;
   font-size:12px;color:var(--tx-secondary);cursor:pointer;background:transparent;border:0
 }
-#recentBlk .rb-li:hover{background:var(--bg-3);color:var(--tx-primary)}
-#recentBlk .rb-li .t{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:left}
-#recentBlk .rb-li .x{
+:is(#recentBlk,#carRecentBlk) .rb-li:hover{background:var(--bg-3);color:var(--tx-primary)}
+:is(#recentBlk,#carRecentBlk) .rb-li .t{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:left}
+:is(#recentBlk,#carRecentBlk) .rb-li .x{
   width:18px;height:18px;flex:0 0 18px;display:flex;align-items:center;justify-content:center;
   border:0;background:none;color:var(--tx-helper);border-radius:3px
 }
-#recentBlk .rb-li .x:hover{background:rgba(255,255,255,.1);color:var(--tx-primary)}
+:is(#recentBlk,#carRecentBlk) .rb-li .x:hover{background:rgba(255,255,255,.1);color:var(--tx-primary)}
 
 
 /* 좌측 패널 제거 — 목록이 전체 폭을 쓴다 */
@@ -7509,19 +7509,12 @@ body.dt-b #dtMulti .mv-tile:hover .mv-head [data-vbm],
 /* 차량번호 드롭다운도 텍스트와 같은 폭·모양 (블록으로 펼쳐 full width) */
 .mode-panel[data-panel="car"] #carRecentBlk{width:100%;box-sizing:border-box}
 
-/* ── 차량번호 최근 검색을 텍스트와 **같은 모양**으로 (2026-09-16 구두) ─────────────
-   평평한 전체 폭 행 스타일이 `#recentBlk` ID 로만 걸려 있어 차량번호 블록에는
-   기본 알약 스타일(radius 16 · 내용 폭)이 적용됐다. 같은 규칙을 그대로 준다. */
-#carRecentBlk .rb-lb{font-size:10.5px;color:var(--tx-helper);margin:0 0 6px}
-#carRecentBlk .rb-list{display:flex;flex-direction:column;gap:0;align-items:stretch}
-#carRecentBlk .rb-li{
-  display:flex;align-items:center;gap:8px;height:30px;padding:0 4px;border-radius:4px;
-  font-size:12px;color:var(--tx-secondary);cursor:pointer;background:transparent;border:0
+
+/* ── 두 입력의 글자 세로 위치를 **완전히 같게** (2026-09-16 구두) ─────────────────
+   line-height 로 가운데를 맞추면 줄상자 반올림 때문에 1px 어긋날 수 있다.
+   줄높이는 글꼴 기본(20)으로 두고 **위 여백 12** 로 고정해 두 입력이 같은 값을 쓴다.
+   (44 = 12 + 20 + 12) */
+.mode-panel[data-panel="text"] #qText,
+.mode-panel[data-panel="car"] #qCar{
+  line-height:20px !important;padding:12px 12px 0 !important;height:44px;box-sizing:border-box
 }
-#carRecentBlk .rb-li:hover{background:var(--bg-3);color:var(--tx-primary)}
-#carRecentBlk .rb-li .t{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:left}
-#carRecentBlk .rb-li .x{
-  width:18px;height:18px;flex:0 0 18px;display:flex;align-items:center;justify-content:center;
-  border:0;background:none;color:var(--tx-helper);border-radius:3px
-}
-#carRecentBlk .rb-li .x:hover{background:rgba(255,255,255,.1);color:var(--tx-primary)}
