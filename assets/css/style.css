@@ -7622,3 +7622,44 @@ body.dt-swap #dtMapSec > #dtCtrl{position:absolute;left:0;right:0;bottom:0;displ
 .md-vsel .vs-preview:has(.cp-empty){display:flex;align-items:center;justify-content:center;padding:0 16px}
 /* 빈 상태 높이도 시안(Timeline 1280x172)에 맞춘다 — 그만큼 위 목록이 줄어든다 */
 .md-vsel .vs-preview:has(.cp-empty){flex:0 0 172px;height:172px;box-sizing:border-box}
+
+/* ── `최근 검색` 을 최종 시안(5402:189689 Option List)대로 (2026-09-16 구두) ─────────
+   시안 : 패널 **좌우 끝까지**(292 = 사이드 패널 폭) 걸치는 독립 상자 —
+          모서리 6(사방) · 1px 테두리 · 그림자 0 4 4 rgba(0,0,0,.5) · 안여백 12/0 ·
+          머리줄(`최근 검색` 12R 흐림 / `전체 삭제` 12M) 과 목록 사이 8 ·
+          항목 28(여백 6/12) · 글자 12 · 닫기 12x12.
+   종전 : 입력창 288 폭에 **붙어서** 아래 모서리만 둥근 한 덩어리 · 항목 30 · 닫기 18 ·
+          머리말 10.5 · `전체 삭제` 없음. */
+:is(#recentBlk,#carRecentBlk){
+  left:-8px;right:-10px;                /* 모드 패널 좌우 여백을 상쇄 = 패널 폭 전체 */
+  top:calc(100% + 4px);                 /* 입력창과 떨어진 독립 상자 */
+  background:var(--bg-2);
+  border:1px solid var(--ln-border);
+  border-radius:6px;
+  padding:12px 0;
+  box-shadow:0 4px 4px rgba(0,0,0,.5)
+}
+:is(#recentBlk,#carRecentBlk) .rb-head{
+  display:flex;align-items:center;justify-content:space-between;
+  height:20px;padding:0 12px;margin:0 0 8px
+}
+:is(#recentBlk,#carRecentBlk) .rb-lb{margin:0;font-size:12px;font-weight:400;color:var(--tx-helper)}
+:is(#recentBlk,#carRecentBlk) .rb-clear{
+  border:0;background:none;padding:0;cursor:pointer;
+  font-size:12px;font-weight:500;color:var(--tx-secondary)
+}
+:is(#recentBlk,#carRecentBlk) .rb-clear:hover{color:var(--tx-primary)}
+:is(#recentBlk,#carRecentBlk) .rb-li{
+  height:28px;padding:6px 12px;border-radius:0;box-sizing:border-box;
+  font-size:12px;color:var(--tx-secondary)
+}
+:is(#recentBlk,#carRecentBlk) .rb-li .x{width:12px;height:12px;flex:0 0 12px;border-radius:0}
+:is(#recentBlk,#carRecentBlk) .rb-li .x:hover{background:none;color:var(--tx-primary)}
+/* 독립 상자가 됐으니 입력창 아래 모서리를 각지게 자르던 처리는 되돌린다 */
+.mode-panel[data-panel="text"] .textarea-wrap.rc-open,
+.mode-panel[data-panel="car"] .textarea-wrap.rc-open{
+  border-bottom-left-radius:8px;border-bottom-right-radius:8px
+}
+.mode-panel[data-panel="text"] .textarea-wrap.rc-open{border-radius:8px}
+/* 차량번호 쪽에만 남아 있던 width:100% 가 right 를 무시하게 만들어 상자가 18px 좁았다 */
+.mode-panel[data-panel="car"] #carRecentBlk{width:auto}
