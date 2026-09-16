@@ -7510,13 +7510,13 @@ body.dt-b #dtMulti .mv-tile:hover .mv-head [data-vbm],
 .mode-panel[data-panel="car"] #carRecentBlk{width:100%;box-sizing:border-box}
 
 
-/* ── 두 입력의 글자 세로 위치를 **완전히 같게** (2026-09-16 구두) ─────────────────
-   line-height 로 가운데를 맞추면 줄상자 반올림 때문에 1px 어긋날 수 있다.
-   줄높이는 글꼴 기본(20)으로 두고 **위 여백 12** 로 고정해 두 입력이 같은 값을 쓴다.
-   (44 = 12 + 20 + 12) */
+/* ── 두 입력의 글자를 상자 **상하 정중앙**에 (2026-09-16 구두) ─────────────────
+   한 줄 입력(rows=1)으로 두고 줄높이를 상자 높이와 같게 하면 글자가 줄상자 가운데에
+   놓여 정확히 중앙이 된다. 위아래 여백은 0. */
 .mode-panel[data-panel="text"] #qText,
 .mode-panel[data-panel="car"] #qCar{
-  line-height:20px !important;padding:12px 12px 0 !important;height:44px;box-sizing:border-box
+  height:44px;min-height:44px;line-height:44px !important;padding:0 12px !important;
+  box-sizing:border-box;overflow:hidden;white-space:nowrap
 }
 
 /* ── 영상 선택 팝업 좌측 : 내용이 늘면 **스크롤** (2026-09-16 구두) ─────────────
