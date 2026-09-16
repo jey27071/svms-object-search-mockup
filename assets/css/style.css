@@ -7346,3 +7346,17 @@ body.dt-b #dtMulti .mv-no{display:none}
   background:var(--bg-1);border:1px solid var(--ln-border);border-radius:4px;
   color:var(--tx-primary);font-size:12px;color-scheme:dark
 }
+
+/* ── 검색 유형 칩을 시안 규격으로 (2026-09-16 구두 · 시안 5391:119185 Chips) ─────
+   시안 : h28 · 좌우 12 · radius 999 · 1px 선.
+   선택 = 선·글자만 파랑(**채움 없음**) / 비선택 = 회색 선·회색 글자.
+   구현은 선택 칩에 10% 파란 배경까지 깔려 테두리와 겹쳐 보였다. */
+#modeRail button{
+  height:28px;padding:0 12px;border-radius:999px;
+  border:1px solid var(--ln-border);background:none;
+  font-size:12px;font-weight:500;color:var(--tx-tertiary)
+}
+#modeRail button:hover{color:var(--tx-secondary);border-color:var(--ln-border)}
+#modeRail button.on{
+  border-color:var(--primary);background:none;color:var(--primary)
+}
