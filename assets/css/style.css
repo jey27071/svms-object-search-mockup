@@ -7126,8 +7126,8 @@ body.dt-b #dtMulti .mv-head .mv-ic .mv-more{display:none}
    조작 바가 화면 아래쪽에 있어 아래로 펼치면 타임라인에 가려 잘린다.
    캐럿도 열렸을 때 위를 향하도록 회전 방향을 뒤집는다. */
 #dtCtrl .vm-type .select-menu{top:auto;bottom:calc(100% + 3px);box-shadow:0 -8px 20px rgba(0,0,0,.55)}
-#dtCtrl .vm-type.open .select-btn .caret{transform:rotate(0deg)}
-#dtCtrl .vm-type .select-btn .caret{transform:rotate(180deg)}
+#dtCtrl .vm-type.open .select-btn .caret{transform:rotate(90deg)}
+#dtCtrl .vm-type .select-btn .caret{transform:rotate(-90deg)}
 
 /* ── 영상 선택 팝업을 시안(5329:111961) 표현에 맞춤 (2026-09-16 구두) ─────────────
    충돌 없는 것만 반영했다. 날짜 디바이더 · `n/전체` 배지 · 이동 경로 미리보기는
@@ -7208,8 +7208,8 @@ body.dt-b #dtTools{display:flex;align-items:center;gap:8px}
 
 /* ── 재생 영상 콤보박스 화살표 : 상태에 따라 하나만 (2026-09-16 구두) ─────────────
    메뉴가 **위로** 펼쳐지므로 닫힘 = 위 방향, 열림 = 아래 방향으로 뒤집는다. */
-#dtCtrl .vm-type .select-btn .caret{width:16px;height:16px;transform:rotate(180deg);transition:transform .12s}
-#dtCtrl .vm-type.open .select-btn .caret{transform:rotate(0deg)}
+#dtCtrl .vm-type .select-btn .caret{width:16px;height:16px;transform:rotate(-90deg);transition:transform .12s}
+#dtCtrl .vm-type.open .select-btn .caret{transform:rotate(90deg)}
 
 /* ── 이동 경로 보기 : 칸 머리말 카메라명 **앞**에 순번 (2026-09-16 구두) ─────────
    종전에는 칸 좌하단에만 있었다. 머리말에서 순서를 바로 읽을 수 있게 앞으로 옮긴다. */
@@ -7437,3 +7437,35 @@ body.dt-b #dtMulti .mv-tile:hover .mv-head [data-vbm],
 #cmpGrid .cmp-tile:hover .cmp-head [data-vbm]{opacity:1}
 /* 공통 제어바의 비율 버튼 — 확대 왼쪽 */
 #dtCtrl #dtRatioAll{flex:0 0 auto}
+
+/* ── 텍스트·차량번호 입력창을 **같은 규격**으로 (2026-09-16 구두) ─────────────────
+   실측하니 텍스트 래퍼 292×40(입력 44가 2px씩 잘림·모서리 6), 차량번호 292×46(입력 폭 238)
+   으로 서로 달랐다. 둘 다 래퍼 46 · 모서리 8 · 입력 44 로 고정하고,
+   래퍼를 flex 로 만들어 글자가 상하 정중앙에 오게 한다(placeholder 가 아래로 치우치던 것). */
+.mode-panel[data-panel="text"] .textarea-wrap,
+.mode-panel[data-panel="car"] .textarea-wrap{
+  height:46px;min-height:46px;box-sizing:border-box;border-radius:8px;
+  display:flex;align-items:center;padding:0
+}
+/* 최근 검색이 펼쳐지면 높이를 내용에 맡긴다 */
+.mode-panel[data-panel="text"] .textarea-wrap.rc-open{height:auto;min-height:46px;display:block}
+.mode-panel[data-panel="text"] .textarea-wrap.rc-open > textarea{height:44px}
+
+.mode-panel[data-panel="text"] .textarea-wrap > textarea,
+.mode-panel[data-panel="car"] .textarea-wrap > textarea{
+  flex:1;width:100%;min-width:0;height:44px;min-height:44px;box-sizing:border-box;
+  padding:0 12px;line-height:44px;font-size:14px;letter-spacing:-.28px;
+  border:0 !important;outline:none;box-shadow:none;background:transparent;resize:none;overflow:hidden
+}
+/* ID 규칙이 더 세서 42px 로 남던 것 — 차량번호와 같은 44px 로 */
+.mode-panel[data-panel="text"] #qText{height:44px;min-height:44px;line-height:44px;padding:0 12px}
+
+/* ── 확대(영상 조회) 팝업 : 채널 수 그대로 배치 (2026-09-16 구두) ─────────────────
+   2채널이면 2칸만 쓴다. 종전에는 2×2 고정이라 아래 절반이 검게 비었다. */
+#mdVideo .vw-stage.vw-grid{display:grid;gap:2px;background:#000}
+#mdVideo .vw-stage.vw-grid[data-n="1"]{grid-template-columns:1fr;grid-template-rows:1fr}
+#mdVideo .vw-stage.vw-grid[data-n="2"]{grid-template-columns:1fr 1fr;grid-template-rows:1fr}
+#mdVideo .vw-stage.vw-grid[data-n="3"]{grid-template-columns:repeat(3,1fr);grid-template-rows:1fr}
+#mdVideo .vw-stage.vw-grid[data-n="4"]{grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr}
+/* 공통 제어의 영상 보기 모드 버튼 — 우측 하단 */
+#mdVideo .vw-ctrl .grp.r{margin-left:auto;display:flex;align-items:center;gap:8px;padding-right:8px}
