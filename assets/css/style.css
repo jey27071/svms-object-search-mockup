@@ -7094,3 +7094,12 @@ body.in-detail .content-col > .tabbar .tab:not(.tab-search).on .tt-c{color:var(-
 /* ── 접힘 상태 탭 줄 : 시안(5329:111727)은 `검색 결과` 탭이 76 에서 시작한다 ────
    펼침용으로 넣은 `.tabbar{padding-left:8}` 이 접힘일 때도 걸려 탭이 8 밀려 있었다. */
 body:not(.in-detail).side-folded .content-col > .tabbar{padding-left:0}
+
+/* ── 멀티 뷰 칸 머리말 : ⋯ 대신 버튼 3개를 항상 노출 (2026-09-16 구두) ─────────────
+   종전에는 `영상 위치 전환(dt-swap)` 일 때만 북마크·비율·확대 3개를 펴고
+   기본 배치에서는 `⋯` 하나로 접어 뒀다. 경로 비교 칸(2026-09-15)과 같이
+   분할 수·배치와 무관하게 세 버튼을 그대로 보인다. */
+body.dt-b #dtMulti .mv-head .mv-sw{display:flex;align-items:center;gap:16px}
+body.dt-b #dtMulti .mv-head .mv-sw .tb{width:24px;height:24px}
+body.dt-b #dtMulti .mv-head .mv-sw .tb .i{width:24px;height:24px}
+body.dt-b #dtMulti .mv-head .mv-ic .mv-more{display:none}
