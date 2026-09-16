@@ -7673,3 +7673,7 @@ body.dt-swap #dtMapSec > .map-panes{flex:1 1 auto;min-height:0}
 body.dt-swap #dtMapSec > #dtCtrl{
   position:static;flex:0 0 auto;display:flex;z-index:2
 }
+/* 영상 머리말의 돋보기(확대)는 두지 않는다 — 휠 확대 + 하단 전체보기로 갈음 (2026-09-16 구두).
+   동적으로 만들어지는 자리까지 함께 막는다(코드는 남기고 표시만 끈다). */
+.dt-vhead [data-vzoom],
+.vh-ic [data-vzoom]{display:none !important}
