@@ -7478,3 +7478,11 @@ body.dt-b #dtMulti .mv-tile:hover .mv-head [data-vbm],
    텍스트 기준(24)으로 맞춘다. */
 .mode-panel[data-panel="text"] .textarea-wrap,
 .mode-panel[data-panel="car"] .textarea-wrap{margin-top:8px}
+
+/* ── 패널 스크롤바를 오른쪽 끝으로 (2026-09-16 구두) ─────────────────────────────
+   `.side` 에 `padding-right:10px` 이 있어 스크롤 영역이 패널 끝에서 10px 안쪽에서
+   끝났고, 그만큼 스크롤바가 왼쪽에 붙어 보였다.
+   여백을 바깥(패널)에서 안쪽(머리말·본문)으로 옮겨 스크롤바가 끝에 붙게 한다. */
+#sidePanel.side{padding-right:0}
+#sidePanel .side-head{padding-right:10px;box-sizing:border-box}
+#sidePanel .side-body{padding-right:10px;box-sizing:border-box}
