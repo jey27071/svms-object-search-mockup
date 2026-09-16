@@ -7663,3 +7663,13 @@ body.dt-swap #dtMapSec > #dtCtrl{position:absolute;left:0;right:0;bottom:0;displ
 .mode-panel[data-panel="text"] .textarea-wrap.rc-open{border-radius:8px}
 /* 차량번호 쪽에만 남아 있던 width:100% 가 right 를 무시하게 만들어 상자가 18px 좁았다 */
 .mode-panel[data-panel="car"] #carRecentBlk{width:auto}
+
+/* ── 스위칭 상태에서 맵이 재생 제어부를 덮던 것 (2026-09-16 구두) ──────────────────
+   제어부를 맵 영역 바닥에 **띄워** 두다 보니 맵 판이 그 아래까지 내려와
+   실측 32px 을 파고들었다(맵 바닥 822 vs 제어부 윗변 790).
+   띄우지 말고 **흐름 안 맨 아래**에 두어 맵이 그만큼 자리를 비키게 한다. */
+body.dt-swap #dtMapSec{display:flex;flex-direction:column}
+body.dt-swap #dtMapSec > .map-panes{flex:1 1 auto;min-height:0}
+body.dt-swap #dtMapSec > #dtCtrl{
+  position:static;flex:0 0 auto;display:flex;z-index:2
+}
