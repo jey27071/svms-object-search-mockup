@@ -7483,6 +7483,45 @@ body.dt-b #dtMulti .mv-tile:hover .mv-head [data-vbm],
    `.side` 에 `padding-right:10px` 이 있어 스크롤 영역이 패널 끝에서 10px 안쪽에서
    끝났고, 그만큼 스크롤바가 왼쪽에 붙어 보였다.
    여백을 바깥(패널)에서 안쪽(머리말·본문)으로 옮겨 스크롤바가 끝에 붙게 한다. */
-#sidePanel.side{padding-right:0}
-#sidePanel .side-head{padding-right:10px;box-sizing:border-box}
-#sidePanel .side-body{padding-right:10px;box-sizing:border-box}
+/* 스크롤바를 오른쪽으로 옮기되 패널 가장자리에 **붙지 않게** 4px 띄운다.
+   내용 여백(10)은 그대로 두고, 바깥 여백 중 4 만 패널에 남긴다. */
+#sidePanel.side{padding-right:4px}
+#sidePanel .side-head{padding-right:6px;box-sizing:border-box}
+#sidePanel .side-body{padding-right:6px;box-sizing:border-box}
+/* 패널 스크롤바는 얇게 — 트랙은 비우고 손잡이만 보인다 */
+#sidePanel .side-body::-webkit-scrollbar{width:6px}
+#sidePanel .side-body::-webkit-scrollbar-track{background:transparent}
+#sidePanel .side-body::-webkit-scrollbar-thumb{background:rgba(255,255,255,.18);border-radius:3px}
+
+/* ── 패널 스크롤바 위치 재조정 (2026-09-16 구두) ─────────────────────────────
+   실제로 스크롤되는 건 `.side-body` 가 아니라 **#modePanels** 였다.
+   그 상자를 패널 오른쪽(가장자리에서 4px)까지 넓혀 스크롤바가 오른쪽에 오게 하고,
+   내용은 `.mode-panel` 의 오른쪽 여백 10 으로 스크롤바와 떨어뜨린다. */
+#sidePanel .side-body{padding-right:0}
+#sidePanel #modePanels{padding-right:0}
+#sidePanel #modePanels > .mode-panel{padding-right:10px;box-sizing:border-box}
+#sidePanel #modePanels::-webkit-scrollbar{width:6px}
+#sidePanel #modePanels::-webkit-scrollbar-track{background:transparent}
+#sidePanel #modePanels::-webkit-scrollbar-thumb{background:rgba(255,255,255,.18);border-radius:3px}
+/* 차량번호 최근 검색도 텍스트와 같은 드롭다운으로 — 펼치면 높이를 내용에 맡긴다 */
+.mode-panel[data-panel="car"] .textarea-wrap.rc-open{height:auto;min-height:46px;display:block}
+.mode-panel[data-panel="car"] .textarea-wrap.rc-open > textarea{height:44px}
+/* 차량번호 드롭다운도 텍스트와 같은 폭·모양 (블록으로 펼쳐 full width) */
+.mode-panel[data-panel="car"] #carRecentBlk{width:100%;box-sizing:border-box}
+
+/* ── 차량번호 최근 검색을 텍스트와 **같은 모양**으로 (2026-09-16 구두) ─────────────
+   평평한 전체 폭 행 스타일이 `#recentBlk` ID 로만 걸려 있어 차량번호 블록에는
+   기본 알약 스타일(radius 16 · 내용 폭)이 적용됐다. 같은 규칙을 그대로 준다. */
+#carRecentBlk .rb-lb{font-size:10.5px;color:var(--tx-helper);margin:0 0 6px}
+#carRecentBlk .rb-list{display:flex;flex-direction:column;gap:0;align-items:stretch}
+#carRecentBlk .rb-li{
+  display:flex;align-items:center;gap:8px;height:30px;padding:0 4px;border-radius:4px;
+  font-size:12px;color:var(--tx-secondary);cursor:pointer;background:transparent;border:0
+}
+#carRecentBlk .rb-li:hover{background:var(--bg-3);color:var(--tx-primary)}
+#carRecentBlk .rb-li .t{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:left}
+#carRecentBlk .rb-li .x{
+  width:18px;height:18px;flex:0 0 18px;display:flex;align-items:center;justify-content:center;
+  border:0;background:none;color:var(--tx-helper);border-radius:3px
+}
+#carRecentBlk .rb-li .x:hover{background:rgba(255,255,255,.1);color:var(--tx-primary)}
