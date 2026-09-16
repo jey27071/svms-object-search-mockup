@@ -7562,3 +7562,9 @@ body.dt-swap #dtMapSec > #dtCtrl{position:absolute;left:0;right:0;bottom:0;displ
 /* 재검색 비활성 : 바탕과 같은 톤으로 눌러 둔다 (시안) */
 .vs-filter .vf-go{margin-top:6px}
 .vs-filter .vf-go:disabled{background:transparent;border-color:var(--ln-subtle);color:var(--tx-helper)}
+
+/* ── 차량번호 최근 검색이 안 보이던 것 (2026-09-16 구두) ──────────────────────
+   드롭다운(#carRecentBlk)은 래퍼 기준 absolute · top:100% 로 **밖**에 그려지는데,
+   래퍼에 overflow:hidden 이 있어 통째로 잘려 나갔다(실측 286x226 이 화면에 0).
+   입력에는 이미 테두리가 없으므로 잘라낼 것이 없다 → 넘침을 허용한다. */
+.mode-panel[data-panel="car"] .textarea-wrap{overflow:visible}
