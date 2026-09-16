@@ -7360,3 +7360,67 @@ body.dt-b #dtMulti .mv-no{display:none}
 #modeRail button.on{
   border-color:var(--primary);background:none;color:var(--primary)
 }
+
+/* ============================================================
+   검색 패널·미리보기 다듬기 (2026-09-16 구두)
+   ============================================================ */
+/* 차량번호 입력을 텍스트 입력과 같은 규격으로 (h44 · 모서리 8 · 파란 선 한 겹) */
+.mode-panel[data-panel="car"] .textarea-wrap{
+  border:1px solid var(--primary);border-radius:8px;background:var(--bg-1);overflow:hidden
+}
+.mode-panel[data-panel="car"] .textarea-wrap textarea,
+.mode-panel[data-panel="car"] .textarea-wrap textarea:focus{
+  border:0 !important;outline:none;box-shadow:none;background:transparent;
+  height:44px;min-height:44px;padding:0 12px;line-height:42px;
+  font-size:14px;letter-spacing:-.28px;resize:none;overflow:hidden
+}
+.mode-panel[data-panel="car"] .textarea-wrap textarea::placeholder{font-size:14px;letter-spacing:-.28px}
+.mode-panel[data-panel="car"] .clear-x{right:10px;top:50%;transform:translateY(-50%)}
+
+/* 카메라 검색 돋보기를 입력 상하 가운데로 (아래로 치우치던 것) */
+.cam-wrap .ct-search{align-items:center}
+.cam-wrap .ct-search .i{display:block;align-self:center;margin:0}
+
+/* 체크박스 : 트리·전체 모두 **같은 모양 같은 크기**로 그린다.
+   네이티브(accent-color)와 커스텀(.check i)이 섞여 크기·모양이 달랐다. */
+.cam-wrap input[type=checkbox]{
+  -webkit-appearance:none;appearance:none;
+  width:16px;height:16px;flex:0 0 16px;margin:0;box-sizing:border-box;
+  border:1px solid var(--ln-border);border-radius:2px;background:var(--bg-0);
+  position:relative;cursor:pointer
+}
+.cam-wrap input[type=checkbox]:checked{background:var(--primary);border-color:var(--primary)}
+.cam-wrap input[type=checkbox]:checked::after{
+  content:'';position:absolute;left:5px;top:2px;width:4px;height:8px;
+  border:solid #fff;border-width:0 1.6px 1.6px 0;transform:rotate(45deg)
+}
+.cam-wrap input[type=checkbox][data-part="1"]{background:var(--primary);border-color:var(--primary)}
+.cam-wrap input[type=checkbox][data-part="1"]::after{
+  content:'';position:absolute;left:3px;top:6.5px;width:8px;height:0;
+  border-top:1.6px solid #fff;transform:none
+}
+/* `전체` 는 커스텀 <i> 를 쓰므로 그 쪽을 숨기고 같은 네이티브 모양으로 통일 */
+.cam-wrap .ct-all i{display:none}
+
+/* 폴더 아이콘(솔리드) · 카메라 아이콘 크기 */
+.cam-wrap .ct-row .i-g-folder{width:20px;height:20px;flex:0 0 20px;color:var(--tx-tertiary)}
+
+/* 조건값 타이틀 : 시안 12px Medium (카메라 (위치) · 기간 · 유사도 · 색상) */
+.filters .acc > .acc-head{font-size:12px;font-weight:500}
+.filters .acc > .acc-head .acc-sum{font-size:12px;font-weight:500}
+
+/* 미리보기 선택 시 위 목록 포커스를 더 두껍게 (구분이 안 되던 것) */
+#clipsBody .reid-card.focus{
+  border-color:var(--primary) !important;border-width:3px;
+  box-shadow:0 0 0 3px rgba(48,112,216,.55)
+}
+
+/* 앞선 규칙(.ct-row input 18px)에 눌려 크기가 안 줄던 것 — 같은 자리에서 16px 로 */
+.cam-wrap .ct-row input[type=checkbox],
+.cam-wrap .ct-row .cb,
+.cam-wrap .ct-all input[type=checkbox]{width:16px;height:16px;flex:0 0 16px}
+/* 돋보기가 3px 아래로 치우치던 것 — 줄 높이를 지워 정확히 가운데로 */
+.cam-wrap .ct-search .i{line-height:0;vertical-align:middle}
+/* 돋보기 세로 중앙 — 다른 규칙에 눌리지 않게 여기서 확실히 */
+.cam-wrap .ct-search{display:flex !important;align-items:center !important}
+.cam-wrap .ct-search > .i{align-self:center !important;margin:0 !important;position:relative;top:0}
