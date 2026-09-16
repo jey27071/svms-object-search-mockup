@@ -7103,3 +7103,21 @@ body.dt-b #dtMulti .mv-head .mv-sw{display:flex;align-items:center;gap:16px}
 body.dt-b #dtMulti .mv-head .mv-sw .tb{width:24px;height:24px}
 body.dt-b #dtMulti .mv-head .mv-sw .tb .i{width:24px;height:24px}
 body.dt-b #dtMulti .mv-head .mv-ic .mv-more{display:none}
+
+/* ── 화면 분할 버튼 하나로 합치기 (2026-09-16 구두) ─────────────────────────────
+   종전 `[1분할] [4분할 ▾]` 두 버튼과 그 팝오버는 숨기고, 합친 버튼 + 재생 영상
+   콤보박스만 보인다. 마크업·코드는 되돌릴 때를 위해 남겨 뒀다. */
+#dtCtrl .vm1,
+#dtCtrl #dtViewSel{display:none !important}
+#dtCtrl .vm-cycle{position:relative}
+/* 현재 분할 수를 아이콘 오른쪽 아래 배지로 */
+#dtCtrl .vm-cycle .vm-n{
+  position:absolute;right:1px;bottom:1px;min-width:12px;height:12px;padding:0 2px;
+  display:flex;align-items:center;justify-content:center;
+  border-radius:6px;background:var(--bg-0);color:var(--tx-secondary);
+  font-family:var(--mono);font-size:9px;font-weight:600;line-height:1;pointer-events:none
+}
+#dtCtrl .vm-cycle.on .vm-n{background:var(--primary);color:#fff}
+/* 재생 영상 콤보박스 — 분할 버튼 옆 */
+#dtCtrl .vm-type{margin-left:6px;min-width:96px}
+#dtCtrl .vm-type.off{opacity:.45;pointer-events:none}
