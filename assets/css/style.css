@@ -7276,3 +7276,28 @@ body.dt-b #dtMulti .mv-no{display:none}
 .filters .acc-head .acc-tit,
 .filters .acc-head > b,
 .filters .acc-head .acc-sum{font-size:12px;font-weight:500}
+
+/* ── 검색 패널 마무리 (2026-09-16 구두 · 시안 5391:119185) ─────────────────────
+   1) 검색 입력은 **기본 상태에서도** 파란 테두리 (시안 border = line/blue)
+   2) 체크박스가 커 보이던 것 — 18px 고정, 안쪽 체크는 그 안에 맞춘다
+   3) 접기 버튼·카메라 검색 아이콘을 시안 것으로 (마크업에서 교체)
+   4) 항목 세로 정렬 : 행 높이 32 안에서 모두 가운데 */
+.mode-panel[data-panel="text"] #qText{border:1px solid var(--primary)}
+.mode-panel[data-panel="text"] #qText:focus{border-color:var(--primary);outline:none}
+
+/* 체크박스 — 트리·전체 모두 18px 한 값으로 */
+.cam-wrap input[type=checkbox]{
+  width:18px;height:18px;flex:0 0 18px;margin:0;box-sizing:border-box;
+  accent-color:var(--primary)
+}
+.cam-wrap .ct-all{display:flex;align-items:center}
+.cam-wrap .ct-all i{width:18px;height:18px;flex:0 0 18px;box-sizing:border-box}
+.cam-wrap .ct-all input[type=checkbox]{width:18px;height:18px}
+
+/* 세로 정렬 : 행 안 요소는 모두 가운데, 아이콘은 제 크기대로 */
+.cam-wrap .ct-row > *{align-self:center}
+.cam-wrap .ct-row .ct-nm,
+.cam-wrap .ct-row .ct-n{line-height:1.3}
+.cam-wrap .ct-search .i{flex:0 0 24px}
+/* 패널 접기 버튼 아이콘 20 */
+#sideHead #btnFold .i{width:20px;height:20px}
