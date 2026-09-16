@@ -7544,3 +7544,21 @@ body.dt-b #dtMulti .mv-tile:hover .mv-head [data-vbm],
 }
 .vs-filter .vf-go:not(:disabled):hover{background:var(--bg-3);color:var(--tx-primary)}
 .vs-filter .vf-go:disabled{background:var(--bg-2);border-color:var(--ln-subtle);color:var(--tx-helper);cursor:default}
+/* 스위칭 상태에서 제어부가 원래 자리(맵이 들어온 영역)에 앉도록 기준을 잡아 준다 */
+body.dt-swap #dtMapSec{position:relative}
+body.dt-swap #dtMapSec > #dtCtrl{position:absolute;left:0;right:0;bottom:0;display:flex}
+
+/* ── 영상 선택 좌측 열을 시안(5402:189952) 대로 (2026-09-16 구두) ─────────────────
+   150px 로는 `전체 카메라에서 검색` 이 두 줄로 접혔다. 폭을 넓히고,
+   카메라·기간 옵션은 **한 덩어리 상자**(어두운 바탕 + 모서리)로 묶는다. */
+.md-vsel .vs-side{flex:0 0 200px;padding:14px 16px 14px 0}
+.md-vsel .vs-filter{
+  background:var(--bg-1);border:1px solid var(--ln-subtle);border-radius:6px;
+  padding:12px;display:flex;flex-direction:column;gap:6px
+}
+.md-vsel .vs-filter .vf-lb{font-size:12px;font-weight:500;color:var(--tx-secondary);margin:2px 0 2px}
+.md-vsel .vs-filter .check,
+.md-vsel .vs-filter .radio{padding:3px 0;font-size:12px;white-space:nowrap}
+/* 재검색 비활성 : 바탕과 같은 톤으로 눌러 둔다 (시안) */
+.vs-filter .vf-go{margin-top:6px}
+.vs-filter .vf-go:disabled{background:transparent;border-color:var(--ln-subtle);color:var(--tx-helper)}
