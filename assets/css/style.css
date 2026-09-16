@@ -7224,3 +7224,55 @@ body.dt-b #dtMulti .mv-head .mv-hn{
 }
 /* 머리말로 옮겼으니 좌하단 배지는 감춘다 (코드는 남겨 둔다) */
 body.dt-b #dtMulti .mv-no{display:none}
+
+/* ============================================================
+   검색 패널을 시안 5391:119185(검색_진입) 실측으로 (2026-09-16 구두)
+   - 검색 입력 : h44 · radius 8 · 안쪽 12 · 14R(-0.28) · 돋보기 없음
+   - 카메라 검색 : 트리 상자 **바깥 위** · h34 · radius 4 · 왼 12/오른 8 · 아이콘 24
+   - 트리 행 : 체크(18) → 화살표(20) → 폴더(20) → 이름(12R) … 개수(12R, 50%)
+   - 2뎁스 목록은 왼쪽 16 들여쓰기 · 행 높이 32 · 안쪽 좌우 8
+   ============================================================ */
+/* 검색 입력 */
+.mode-panel[data-panel="text"] .textarea-wrap{padding:0}
+.mode-panel[data-panel="text"] #qText{
+  height:44px;min-height:44px;padding:0 12px;line-height:42px;
+  border-radius:8px;font-size:14px;letter-spacing:-.28px;resize:none;overflow:hidden
+}
+.mode-panel[data-panel="text"] #qText::placeholder{font-size:14px;letter-spacing:-.28px}
+.mode-panel[data-panel="text"] .clear-x{right:10px;top:50%;transform:translateY(-50%)}
+
+/* 카메라 검색창 — 트리 상자 바깥 */
+.cam-wrap{display:flex;flex-direction:column;gap:10px}
+.cam-wrap .ct-search{
+  display:flex;align-items:center;justify-content:space-between;
+  height:34px;padding:0 8px 0 12px;border-radius:4px;
+  background:var(--bg-1);border:1px solid var(--ln-border);margin:0
+}
+.cam-wrap .ct-search input{
+  flex:1;min-width:0;height:100%;border:0;background:none;outline:none;
+  font-size:14px;letter-spacing:-.28px;color:var(--tx-primary);padding:0
+}
+.cam-wrap .ct-search input::placeholder{color:var(--tx-tertiary);font-size:14px;letter-spacing:-.28px}
+.cam-wrap .ct-search .i,.cam-wrap .ct-search svg{width:24px;height:24px;flex:0 0 24px;color:var(--tx-secondary)}
+
+/* 트리 상자 */
+.cam-wrap .cam-tree{background:var(--bg-1);border:1px solid var(--ln-subtle);border-radius:4px;padding:10px;display:flex;flex-direction:column;gap:10px}
+.cam-wrap .ct-all{height:32px;gap:8px;margin:0;font-size:14px;font-weight:500;letter-spacing:-.28px}
+.cam-wrap .ct-list{padding-left:16px}
+
+/* 트리 행 : 체크 → 화살표 → 폴더 → 이름 … 개수 */
+.cam-wrap .ct-row{display:flex;align-items:center;gap:4px;height:32px;padding:0 8px;margin:0}
+.cam-wrap .ct-row .cb,
+.cam-wrap .ct-row input[type=checkbox]{width:18px;height:18px;flex:0 0 18px;margin:0}
+.cam-wrap .ct-cv{display:flex;align-items:center;justify-content:center;width:20px;height:20px;flex:0 0 20px}
+.cam-wrap .ct-cv .i{width:20px;height:20px}
+.cam-wrap .ct-row .ic,
+.cam-wrap .ct-row > .i{width:20px;height:20px;flex:0 0 20px}
+.cam-wrap .ct-nm{flex:1;min-width:0;font-size:12px;font-weight:400;color:var(--tx-secondary);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cam-wrap .ct-n{flex:0 0 auto;font-size:12px;font-weight:400;color:var(--tx-secondary);opacity:.5;font-family:inherit}
+
+/* 아코디언 머리말·값 칩 글자 크기 (시안 12M) */
+.filters .acc-head .acc-tit,
+.filters .acc-head > b,
+.filters .acc-head .acc-sum{font-size:12px;font-weight:500}
