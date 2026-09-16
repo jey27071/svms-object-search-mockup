@@ -7149,3 +7149,12 @@ body.dt-b #dtMulti .mv-head .mv-ic .mv-more{display:none}
 /* 재검색 : 조건이 바뀌기 전에는 회색(비활성) */
 .vs-filter .vf-go:disabled{background:var(--bg-3);border-color:var(--ln-border);color:var(--tx-helper);cursor:default}
 .vs-filter .vf-go:disabled:hover{background:var(--bg-3)}
+
+/* ── 분석 도구를 조작 바 왼쪽으로 (2026-09-16 구두) ─────────────────────────────
+   순서 = 영역 검색 · 가상펜스 · 히트맵 · 주변 카메라 보기.
+   히트맵·주변 카메라가 오른쪽(#dtTools)에 있을 때 걸려 있던 표시 규칙을
+   옮긴 자리(#dtAreaTools)에도 그대로 준다. */
+body.dt-b #dtAreaTools > [data-tool="heat"],
+body.dt-b #dtAreaTools > [data-tool="cctv"]{display:flex}
+/* 영상 위치 전환(dt-swap)에서는 종전처럼 함께 숨긴다 */
+body.dt-swap .dt-side #dtCtrl > #dtAreaTools > :is([data-tool="heat"],[data-tool="cctv"]){display:none !important}

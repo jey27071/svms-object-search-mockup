@@ -9,8 +9,8 @@
 <title>SVMS — 동선 추적 검색 (Working Mockup)</title>
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
-<link rel="stylesheet" href="assets/css/icons.css?v=202609161100">
-<link rel="stylesheet" href="assets/css/style.css?v=202609161100">
+<link rel="stylesheet" href="assets/css/icons.css?v=202609161105">
+<link rel="stylesheet" href="assets/css/style.css?v=202609161105">
 </head>
 <body class="booting">
 
@@ -302,7 +302,7 @@
         <!-- 상단 : 1~3단 패널. 각 칸은 영상 또는 맵뷰로 쓰고 좌우로 폭을 조정한다 -->
         <div class="dt-panes" id="dtPanes" data-panes="1">
         <div class="dt-video" id="dtVideo">
-          <img id="dtVideoImg" src="assets/video/v01.jpg?v=202609161100" alt="">
+          <img id="dtVideoImg" src="assets/video/v01.jpg?v=202609161105" alt="">
           <div class="ov ov-heat" id="ovHeat" hidden></div>
           <div class="ov ov-path" id="ovPath" hidden></div>
           <div class="ov ov-cctv" id="ovCctv" hidden></div>
@@ -342,9 +342,14 @@
             <div class="flt-list" id="trackList"></div>
           </div>
           <div class="dt-ctrl" id="dtCtrl">
+            <!-- 2026-09-16 구두 : 분석 도구는 조작 바 **왼쪽**에 모은다.
+                 순서 = 영역 검색 · 가상펜스 · 히트맵 · 주변 카메라 보기
+                 (히트맵·주변 카메라는 오른쪽 #dtTools 에 있던 것을 옮겼다) -->
             <div class="grp l" id="dtAreaTools">
               <button class="btn-icon" data-area="shape" title="영역 검색"><i class="i i-24 i-g-shape"></i></button>
               <button class="btn-icon" data-area="line" title="가상펜스 검색"><i class="i i-24 i-g-line"></i></button>
+              <button class="btn-icon" data-tool="heat" title="히트맵"><i class="i i-24 i-g-heatmap"></i></button>
+              <button class="btn-icon" data-tool="cctv" title="주변 카메라 보기"><i class="i i-24 i-g-camera"></i></button>
             </div>
             <div class="grp c">
               <!-- 시안 5126:58070 : 이전 · 배속뒤로 · 10초뒤로 · 재생(토글) · 10초앞 · 배속앞 · 다음
@@ -361,9 +366,9 @@
               <!-- 사양서 Detail_000_2 · 2-5) 영상 분석 및 뷰어 도구 :
                    히트맵 / 경로 확인 / 주변 카메라 / 단일 영상 view(1X1, Default) / 다중 영상 view(2X2)
                    ※ 대상 바운딩 박스는 2-2)에 따라 상시 표시라 토글 버튼을 두지 않는다 -->
-              <button class="btn-icon" data-tool="heat" title="히트맵"><i class="i i-24 i-g-heatmap"></i></button>
+              <!-- 히트맵 · 주변 카메라는 왼쪽(#dtAreaTools)으로 옮겼다 (2026-09-16 구두).
+                   경로 확인은 시안에 없어 계속 숨김 -->
               <button class="btn-icon" data-tool="path" title="경로 확인"><i class="i i-18 i-tool-path"></i></button>
-              <button class="btn-icon" data-tool="cctv" title="인접 카메라"><i class="i i-24 i-g-camera"></i></button>
               <span class="tb-div"></span>
               <!-- 2026-09-16 구두 : 1분할·4분할 두 버튼을 **하나로 합쳤다.**
                  누를 때마다 1 → 2 → 3 → 4 → 1 로 순차 전환하고, 팝오버로 고르지 않는다.
@@ -492,7 +497,7 @@
             </div>
           </div>
           <div class="dt-map" id="dtMap">
-            <img id="dtMapImg" src="assets/img/floor.png?v=202609161100" alt="">
+            <img id="dtMapImg" src="assets/img/floor.png?v=202609161105" alt="">
             <!-- 층별 : 참고안(검색상세 시안_260903)처럼 층을 비스듬히 쌓아
                  층간 이동을 관통선으로 보여준다 -->
             <div class="map-3d" id="dtMap3d" hidden></div>
@@ -838,10 +843,10 @@
 <div class="toast" id="toast" hidden></div>
 
 <script src="assets/vendor/three.r128.min.js"></script>
-<script src="assets/js/floor-tex.js?v=202609161100"></script>
-<script src="assets/js/data.js?v=202609161100"></script>
-<script src="assets/js/map3d.js?v=202609161100"></script>
-<script src="assets/js/app.js?v=202609161100"></script>
+<script src="assets/js/floor-tex.js?v=202609161105"></script>
+<script src="assets/js/data.js?v=202609161105"></script>
+<script src="assets/js/map3d.js?v=202609161105"></script>
+<script src="assets/js/app.js?v=202609161105"></script>
 <script id="booting-guard">
   /* 앱 스크립트가 실패해도 화면은 나와야 한다 */
   setTimeout(function(){ document.body.classList.remove('booting'); }, 1500);
