@@ -1,0 +1,19 @@
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="ic_&#236;&#155;&#144;&#235;&#179;&#184;&#235;&#185;&#132;&#236;&#156;&#168;">
+<g id="&#236;&#155;&#144;&#235;&#179;&#184;">
+<g id="Group">
+<path id="Vector" d="M3 3.5625V16.4984H4.125V4.125H16.6341V3H3.5625C3.2475 3 3 3.2475 3 3.5625Z" fill="white"/>
+<path id="Vector_2" d="M10.6492 3H7.94922V4.125H10.6492V3Z" fill="white"/>
+<path id="Vector_3" d="M21 3.5625C21 3.2475 20.7525 3 20.4375 3H15.9375V4.125H19.875V17.1092H21V3.5625Z" fill="white"/>
+<path id="Vector_4" d="M21 15.9375H19.875V19.875H15.9375V21H20.4375C20.7525 21 21 20.7525 21 20.4375V15.9375Z" fill="white"/>
+<path id="Vector_5" d="M3 20.4375C3 20.7525 3.2475 21 3.5625 21H16.4983V19.875H4.125V15.9375H3V20.4375Z" fill="white"/>
+</g>
+</g>
+<g id="Rectangle 34626061">
+<mask id="path-10-inside-1_4586_45748" fill="white">
+<rect x="6.375" y="6.375" width="11.25" height="11.25" rx="0.56"/>
+</mask>
+<rect x="6.375" y="6.375" width="11.25" height="11.25" rx="0.56" fill="white" stroke="white" stroke-width="2.24" mask="url(#path-10-inside-1_4586_45748)"/>
+</g>
+</g>
+</svg>
