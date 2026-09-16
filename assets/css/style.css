@@ -7146,9 +7146,7 @@ body.dt-b #dtMulti .mv-head .mv-ic .mv-more{display:none}
 .vs-name .q:hover::after{opacity:1}
 /* 보기 전환은 글자 세그먼트 — 아이콘 크기 고정 규칙을 푼다 */
 .vs-seg button{width:auto;min-width:46px;height:24px;padding:0 10px;font-size:11.5px;line-height:1}
-/* 재검색 : 조건이 바뀌기 전에는 회색(비활성) */
-.vs-filter .vf-go:disabled{background:var(--bg-3);border-color:var(--ln-border);color:var(--tx-helper);cursor:default}
-.vs-filter .vf-go:disabled:hover{background:var(--bg-3)}
+/* 재검색 비활성은 **앱 표준**(.btn-primary:disabled) 을 그대로 쓴다 — 따로 칠하지 않는다 */
 
 /* ── 분석 도구를 조작 바 왼쪽으로 (2026-09-16 구두) ─────────────────────────────
    순서 = 영역 검색 · 가상펜스 · 히트맵 · 주변 카메라 보기.
@@ -7282,8 +7280,11 @@ body.dt-b #dtMulti .mv-no{display:none}
    2) 체크박스가 커 보이던 것 — 18px 고정, 안쪽 체크는 그 안에 맞춘다
    3) 접기 버튼·카메라 검색 아이콘을 시안 것으로 (마크업에서 교체)
    4) 항목 세로 정렬 : 행 높이 32 안에서 모두 가운데 */
-.mode-panel[data-panel="text"] #qText{border:1px solid var(--primary)}
-.mode-panel[data-panel="text"] #qText:focus{border-color:var(--primary);outline:none}
+/* 테두리는 감싸는 .textarea-wrap 한 곳에만 있다 — 입력에 또 그리면 두 겹으로 보인다.
+   기본 상태에서도 파란 선(시안 line/blue)이 되도록 **색만** 바꾼다. */
+.mode-panel[data-panel="text"] .textarea-wrap{border-color:var(--primary)}
+.mode-panel[data-panel="text"] .textarea-wrap textarea,
+.mode-panel[data-panel="text"] .textarea-wrap textarea:focus{border:0 !important;outline:none;box-shadow:none}
 
 /* 체크박스 — 트리·전체 모두 18px 한 값으로 */
 .cam-wrap input[type=checkbox]{
@@ -7325,3 +7326,23 @@ body.dt-b #dtMulti .mv-no{display:none}
 }
 /* 미리보기에서 지금 누른 칸도 표시 */
 #clipsPreview .cp-node.on img{outline:2px solid var(--primary);outline-offset:-2px}
+
+/* ── 이동 경로 미리보기 정리 (2026-09-16 구두) ─────────────────────────────────
+   1) 하단 확대/축소 삭제 — 코드는 남기고 표시만 끈다
+   2) 썸네일을 영역 상하 폭에 맞는 **표준 크기 120×76** 한 값으로 (배율 없음)
+   3) `취소 · 완료` 줄의 위아래 여백을 줄인다 */
+#clipsPreview .cp-zoom{display:none !important}
+#clipsPreview .cp-inner{height:145px}
+#clipsPreview .cp-node{width:120px;top:20px}
+#clipsPreview .cp-node img{width:120px;height:76px}
+#mdClips .md-foot{padding:8px 16px}
+/* `날짜 지정` 시작·종료 입력 */
+.vs-filter .vs-date{display:flex;flex-direction:column;gap:6px;margin:2px 0 4px}
+.vs-filter .vs-date[hidden]{display:none}
+.vs-filter .vs-date label{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--tx-secondary)}
+.vs-filter .vs-date span{flex:0 0 44px}
+.vs-filter .vs-date input{
+  flex:1;min-width:0;height:28px;padding:0 8px;box-sizing:border-box;
+  background:var(--bg-1);border:1px solid var(--ln-border);border-radius:4px;
+  color:var(--tx-primary);font-size:12px;color-scheme:dark
+}
