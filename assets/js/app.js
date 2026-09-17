@@ -1247,22 +1247,30 @@ function renderClipPreview() {
     return;
   }
 
-  const fmt = o => String(o.t).slice(11, 16);
+  const fmt = o => String(o.t).slice(11, 19);
+  /* 새 시안 5476:107477 Timeline : 날짜가 바뀌는 지점마다 세로선 + 날짜를 세우고,
+     썸네일(192×108)은 시각을 머리에 달고 파란 축 위에 놓인다.
+     번호 배지·닫기·위치명은 썸네일 **안**에 (위·아래 그라데이션 위) 얹힌다. */
+  const days = picked.map(o => String(o.t).slice(0, 10));
+  const marks = days.map((d0, i) => (i === 0 || d0 !== days[i - 1]) ? { i, d: d0 } : null).filter(Boolean);
   host.innerHTML = `
-    <!-- 시안 5402:189952 : 제목 줄은 없고 **날짜**만 왼쪽 위에 둔다 (2026-09-16 구두) -->
-    <div class="cp-head cp-date"><b>${String(picked[0].t).slice(0, 10)}</b></div>
     <div class="cp-scroll">
       <div class="cp-inner">
+        <div class="cp-box"></div>
         <div class="cp-axis"></div>
+        ${marks.map(m => `<i class="cp-vline" data-cpv="${m.i}"></i>
+          <b class="cp-dlabel" data-cpd="${m.i}">${m.d}</b>`).join('')}
         ${picked.map((o, i) => `
           <div class="cp-node" data-cpn="${i}" data-cpid="${o.id}" title="${o.cam} · ${o.t}">
-            <span class="cp-n">${i + 1}</span>
-            <button class="cp-rm" data-cprm="${o.id}" type="button"
-                    title="이 클립을 경로에서 빼기" aria-label="${o.cam} 클립 빼기">
-              <i class="i i-close-x"></i></button>
-            <img src="${o.img}" alt="">
-            <span class="cp-cam">${o.cam}</span>
             <span class="cp-t">${fmt(o)}</span>
+            <div class="cp-shot">
+              <img src="${o.img}" alt="">
+              <span class="cp-n">${i + 1}</span>
+              <button class="cp-rm" data-cprm="${o.id}" type="button"
+                      title="이 클립을 경로에서 빼기" aria-label="${o.cam} 클립 빼기">
+                <i class="i i-close-x"></i></button>
+              <span class="cp-cam">${o.cam}</span>
+            </div>
           </div>`).join('')}
       </div>
     </div>
@@ -1324,8 +1332,9 @@ function fitClipPreview() {
   const host0 = document.getElementById('clipsPreview');
   if (host0) host0.style.setProperty('--cpz', CP_ZOOM);
 
-  /* 썸네일 120 + 최소 간격 12 = 132 (2026-09-16 구두 : 커지면서 서로 붙던 것) */
-  const n = CP_TIMES.length, SLOT = 132, PAD = 66, HALF = 60;
+  /* 새 시안 5476:107477 실측 : 썸네일 192 + 최소 간격 12 = 204(시안 간격 203),
+     첫 썸네일 왼쪽 여백 40 → 중심 136 */
+  const n = CP_TIMES.length, SLOT = 204, PAD = 136, HALF = 96;
   const view = Math.max(sc.clientWidth, 420), avail = view * CP_ZOOM;
   /* 확대해도 보던 가운데가 그대로 보이도록 */
   const mid = inner.scrollWidth ? (sc.scrollLeft + sc.clientWidth / 2) / inner.scrollWidth : 0;
@@ -1345,8 +1354,16 @@ function fitClipPreview() {
 
   inner.style.width = Math.max(total, avail) + 'px';
   inner.querySelectorAll('.cp-node').forEach((el, i) => { el.style.left = Math.round(xs[i]) + 'px'; });
+  /* 축은 시안대로 폭 전체를 가로지른다 (종전엔 첫~마지막 클립 사이만 그었다) */
   const ax = inner.querySelector('.cp-axis');
-  if (ax) { ax.style.left = (PAD - HALF) + 'px'; ax.style.right = Math.max(inner.clientWidth - xs[n - 1] - HALF, 0) + 'px'; }
+  if (ax) { ax.style.left = '0'; ax.style.right = '0'; }
+  /* 날짜 표시 : 세로선은 그 날 첫 썸네일 왼쪽 22, 날짜는 선보다 1px 왼쪽 (시안 18 / 17) */
+  inner.querySelectorAll('[data-cpv]').forEach(el => {
+    el.style.left = Math.max(Math.round(xs[+el.dataset.cpv] - HALF - 22), 0) + 'px';
+  });
+  inner.querySelectorAll('[data-cpd]').forEach(el => {
+    el.style.left = Math.max(Math.round(xs[+el.dataset.cpd] - HALF - 23), 0) + 'px';
+  });
   if (mid) sc.scrollLeft = Math.max(0, mid * inner.scrollWidth - sc.clientWidth / 2);
 }
 addEventListener('resize', fitClipPreview);
@@ -3327,11 +3344,23 @@ function ctrlHTML(opt = {}) {
     ${b('가상펜스 검색', 'i-g-line')}
   </div>`;
   const center = `<div class="grp c">${playCtrlHTML()}</div>`;
+  /* 새 시안 5501:163780(경로비교 4명) 실측 : 오른쪽은
+     [화면 분할(아이콘+숫자) 28] [재생영상 Select Box 98×28] | [화면 비율 28] [전체화면 28].
+     종전엔 `[단일] [멀티 뷰 ▾(팝오버 : 재생영상·화면 분할 2줄)]` 이라 상세 화면만
+     새 시안(콤보박스+분할 버튼)으로 바뀌고 경로 비교는 옛 팝오버가 남아 있었다. */
   const right = `<div class="grp r">
     <span class="tg${dim}">${b('히트맵', 'i-g-heatmap')}${b('인접 카메라', 'i-g-camera')}</span>
     <span class="tb-div${dim}"></span>
-    <span class="tg"><button class="btn-icon vm1 on" title="단일 영상 view"><i class="i i-24 i-g-view1"></i></button>
-      <div class="vm4"><button class="vm4-go" title="멀티 뷰"><i class="i i-24 i-g-view4"></i><span class="vm4-lb">동시 포착</span></button><button class="vm4-dd" title="영상 유형 선택"><i class="i i-16 i-chevron i-down caret"></i></button></div></span>
+    <button class="btn-icon vm-cycle" id="cmpSplitBtn" data-split="1" title="화면 분할 (1분할)">
+      <i class="i i-24 i-g-view1"></i><b class="vm-n">1</b>
+    </button>
+    <div class="select sm vm-type" id="cmpMvType" data-value="이동 경로">
+      <button class="select-btn">이동 경로<i class="i i-16 i-chevron caret" aria-hidden="true"></i></button>
+      <div class="select-menu"><div data-v="이동 경로">이동 경로</div><div data-v="주변 카메라">주변 카메라</div></div>
+    </div>
+    <span class="tb-div"></span>
+    <button class="btn-icon" id="cmpRatioAll" data-vratio-all data-ratio-state="원본 비율" title="화면 비율 변경 (원본 비율)"><i class="i i-24 i-g-ratio-original"></i></button>
+    <button class="btn-icon" id="cmpFull" title="화면 그대로 크게 보기"><i class="i i-24 i-g-full"></i></button>
   </div>`;
   return left + center + right;
 }
@@ -3353,6 +3382,14 @@ function syncTlEditBtn(tab) {
 /* ---- PIP ----
    한 장소에 카메라가 여러 대면 대표만 메인으로 재생하고
    나머지는 영상 우하단에 작게 띄운다. 누르면 메인과 스위칭된다. */
+/* 칸 안 스위칭 상태(클립별 키) · 주변 카메라 PIP 접힘 상태 · 그 안 아이콘 —
+   원래는 파일 맨 끝(9030~9041행 근처)에 선언돼 있었다. 딥링크(#demo=cmp4 등)처럼
+   init 도중에 화면을 먼저 그리는 흐름에서는 선언 전에 읽혀
+   `Cannot access 'PIP_MAIN'/'PIPS' before initialization` 으로 화면이 통째로 비었다. */
+const PIP_MAIN = {};
+const PIPS = {};
+const PIP_X = '<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M3 3l6 6M9 3L3 9" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>';
+const PIP_MAX = '<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M7 2h3v3M10 2L6.6 5.4M5 10H2V7M2 10l3.4-3.4" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 function renderPip(clip) {
   const stage = document.getElementById('dtVideo'); if (!stage) return;
   { const old = document.getElementById('dtPip'); if (old) old.remove(); }   /* 옛 PIP 줄 */
@@ -3447,7 +3484,7 @@ function paneToolsHTML(kind, i) {
 function paneBody(kind, i) {
   if (kind === 'map') {
     return `<div class="pn-map">
-      <img src="assets/img/floor.png?v=202609161734" alt="맵뷰">
+      <img src="assets/img/floor.png?v=202609171232" alt="맵뷰">
       ${PANE.mapTools.includes('path') ? paneMapPathHTML() : ''}
       ${PANE.mapTools.includes('cctv') ? `<div class="pn-cones">${MAP_CCTV.map(c =>
         `<span class="map-cone" style="left:${c.x}%;top:${c.y}%;rotate:${c.deg - 90}deg"><i></i><b></b></span>`).join('')}</div>` : ''}
@@ -3529,7 +3566,7 @@ function renderPanes() {
     if (PANE.kind[0] !== 'map') v.insertAdjacentHTML('beforeend', paneToolsHTML('video', 0));
     if (PANE.kind[0] === 'map') {
       v.insertAdjacentHTML('afterbegin', `<div class="pn-map">
-        <img src="assets/img/floor.png?v=202609161734" alt="맵뷰">
+        <img src="assets/img/floor.png?v=202609171232" alt="맵뷰">
         ${PANE.mapTools.includes('path') ? paneMapPathHTML() : ''}
         ${PANE.mapTools.includes('cctv') ? `<div class="pn-cones">${MAP_CCTV.map(c =>
           `<span class="map-cone" style="left:${c.x}%;top:${c.y}%;rotate:${c.deg - 90}deg"><i></i><b></b></span>`).join('')}</div>` : ''}
@@ -4010,27 +4047,43 @@ function cmpApplyMulti() {
     if (typeof fitCmpGrid === 'function') fitCmpGrid();
   }
 }
+/* 경로 비교의 화면 분할 = 1분할이면 비교 그리드(인물별 타일), 2~4분할이면 멀티 뷰 */
+function cmpCurSplit() { return CMP.multi ? (DT.mvSplit || 4) : 1; }
 function bindCmpView() {
   const ctrl = document.getElementById('cmpCtrl'); if (!ctrl) return;
-  const vm1 = ctrl.querySelector('.vm1'), vm4 = ctrl.querySelector('.vm4'); if (!vm1 || !vm4) return;
-  if (!vm4.querySelector('.vm4-menu')) { const src = document.querySelector('#dtViewSel .vm4-menu'); if (src) vm4.appendChild(src.cloneNode(true)); }
-  const menu = vm4.querySelector('.vm4-menu'); if (menu) menu.hidden = true;
+  const sb = ctrl.querySelector('#cmpSplitBtn'), sel = ctrl.querySelector('#cmpMvType');
+  if (!sb || !sel) return;
+  /* 상세 화면의 `syncSplitBtn` 과 같은 규칙 — 아이콘·숫자·제목과 콤보박스 값을 현재 상태로 */
   const paint = () => {
-    const t = DT.mvType || '이동 경로', n = DT.mvSplit || 4;
-    vm4.querySelector('.vm4-lb').textContent = t;
-    if (menu) {
-      const ct = menu.querySelector('[data-cur="type"]'), cs = menu.querySelector('[data-cur="split"]');
-      if (ct) ct.textContent = t; if (cs) cs.textContent = n + '분할';
-      menu.querySelectorAll('[data-mt]').forEach(d => d.classList.toggle('on', d.dataset.mt === t));
-      menu.querySelectorAll('[data-ms]').forEach(d => d.classList.toggle('on', +d.dataset.ms === n));
-    }
-    vm1.classList.toggle('on', !CMP.multi); vm4.classList.toggle('on', !!CMP.multi);
+    const n = cmpCurSplit(), t = DT.mvType || '이동 경로';
+    sb.dataset.split = n;
+    sb.title = `화면 분할 (${n}분할)`;
+    sb.classList.toggle('on', n > 1);
+    const ic = sb.querySelector('i'); if (ic) ic.className = 'i i-24 ' + (n === 1 ? 'i-g-view1' : 'i-g-view4');
+    const nm = sb.querySelector('.vm-n'); if (nm) nm.textContent = n;
+    sel.dataset.value = t;
+    const btn = sel.querySelector('.select-btn');
+    if (btn && btn.childNodes[0] && btn.childNodes[0].nodeType === 3) btn.childNodes[0].nodeValue = t;
+    sel.querySelectorAll('.select-menu div').forEach(x => x.classList.toggle('on', x.dataset.v === t));
+    /* 1분할(비교 그리드)에서는 재생영상을 고를 의미가 없다 — 시안에서도 흐리게 */
+    sel.classList.toggle('off', n === 1);
   };
-  vm1.onclick = () => { CMP.multi = false; cmpApplyMulti(); paint(); };
-  vm4.querySelector('.vm4-go').onclick = e => { e.stopPropagation(); CMP.multi = true; cmpApplyMulti(); paint(); if (menu) vm4Toggle(menu); };
-  if (menu) bindVm4Menu(menu, () => { if (typeof syncVm4 === 'function') syncVm4(); CMP.multi = true; cmpApplyMulti(); paint(); });
-  if (!bindCmpView._doc) { bindCmpView._doc = true;
-    document.addEventListener('click', e => { if (!e.target.closest('#cmpCtrl .vm4')) document.querySelectorAll('#cmpCtrl .vm4-menu').forEach(m => vm4Toggle(m, false)); }); }
+  sb.onclick = e => {
+    e.stopPropagation();
+    const n = MV_SPLITS[(MV_SPLITS.indexOf(cmpCurSplit()) + 1) % MV_SPLITS.length];
+    if (n === 1) CMP.multi = false;
+    else { DT.mvSplit = n; CMP.multi = true; }
+    cmpApplyMulti(); paint();
+    if (typeof syncSplitBtn === 'function') syncSplitBtn();
+  };
+  bindSelect('#cmpMvType', v => {
+    DT.mvType = v;
+    if (cmpCurSplit() > 1 && typeof renderMulti === 'function') renderMulti();
+    paint();
+    if (typeof syncSplitBtn === 'function') syncSplitBtn();
+  });
+  const full = ctrl.querySelector('#cmpFull');
+  if (full) full.onclick = () => openCurrentViewPopup(full);
   paint(); cmpApplyMulti();
 }
 /* 지금 재생 중인 클립 = 커서가 가리키는 구간(구간 사이면 직전 구간) */
@@ -4186,7 +4239,7 @@ function renderArea() {
       const vb = $('#dtVideo').getBoundingClientRect();
       const ang = Math.atan2((y2 - y1) * vb.height, (x2 - x1) * vb.width) * 180 / Math.PI + 90 * (a.dir || 1);
       a.dirOn = true;   /* 방향은 항상 표시 — 기본 한쪽 방향 */
-      h += `<button class="area-dir" data-abarrow title="눌러서 방향 바꾸기" style="left:${(x1 + x2) / 2}%;top:${(y1 + y2) / 2}%"><img src="assets/img/area-direction.svg?v=202609161734" alt="" style="transform:rotate(${ang + 45}deg)"></button>`;
+      h += `<button class="area-dir" data-abarrow title="눌러서 방향 바꾸기" style="left:${(x1 + x2) / 2}%;top:${(y1 + y2) / 2}%"><img src="assets/img/area-direction.svg?v=202609171232" alt="" style="transform:rotate(${ang + 45}deg)"></button>`;
       const ex = x1 >= x2 ? x1 : x2, ey = x1 >= x2 ? y1 : y2;
       h += areaBar(ex, `calc(${ey}% + 14px)`, a, 'r');
     }
@@ -4436,7 +4489,7 @@ function renderMap3d(paths) {
     const poly = polys ? `<svg class="m3-path" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${polys}</svg>` : '';
     /* 위층이 앞(위)에 오도록 쌓는다 — DOM 순서대로면 아래층이 덮는다 */
     return `<div class="m3-floor${pl.some(({ pts }) => onFl(pts).length) ? '' : ' dim'}" data-fl="${f.label}" style="--i:${fi};z-index:${M3_FLOORS.length - fi}">
-      <img src="assets/img/floor.png?v=202609161734" alt="">
+      <img src="assets/img/floor.png?v=202609171232" alt="">
       ${poly}
       ${pl.map(({ p, pts }) => onFl(pts).map(t => `<span class="map-wp" data-pt="${f.key}-${p.slot}-${t.n}" data-cam="${t.cam}"
           data-hh="${t.hh}" data-x="${t.x}" data-y="${t.y}"
@@ -4675,7 +4728,7 @@ function spreadMapLabels(host, sel) {
 $$('#dtMapSeg button').forEach(b => b.onclick = () => {
   $$('#dtMapSeg button').forEach(x => x.classList.toggle('on', x === b));
   DT.map = b.dataset.m;
-  $('#dtMapImg').src = DT.map === 'map' ? 'assets/img/map.png?v=202609161734' : 'assets/img/floor.png?v=202609161734';
+  $('#dtMapImg').src = DT.map === 'map' ? 'assets/img/map.png?v=202609171232' : 'assets/img/floor.png?v=202609171232';
   $('#dtFloor').hidden = true;                 /* 층 배지는 3D 각 층에 붙는다 */
   renderMap3d(MAP_PATHS_CACHE);
 });
@@ -5450,7 +5503,7 @@ function mvwPaths() {
 }
 function renderMapView() {
   const paths = mvwPaths();
-  const mapImg = DT.map === 'map' ? 'assets/img/map.png?v=202609161734' : 'assets/img/floor.png?v=202609161734';
+  const mapImg = DT.map === 'map' ? 'assets/img/map.png?v=202609171232' : 'assets/img/floor.png?v=202609171232';
   const seg = `<div class="seg"><button class="${DT.map === 'map' ? 'on' : ''}" data-mm="map">지도</button><button class="${DT.map === 'map' ? '' : 'on'}" data-mm="floor">층별</button></div>`;
   /* 사양서 Detail_000_4 · 4-4) : 주변 카메라 / 이동 경로 / 전체 보기
      이동 경로는 **단일 대상일 때 비활성** (그룹·경로비교에서만 사용) */
@@ -5512,7 +5565,7 @@ function renderMapView() {
   /* 바인딩 */
   $$('#mvwBody [data-mm]').forEach(b => b.onclick = () => {
     DT.map = b.dataset.mm;
-    $('#dtMapImg').src = DT.map === 'map' ? 'assets/img/map.png?v=202609161734' : 'assets/img/floor.png?v=202609161734';
+    $('#dtMapImg').src = DT.map === 'map' ? 'assets/img/map.png?v=202609171232' : 'assets/img/floor.png?v=202609171232';
     $('#dtFloor').hidden = DT.map === 'map';
     renderMapView();
   });
@@ -5931,6 +5984,15 @@ function applyDemo() {
     setMode('text'); S.q = '검정색 모자를 쓴 배송기사'; qText.value = S.q; buildFilters('text'); runSearch(false);
     S.grouped = true; $('#groupToggle').checked = true; S.openGroups.add('c1'); renderResults(); openEdit('c1');
   }
+  /* ---- 입력창 포커스 → 최근·추천 검색 (시안 5476:105962 / 5476:105975) ---- */
+  if (d === 'recent' || d === 'recentafter') {
+    setMode('text');
+    if (d === 'recentafter') {
+      S.q = '검정색 모자를 쓴 남성'; qText.value = S.q; $('#qTextClear').hidden = false;
+      buildFilters('text'); runSearch(false);
+    }
+    qText.focus(); S.recentOpen = true; renderRecentBlk();
+  }
   /* ---- 상세화면 WF : 단일 / 그룹 상세 · 화면 변형 ---- */
   const DETAIL_DEMOS = {
     detail: {}, heatmap: { tools: ['obj', 'heat'] },
@@ -5977,6 +6039,13 @@ function applyDemo() {
     const o = OBJECTS[0];
     newTab(d === 'movepath' ? `인물 A` : `${o.cam}`, o, d === 'movepath' ? { kind: 'group' } : null);
     setTimeout(POPUPS[d], 60);
+  }
+  /* 영상 선택 팝업 + 하단 미리보기 (시안 5476:107389) — 5건 선택, 4번째를 고른 상태 */
+  if (d === 'clipsel') {
+    setMode('text'); S.q = '검정색 모자를 쓴 배송기사'; qText.value = S.q; buildFilters('text'); runSearch(false);
+    openReid(OBJECTS[0].id);
+    REID.clipSel = new Set(OBJECTS.slice(0, 5).map(o => o.id));
+    renderClips([...REID.sel]);
   }
   if (d === 'personmgr') { switchMode('person'); renderPersonGrid(); openPersonMgr(); }
   if (d === 'history')   { HIST.open.add('0-0'); $('#btnHistory').click(); }
@@ -6649,7 +6718,7 @@ function csDetailHTML(c) {
           <button class="btn-ghost sm" style="margin-left:auto" data-csmap>전체 보기</button>
         </div>
         <div style="position:relative;height:196px;border-radius:6px;overflow:hidden;background:var(--bg-1);border:1px solid var(--ln-subtle)">
-          <img src="assets/img/map.png?v=202609161734" style="width:100%;height:100%;object-fit:cover;opacity:.85" alt="">
+          <img src="assets/img/map.png?v=202609171232" style="width:100%;height:100%;object-fit:cover;opacity:.85" alt="">
           ${c.path.map((p, i) => {
             const x = 16 + (i * 23) % 68, y = 22 + (i * 17) % 54;
             return `<span style="position:absolute;left:${x}%;top:${y}%;width:9px;height:9px;border-radius:50%;
@@ -7498,15 +7567,26 @@ const TEXT_RECENT = [
   '어제 검은색 옷을 입은 택배 기사 찾아줘',
   '지하 주차장에서 빨간색 가방을 든 여자',
   '최근 3일 이내 침입 시도한 사람',
-  '주차장 내 흡연한 사람',
-  '최근 3일간 안전모 미착용한 인물'
+  '최근 3일간 안전모 미착용한 인물',
+  '주차장 내 흡연한 사람'
 ];
 S.textRecent = TEXT_RECENT.slice();
+
+/* 새 시안 5476:106004 Option List — `최근 검색` 아래에 `추천 검색` 구역이 붙었다.
+   추천은 사용자가 지울 수 없어 닫기(✕)가 없고, 눌러 바로 검색한다. */
+const TEXT_SUGGEST = [
+  'B1 주차장의 빨간색 차량',
+  '오전에 로비에 들어온 사람',
+  '흰옷 입고 가방 든 사람'
+];
 
 S.recentOpen = false;
 (function initTextA() {
   const ta = $('#qText'); if (!ta) return;
   ta.addEventListener('focus', () => { S.recentOpen = true; renderRecentBlk(); });
+  /* 항목을 고르면 포커스가 입력창에 그대로 남는다 → 다시 누를 때 focus 가 안 뜨므로
+     누름(click)으로도 펼친다 */
+  ta.addEventListener('click', () => { if (!S.recentOpen) { S.recentOpen = true; renderRecentBlk(); } });
   ta.addEventListener('blur', () => setTimeout(() => { S.recentOpen = false; renderRecentBlk(); }, 180));
   /* 시안 5391:119185 문구 (2026-09-16 구두) — 예시형에서 안내형으로 */
   ta.placeholder = '검색 대상의 특징을 문장으로 입력해 보세요.';
@@ -7532,32 +7612,43 @@ function pushTextRecent(v) {
 /* 최근 검색 — 입력창 아래 블록 하나로 통일 */
 function renderTextRecent() { renderRecentBlk(); }
 
-/* 상시 `최근 검색` 블록 — li 32 / pitch 38 / 텍스트 x12 / ✕ 12×12 (시안 실측) */
+/* `최근 검색` + `추천 검색` 드롭다운 — 새 시안 5476:106004 실측
+   상자 : 입력창과 같은 폭 · 8px 아래 · 안여백 12/0 · 구역 간격 8
+   항목 : 28(여백 6/12) · 글자 12 · 닫기 12×12 (추천에는 닫기 없음) */
 function renderRecentBlk() {
   const blk = $('#recentBlk'); if (!blk) return;
-  /* 입력창을 선택했을 때만 확장된다 */
-  const open = !S.searched && S.textRecent.length && S.recentOpen;
+  /* 입력창을 선택했을 때 펼쳐진다. 검색 결과가 떠 있어도 마찬가지다(시안 001_2). */
+  const open = S.recentOpen && (S.textRecent.length || TEXT_SUGGEST.length);
   blk.hidden = !open;
   const wrap = blk.closest('.textarea-wrap');
   if (wrap) wrap.classList.toggle('rc-open', !!open);
   if (blk.hidden) { blk.innerHTML = ''; return; }
-  /* 최종 시안 5402:189689 Option List : 머리줄에 `최근 검색` 과 **전체 삭제** 가 마주 본다 */
-  blk.innerHTML = `<div class="rb-head"><span class="rb-lb">최근 검색</span>
-      <button type="button" class="rb-clear" data-rball>전체 삭제</button></div>
-    <div class="rb-list">${S.textRecent.map((v, i) =>
-      `<div class="rb-li" data-rbc="${i}"><span class="t">${v}</span>
-         <button class="x" data-rbx="${i}" title="삭제"><i class="i i-12 i-close"></i></button></div>`).join('')}</div>`;
-  const clr = blk.querySelector('[data-rball]');
-  if (clr) clr.onmousedown = e => { e.preventDefault(); S.textRecent = []; renderTextRecent(); };
-  $$('#recentBlk [data-rbc]').forEach(p => p.onclick = e => {
-    if (e.target.closest('[data-rbx]')) return;
-    const v = S.textRecent[+p.dataset.rbc];
+  /* 머리줄에 `최근 검색` 과 **전체 삭제** 가 마주 본다. 최근 검색이 비면 구역째로 빠진다. */
+  const recent = !S.textRecent.length ? '' :
+    `<div class="rb-head"><span class="rb-lb">최근 검색</span>
+       <button type="button" class="rb-clear" data-rball>전체 삭제</button></div>
+     <div class="rb-list">${S.textRecent.map((v, i) =>
+       `<div class="rb-li" data-rbc="${i}"><span class="t">${v}</span>
+          <button class="x" data-rbx="${i}" title="삭제"><i class="i i-12 i-close"></i></button></div>`).join('')}</div>
+     <div class="rb-sep"></div>`;
+  blk.innerHTML = `${recent}
+    <div class="rb-head"><span class="rb-lb">추천 검색</span></div>
+    <div class="rb-list">${TEXT_SUGGEST.map(v =>
+      `<div class="rb-li rb-sg" data-rbs="${v}"><span class="t">${v}</span></div>`).join('')}</div>`;
+  const pick = v => {
     S.q = v; $('#qText').value = v; $('#qTextClear').hidden = false;
+    S.recentOpen = false; renderRecentBlk();
     buildFilters('text'); runSearch(false);
-  });
-  $$('#recentBlk [data-rbx]').forEach(b => b.onclick = e => {
-    e.stopPropagation(); S.textRecent.splice(+b.dataset.rbx, 1); renderTextRecent();
-  });
+  };
+  /* 누르는 순간(mousedown)에 처리한다 — `click` 으로 받으면 입력창이 포커스를 잃고
+     180ms 뒤 목록을 지우는 blur 처리가 먼저 끼어들어, 마우스를 조금 오래 누르면
+     항목을 골라도 아무 일도 일어나지 않았다. preventDefault 로 포커스도 지킨다. */
+  const arm = (el, fn) => { el.onmousedown = e => { e.preventDefault(); e.stopPropagation(); fn(); }; };
+  const clr = blk.querySelector('[data-rball]');
+  if (clr) arm(clr, () => { S.textRecent = []; renderTextRecent(); });
+  $$('#recentBlk [data-rbc]').forEach(p => arm(p, () => pick(S.textRecent[+p.dataset.rbc])));
+  $$('#recentBlk [data-rbs]').forEach(p => arm(p, () => { pushTextRecent(p.dataset.rbs); pick(p.dataset.rbs); }));
+  $$('#recentBlk [data-rbx]').forEach(b => arm(b, () => { S.textRecent.splice(+b.dataset.rbx, 1); renderTextRecent(); }));
 }
 /* 자동완성 제거 — 잔여 호출을 위해 no-op 로 남긴다 */
 function openAutocomplete() {}
@@ -8069,8 +8160,11 @@ renderPersonGrid();
 renderAlgoGrid();
 render();
 renderMenuBar();
-applyDemo();
-applyMenuDemo();
+/* 딥링크는 **스크립트 평가가 다 끝난 뒤** 적용한다 (2026-09-17).
+   여기서 바로 부르면 파일 뒤쪽에 선언된 const(PIPS·VID…)를 선언 전에 읽어
+   `Cannot access 'VID' before initialization` 으로 화면이 통째로 비었다
+   (#demo=cmp4 처럼 영상 칸을 그리는 딥링크에서 발생). 한 틱 미루면 모두 초기화된 뒤 실행된다. */
+setTimeout(() => { applyDemo(); applyMenuDemo(); }, 0);
 window.addEventListener('hashchange', () => location.reload());
 
 /* ---- 검색 실행 버튼 (패널 하단 고정) ----
@@ -8583,7 +8677,7 @@ function renderZoneMap(host, pts, color) {
   /* 경로 비교면 경로 묶음([{ slot, pts, off }])을 받아 인물마다 선·지점을 그린다 */
   const groups = Array.isArray(pts) && pts[0] && pts[0].pts ? pts : [{ slot: '', pts, off: false }];
   const col = g => (g.slot ? slotColor(g.slot) : color);
-  zm.innerHTML = `<div class="zm-stage"><img src="assets/img/map.png?v=202609161734" alt="외부 지도" draggable="false">
+  zm.innerHTML = `<div class="zm-stage"><img src="assets/img/map.png?v=202609171232" alt="외부 지도" draggable="false">
       <svg class="zm-path" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${groups.map(g => {
         const seq = g.pts.slice().sort((a, b) => a.n - b.n);
         return seq.length > 1 ? `<polyline points="${seq.map(t => `${t.x},${t.y}`).join(' ')}" fill="none" stroke="${col(g)}" stroke-width="2.5"
@@ -8682,7 +8776,7 @@ function renderFloorPane(host, pts, color) {
   const mine = pts.filter(t => m3FloorOf(t.cam) === fl).sort((a, b) => a.n - b.n);
   const flb = (M3_FLOORS.find(f => f.key === fl) || {}).label || fl;
   /* GUI 260914 : 도면은 원본 비율로 가운데(흰 판) — 좌표는 flatU 로 도면 기준 */
-  fp.innerHTML = `<div class="zp-stage"><img src="assets/img/floor.png?v=202609161734" alt=""><span class="dt-floor">${flb}</span>
+  fp.innerHTML = `<div class="zp-stage"><img src="assets/img/floor.png?v=202609171232" alt=""><span class="dt-floor">${flb}</span>
     <svg class="zp-path" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${mine.length > 1
       ? `<polyline points="${mine.map(t => `${flatU(t.x)},${t.y}`).join(' ')}" fill="none" stroke="${color}" stroke-width="2" vector-effect="non-scaling-stroke"/>` : ''}</svg>
     ${mine.map(t => `<span class="map-wp" data-cam="${t.cam}" data-hh="${t.hh}" data-x="${flatU(t.x)}" data-y="${t.y}"
@@ -8941,8 +9035,8 @@ document.addEventListener('click', e => {
    영상 위 우하단에 **겹쳐** 띄운다(영상 아래 별도 줄 아님).
    호버 → 어두운 상자 테두리 + `동시 포착 (N)` + ✕(접기). 접으면 우하단 모서리 `동시 포착 (N) ↘` 버튼.
    단일 · 경로 비교 2/3/4 · 멀티 뷰 모두 같은 부품. 자리가 좁으면 처음부터 접어 두고,
-   사용자가 한 번 바꾸면 그 칸의 상태를 기억한다 (2026-09-14 구두). */
-const PIPS = {};
+   사용자가 한 번 바꾸면 그 칸의 상태를 기억한다 (2026-09-14 구두).
+   (PIPS · PIP_X · PIP_MAX 선언은 renderPip 위로 옮겼다 — 초기 렌더 TDZ) */
 function simulCams(clip) {
   if (!clip) return [];
   const extra = (clip.extra || []).map(x => ({ cam: x.cam, img: x.img }));
@@ -8952,8 +9046,6 @@ function simulCams(clip) {
   /* 같은 층·구역(인접) 카메라 우선, 모자라면 나머지로 채운다 (목업 데이터) */
   return extra.concat(all.filter(same), all.filter(x => !same(x))).slice(0, 3);
 }
-const PIP_X = '<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M3 3l6 6M9 3L3 9" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>';
-const PIP_MAX = '<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M7 2h3v3M10 2L6.6 5.4M5 10H2V7M2 10l3.4-3.4" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 function pipHTML(key, list) {
   if (!list || !list.length) return '';
   const n = list.length, col = PIPS[key];
@@ -8986,8 +9078,9 @@ document.addEventListener('click', e => {
 
 /* PIP 카메라를 누르면 **그 영상 칸 안에서** 메인 영상과 자리를 바꾼다 (2026-09-14 구두).
    누른 카메라가 칸의 메인(영상 · 카메라명)이 되고, 원래 메인은 PIP 로 내려간다.
-   상태는 칸 키별로 남겨 다시 그려도 유지 — 원래 카메라를 누르면 원상태. */
-const PIP_MAIN = {};
+   상태는 칸 키별로 남겨 다시 그려도 유지 — 원래 카메라를 누르면 원상태.
+   (PIP_MAIN 선언은 renderPip 위로 옮겼다 — 여기 두면 화면을 먼저 그리는 흐름에서
+    `Cannot access 'PIP_MAIN' before initialization` 으로 화면이 통째로 비었다) */
 function pipResolve(key, main, list) {
   const sw = PIP_MAIN[key];
   if (!sw || !main || sw.cam === main.cam) return { main, list };

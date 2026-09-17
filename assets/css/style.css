@@ -7677,3 +7677,133 @@ body.dt-swap #dtMapSec > #dtCtrl{
    동적으로 만들어지는 자리까지 함께 막는다(코드는 남기고 표시만 끈다). */
 .dt-vhead [data-vzoom],
 .vh-ic [data-vzoom]{display:none !important}
+
+/* ── 포커스 시 `최근 검색` 을 새 시안(5476:106004 Option List)대로 (2026-09-17) ────────
+   실측 : 상자 292×321 — 입력창(292×44)과 **좌우 폭이 같고** 8px 아래 떠 있다 ·
+          모서리 6 · 테두리 1 #3e4049 · 그림자 0 4 8 rgba(0,0,0,.5) · 안여백 12/0 ·
+          구역 간격 8 · 머리줄 20(라벨 12R #757575 / `전체 삭제` 12M) ·
+          항목 28(여백 6/12, 간격 0) · 글자 12 #b8babf · 닫기 12×12 ·
+          구분선 268×1 #2e2f38(좌우 12) · 아래에 `추천 검색` 3건(닫기 없음).
+   종전 : 상자가 입력창보다 18px 넓고 4px 만 떨어져 글자·✕ 가 입력창과 어긋났다 ·
+          그림자 0 4 4 · `추천 검색` 구역이 없었다. */
+:is(#recentBlk,#carRecentBlk){
+  /* 입력창과 좌우 끝이 정확히 맞게 — 기준 상자가 입력 테두리 **안쪽**이라 1px 씩 물린다 */
+  left:-1px;right:-1px;width:auto;
+  top:calc(100% + 8px);
+  box-sizing:border-box;                /* 안여백·테두리를 합쳐 시안 321 이 되게 */
+  box-shadow:0 4px 8px rgba(0,0,0,.5)
+}
+:is(#recentBlk,#carRecentBlk) .rb-lb{color:#757575}
+:is(#recentBlk,#carRecentBlk) .rb-head{margin:0 0 8px}
+/* 최근 ↔ 추천 사이 구분선 : 좌우 12 · 위아래 간격 8 */
+:is(#recentBlk,#carRecentBlk) .rb-sep{
+  height:1px;margin:8px 12px;background:var(--ln-subtle)
+}
+/* 추천 항목은 닫기가 없으니 글자가 왼쪽부터 채운다 */
+:is(#recentBlk,#carRecentBlk) .rb-li.rb-sg .t{flex:0 1 auto}
+
+/* ── 경로 비교 조작 바도 상세와 같은 새 시안으로 (2026-09-17, 시안 5501:163780) ──────
+   상세(#dtCtrl)만 `분할 버튼 + 재생영상 콤보박스` 로 바뀌어 있고 경로 비교(#cmpCtrl)는
+   옛 팝오버(`재생영상 · 화면 분할` 2줄)가 남아 있었다. 스타일이 #dtCtrl 로만 묶여 있었으니
+   같은 규칙을 #cmpCtrl 에도 적용한다. */
+#cmpCtrl .vm-cycle{position:relative}
+#cmpCtrl .vm-cycle .vm-n{
+  position:absolute;right:1px;bottom:1px;min-width:12px;height:12px;padding:0 2px;
+  display:flex;align-items:center;justify-content:center;
+  border-radius:6px;background:var(--bg-0);color:var(--tx-secondary);
+  font-family:var(--mono);font-size:9px;font-weight:600;line-height:1;pointer-events:none
+}
+#cmpCtrl .vm-cycle.on .vm-n{background:var(--primary);color:#fff}
+#cmpCtrl .vm-type{margin:0;min-width:96px}
+#cmpCtrl .vm-type.off{opacity:.45;pointer-events:none}
+/* 조작 바가 아래쪽이라 콤보박스는 위로 펼친다 — 캐럿도 닫힘=위, 열림=아래 */
+#cmpCtrl .vm-type .select-menu{top:auto;bottom:calc(100% + 3px);box-shadow:0 -8px 20px rgba(0,0,0,.55)}
+#cmpCtrl .vm-type .select-btn .caret{width:16px;height:16px;transform:rotate(-90deg);transition:transform .12s}
+#cmpCtrl .vm-type.open .select-btn .caret{transform:rotate(90deg)}
+
+/* ── 영상 선택 팝업 하단 미리보기를 새 시안(5476:107477 Timeline)대로 (2026-09-17) ──
+   실측 : 전체 1280×168 = 날짜줄 20 + 타임라인 148(바탕 #1c1d23 · 테두리 #2e2f38) ·
+          파란 축 1280×2 #3070d8 (타임라인 위에서 38) ·
+          썸네일 192×128 = 시각 16(12R #b8babf) + 4 + 사진 192×108(모서리 4 · 테두리 #3e4049) ·
+          사진 안 : 위 그라데이션 30(번호 20원 #3070d8 · 흰 테두리 1 · 12M 흰글씨 / 닫기 24 흰색, 여백 4) ·
+                    아래 그라데이션 32(위치명 12M 흰글씨, 여백 8) ·
+          날짜가 바뀌는 곳에 세로선 1 #2e2f38 + 날짜(12).
+   종전 : 사진 120×76 · 위치명·시각이 사진 **아래** 작은 글씨 · 축이 첫~마지막 클립 사이만. */
+#clipsPreview .cp-scroll{padding:0}
+#clipsPreview .cp-inner{height:168px}
+#clipsPreview .cp-box{
+  position:absolute;left:0;right:0;top:20px;bottom:0;
+  background:var(--bg-2);border:1px solid var(--ln-subtle);box-sizing:border-box
+}
+#clipsPreview .cp-axis{
+  top:58px;height:2px;border-radius:0;background:var(--primary)
+}
+#clipsPreview .cp-vline{position:absolute;top:20px;bottom:0;width:1px;background:var(--ln-subtle)}
+#clipsPreview .cp-dlabel{
+  position:absolute;top:2px;font-size:12px;line-height:16px;font-weight:400;
+  color:var(--tx-secondary);white-space:nowrap
+}
+#clipsPreview .cp-node{top:28px;width:192px;text-align:left}
+#clipsPreview .cp-node::before{display:none}      /* 옛 눈금 꼬리 */
+#clipsPreview .cp-node .cp-t{
+  display:block;font-family:inherit;font-size:12px;line-height:16px;
+  color:var(--tx-secondary);margin:0 0 4px
+}
+#clipsPreview .cp-shot{
+  position:relative;width:192px;height:108px;box-sizing:border-box;
+  border:1px solid var(--ln-border);border-radius:4px;overflow:hidden;background:#000
+}
+#clipsPreview .cp-shot img{
+  width:100%;height:100%;object-fit:cover;display:block;border:0;border-radius:0
+}
+#clipsPreview .cp-node.on .cp-shot{border-color:var(--primary)}
+#clipsPreview .cp-node.on img{outline:0}
+/* 글자가 사진 위에서 읽히도록 위·아래에 그라데이션을 깐다 */
+#clipsPreview .cp-shot::before,
+#clipsPreview .cp-shot::after{content:'';position:absolute;left:0;right:0;z-index:2;pointer-events:none}
+#clipsPreview .cp-shot::before{top:0;height:30px;background:linear-gradient(180deg,rgba(0,0,0,.65),transparent)}
+#clipsPreview .cp-shot::after{bottom:0;height:32px;background:linear-gradient(0deg,rgba(0,0,0,.65),transparent)}
+#clipsPreview .cp-n{
+  left:4px;top:4px;width:20px;height:20px;min-width:0;padding:0;box-sizing:border-box;
+  border-radius:999px;background:var(--primary);border:1px solid #fff;
+  font-family:inherit;font-size:12px;font-weight:500;line-height:18px;text-align:center;
+  color:#fff;z-index:3
+}
+#clipsPreview .cp-rm{
+  position:absolute;right:4px;top:4px;left:auto;bottom:auto;
+  width:24px;height:24px;padding:0;border:0;border-radius:999px;background:none;
+  display:flex;align-items:center;justify-content:center;
+  color:#fff;opacity:1;z-index:3;cursor:pointer
+}
+#clipsPreview .cp-rm .i{width:16px;height:16px}
+#clipsPreview .cp-rm:hover{background:rgba(0,0,0,.45);border:0;color:#fff}
+#clipsPreview .cp-cam{
+  position:absolute;left:8px;right:8px;bottom:8px;margin:0;z-index:3;
+  font-size:12px;font-weight:500;line-height:16px;color:#fff;text-align:left;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap
+}
+
+/* 입력창도 시안 실측(292×44 · 모서리 6)으로 — 종전 46 · 모서리 8 */
+.mode-panel[data-panel="text"] .textarea-wrap,
+.mode-panel[data-panel="car"] .textarea-wrap{
+  height:44px;min-height:44px;border-radius:6px
+}
+/* 펼친 상태의 높이도 44 로 못박는다 — 드롭다운은 absolute 라 상자 높이에 얹히지 않는다.
+   (종전 height:auto 라 입력의 inline 여백까지 더해져 46~49 로 들쭉날쭉했다) */
+.mode-panel[data-panel="text"] .textarea-wrap.rc-open,
+.mode-panel[data-panel="car"] .textarea-wrap.rc-open{
+  height:44px;min-height:44px;border-radius:6px
+}
+.mode-panel[data-panel="text"] .textarea-wrap > textarea,
+.mode-panel[data-panel="car"] .textarea-wrap > textarea,
+.mode-panel[data-panel="text"] .textarea-wrap.rc-open > textarea,
+.mode-panel[data-panel="car"] .textarea-wrap.rc-open > textarea{
+  height:42px;min-height:42px;line-height:42px;
+  /* 펼쳐지면 래퍼가 flex → block 으로 바뀌는데, 입력이 inline 요소라
+     글꼴 하강폭만큼(실측 5px) 상자가 늘어나 49 가 됐다 → 블록으로 세운다 */
+  display:block
+}
+
+/* 칩 줄 ↔ 입력창 간격은 시안 실측 16 (종전 24 — 래퍼에 margin-top:8 이 더 붙어 있었다) */
+.mode-panel[data-panel="text"] .textarea-wrap,
+.mode-panel[data-panel="car"] .textarea-wrap{margin-top:0}
