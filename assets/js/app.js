@@ -2865,8 +2865,9 @@ function renderTimeline(host, tracks, opt = {}) {
     <!-- 시안 5184:98960 · 사양 3-5) : 좌 경로 편집·영상 편집 / 중앙 확대(− 슬라이더 +) / 우 경로 비교·사건 등록 -->
     <div class="tl-foot">
       <div class="tf-l">
-        <!-- ✎ = 경로 편집(영상 선택·추가) / 필름 = 영상 편집(클립 길이) — 2026-09-11 구두로 기능 맞바꿈 -->
-        <button class="btn-icon" data-tledit title="경로 편집"><i class="i i-24 i-g-write"></i></button>
+        <!-- 2026-09-18 구두 : ✎ 경로 편집(i-g-write)을 **삭제**하고, 그 오른쪽에 있던
+             길이 편집(필름)을 그 자리 = 맨 왼쪽으로 옮긴다.
+             종전 : [✎ 경로 편집][필름 영상 클립 편집] 2개 (2026-09-11 구두로 기능 맞바꿈) -->
         <button class="btn-icon${tlEditOn() ? ' on' : ''}" data-tlvedit title="영상 클립 편집"><i class="i i-24 i-g-editmovie"></i></button>
       </div>
       <div class="tf-zoom" title="타임라인 확대/축소">
@@ -3205,54 +3206,60 @@ function renderTimeline(host, tracks, opt = {}) {
     if (z !== TL.zoom) { TL.zoom = z; renderTimeline(host, allTracks, opt); }
   }, { passive: false });
 
-  /* 인물 상세 툴팁 : **왼쪽 인물 칩**에 올렸을 때만 (시안 5223:57276 Hover).
-     영상 클립(썸네일)에 올렸을 땐 띄우지 않는다 — 2026-09-11 구두.
-     툴팁 안 `인물등록 ›` 을 누를 수 있게 칩 → 툴팁으로 옮겨가는 동안은 닫지 않는다. */
-  let tipTimer = 0;
-  const tipEl = () => {
-    let tip = document.getElementById('tlTip');
-    if (!tip) {
-      tip = el('div', 'tl-tip'); tip.id = 'tlTip'; tip.hidden = true; document.body.appendChild(tip);
-      tip.addEventListener('mouseenter', () => clearTimeout(tipTimer));
-      tip.addEventListener('mouseleave', () => { tip.hidden = true; });
+  /* 인물 칩 호버 메뉴 (2026-09-18 구두)
+     종전엔 칩 **이미지**에 올리면 상세 정보(사진·이름·구간·`인물등록 ›`)를 띄우고,
+     칩을 누르면 그것을 고정해 보여 줬다(openChipInfo). → **상세 정보 표시는 삭제**하고
+     시안처럼 `영상추가 · 인물등록 · 삭제` 3단 메뉴를 칩 오른쪽에 띄운다.
+       · 영상추가 : 인물이 이미 정해졌으므로 인물 선택을 건너뛰고 영상 선택 팝업을 바로 띄운다
+       · 인물등록 : 종전 툴팁의 `인물등록 ›` 과 같은 동작(openWatch)
+       · 삭제     : 타임라인에서 그 인물 빼기 — 칩의 ✕(data-tlrm)와 **같은 경로**로 보내
+                    §14 `인물 삭제` Alert·비교→단일 뷰 전환까지 그대로 타게 한다
+     칩 → 메뉴로 마우스가 건너가는 동안 닫히지 않게 160ms 늦춰 닫는다.
+     (openChipInfo·#tlTip·.tl-tip 은 되돌릴 때를 위해 남겨 두고 호출만 끊었다) */
+  let chipMenuTimer = 0;
+  const chipMenuEl = () => {
+    let m = document.getElementById('tlChipMenu');
+    if (!m) {
+      m = el('div', 'ctx-menu tl-chip-menu'); m.id = 'tlChipMenu'; m.hidden = true;
+      document.body.appendChild(m);
+      m.addEventListener('mouseenter', () => clearTimeout(chipMenuTimer));
+      m.addEventListener('mouseleave', () => { m.hidden = true; });
     }
-    return tip;
+    return m;
   };
   host.querySelectorAll('.tl-row').forEach(row => {
     const chip = row.querySelector('.tl-obj'); if (!chip) return;
-    /* v0.8 3-1 : 상세 툴팁은 칩 **이미지** 호버, 삭제 ✕ 는 **이름 영역** 호버 — 서로 가리지 않게 */
-    const chipImg = chip.querySelector('img') || chip;
-    chipImg.addEventListener('mouseenter', e => {
-      clearTimeout(tipTimer);
-      /* 눌러서 띄운 상세 정보가 열려 있으면 호버 툴팁이 덮어쓰지 않는다 */
-      { const t = document.getElementById('tlTip'); if (t && t.dataset.pin) return; }
+    chip.addEventListener('mouseenter', () => {
+      clearTimeout(chipMenuTimer);
       const tr = tracks[+row.dataset.tr]; if (!tr || !tr.clips.length) return;
-      const a = tr.clips[0], z = tr.clips[tr.clips.length - 1];
-      const tip = tipEl();
-      tip.innerHTML = `<img src="${a.img}" alt="">
-        <span class="tt-i"><b><i style="background:${slotColor(tr.slot)}"></i>${tr.label}</b>
-        <em>${a.from} ~<br>${z.to}</em>
-        <button type="button" class="tt-reg">인물등록<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3.5L10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button></span>`;
-      tip.querySelector('.tt-reg').onclick = () => { tip.hidden = true; if (typeof openWatch === 'function') openWatch(); };
-      tip.hidden = false;
-      const r = chip.getBoundingClientRect();
-      /* 칩 **위쪽**에 띄운다 — 칩 오른쪽 위의 삭제(✕) 버튼을 가리지 않게 (2026-09-14 구두) */
-      tip.style.left = Math.max(8, Math.min(r.left, innerWidth - tip.offsetWidth - 8)) + 'px';
-      tip.style.top = Math.max(8, r.top - tip.offsetHeight - 6) + 'px';
+      const m = chipMenuEl();
+      m.innerHTML = `<div data-cm="add">영상추가</div><div data-cm="reg">인물등록</div><div data-cm="del">삭제</div>`;
+      m.querySelectorAll('[data-cm]').forEach(d => d.onclick = ev => {
+        ev.stopPropagation(); m.hidden = true;
+        const act = d.dataset.cm;
+        if (act === 'add') openClipReselect(host, allTracks, opt, Math.max(0, allTracks.indexOf(tr)));
+        else if (act === 'reg') { if (typeof openWatch === 'function') openWatch(); }
+        else {
+          const rm = row.querySelector('[data-tlrm]');
+          if (rm) rm.click(); else toast('기준 대상은 삭제할 수 없습니다.');
+        }
+      });
+      m.hidden = false;
+      /* 시안대로 칩 **오른쪽**에 붙인다. 오른쪽이 모자라면 왼쪽으로 뒤집고,
+         아래가 모자라면 위로 끌어올린다 */
+      const r = chip.getBoundingClientRect(), w = m.offsetWidth, h = m.offsetHeight;
+      m.style.left = ((r.right + 8 + w > innerWidth) ? Math.max(8, r.left - w - 8) : r.right + 8) + 'px';
+      m.style.top = Math.max(8, Math.min(r.top, innerHeight - h - 8)) + 'px';
     });
-    chipImg.addEventListener('mouseleave', () => { tipTimer = setTimeout(() => { const t = document.getElementById('tlTip'); if (t && !t.dataset.pin) t.hidden = true; }, 160); });
-    /* 칩을 누르면 그 인물의 **상세 정보**를 띄운다 (2026-09-15 구두).
-       종전의 '눌러서 활성/비활성(Dim)' 사양은 삭제 — TL.off 자체는 다른 화면이 쓰므로 남겨 둔다.
-       ✕(삭제)는 제외하고, 호버 때 ✕ 가 뜨는 동작은 그대로. */
-    chip.addEventListener('click', e => {
-      if (e.target.closest('[data-tlrm]')) return;
-      const tr = tracks[+row.dataset.tr]; if (!tr || !tr.clips.length) return;
-      openChipInfo(chip, tr);
+    chip.addEventListener('mouseleave', () => {
+      chipMenuTimer = setTimeout(() => { const m = document.getElementById('tlChipMenu'); if (m) m.hidden = true; }, 160);
     });
-    chip.title = `${(tracks[+row.dataset.tr] || {}).label || ''} 상세 정보`;
   });
 
-  /* 사양 3-5) 경로 편집 → 영상 선택 팝업(기존 선택 유지) / 영상 편집 → 구간 길이 편집 모드 */
+  /* 사양 3-5) 경로 편집 → 영상 선택 팝업(기존 선택 유지) / 영상 편집 → 구간 길이 편집 모드
+     ※ 경로 편집(✎) 버튼은 2026-09-18 구두로 하단에서 빠졌다. 되돌릴 때를 위해 처리는
+       남겨 둔다(버튼이 없으면 querySelector 가 null 이라 그냥 건너뛴다).
+       같은 `영상 선택 팝업`은 인물 칩 호버 메뉴의 `영상추가`로 들어간다. */
   const ed = host.querySelector('[data-tledit]');
   if (ed) ed.onclick = () => {
     if (tracks.length < 2) { openClipReselect(host, allTracks, opt, allTracks.indexOf(tracks[0])); return; }
@@ -3487,7 +3494,7 @@ function paneToolsHTML(kind, i) {
 function paneBody(kind, i) {
   if (kind === 'map') {
     return `<div class="pn-map">
-      <img src="assets/img/floor.png?v=202609171314" alt="맵뷰">
+      <img src="assets/img/floor.png?v=202609181040" alt="맵뷰">
       ${PANE.mapTools.includes('path') ? paneMapPathHTML() : ''}
       ${PANE.mapTools.includes('cctv') ? `<div class="pn-cones">${MAP_CCTV.map(c =>
         `<span class="map-cone" style="left:${c.x}%;top:${c.y}%;rotate:${c.deg - 90}deg"><i></i><b></b></span>`).join('')}</div>` : ''}
@@ -3569,7 +3576,7 @@ function renderPanes() {
     if (PANE.kind[0] !== 'map') v.insertAdjacentHTML('beforeend', paneToolsHTML('video', 0));
     if (PANE.kind[0] === 'map') {
       v.insertAdjacentHTML('afterbegin', `<div class="pn-map">
-        <img src="assets/img/floor.png?v=202609171314" alt="맵뷰">
+        <img src="assets/img/floor.png?v=202609181040" alt="맵뷰">
         ${PANE.mapTools.includes('path') ? paneMapPathHTML() : ''}
         ${PANE.mapTools.includes('cctv') ? `<div class="pn-cones">${MAP_CCTV.map(c =>
           `<span class="map-cone" style="left:${c.x}%;top:${c.y}%;rotate:${c.deg - 90}deg"><i></i><b></b></span>`).join('')}</div>` : ''}
@@ -4242,7 +4249,7 @@ function renderArea() {
       const vb = $('#dtVideo').getBoundingClientRect();
       const ang = Math.atan2((y2 - y1) * vb.height, (x2 - x1) * vb.width) * 180 / Math.PI + 90 * (a.dir || 1);
       a.dirOn = true;   /* 방향은 항상 표시 — 기본 한쪽 방향 */
-      h += `<button class="area-dir" data-abarrow title="눌러서 방향 바꾸기" style="left:${(x1 + x2) / 2}%;top:${(y1 + y2) / 2}%"><img src="assets/img/area-direction.svg?v=202609171314" alt="" style="transform:rotate(${ang + 45}deg)"></button>`;
+      h += `<button class="area-dir" data-abarrow title="눌러서 방향 바꾸기" style="left:${(x1 + x2) / 2}%;top:${(y1 + y2) / 2}%"><img src="assets/img/area-direction.svg?v=202609181040" alt="" style="transform:rotate(${ang + 45}deg)"></button>`;
       const ex = x1 >= x2 ? x1 : x2, ey = x1 >= x2 ? y1 : y2;
       h += areaBar(ex, `calc(${ey}% + 14px)`, a, 'r');
     }
@@ -4492,7 +4499,7 @@ function renderMap3d(paths) {
     const poly = polys ? `<svg class="m3-path" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${polys}</svg>` : '';
     /* 위층이 앞(위)에 오도록 쌓는다 — DOM 순서대로면 아래층이 덮는다 */
     return `<div class="m3-floor${pl.some(({ pts }) => onFl(pts).length) ? '' : ' dim'}" data-fl="${f.label}" style="--i:${fi};z-index:${M3_FLOORS.length - fi}">
-      <img src="assets/img/floor.png?v=202609171314" alt="">
+      <img src="assets/img/floor.png?v=202609181040" alt="">
       ${poly}
       ${pl.map(({ p, pts }) => onFl(pts).map(t => `<span class="map-wp" data-pt="${f.key}-${p.slot}-${t.n}" data-cam="${t.cam}"
           data-hh="${t.hh}" data-x="${t.x}" data-y="${t.y}"
@@ -4731,7 +4738,7 @@ function spreadMapLabels(host, sel) {
 $$('#dtMapSeg button').forEach(b => b.onclick = () => {
   $$('#dtMapSeg button').forEach(x => x.classList.toggle('on', x === b));
   DT.map = b.dataset.m;
-  $('#dtMapImg').src = DT.map === 'map' ? 'assets/img/map.png?v=202609171314' : 'assets/img/floor.png?v=202609171314';
+  $('#dtMapImg').src = DT.map === 'map' ? 'assets/img/map.png?v=202609181040' : 'assets/img/floor.png?v=202609181040';
   $('#dtFloor').hidden = true;                 /* 층 배지는 3D 각 층에 붙는다 */
   renderMap3d(MAP_PATHS_CACHE);
 });
@@ -5506,7 +5513,7 @@ function mvwPaths() {
 }
 function renderMapView() {
   const paths = mvwPaths();
-  const mapImg = DT.map === 'map' ? 'assets/img/map.png?v=202609171314' : 'assets/img/floor.png?v=202609171314';
+  const mapImg = DT.map === 'map' ? 'assets/img/map.png?v=202609181040' : 'assets/img/floor.png?v=202609181040';
   const seg = `<div class="seg"><button class="${DT.map === 'map' ? 'on' : ''}" data-mm="map">지도</button><button class="${DT.map === 'map' ? '' : 'on'}" data-mm="floor">층별</button></div>`;
   /* 사양서 Detail_000_4 · 4-4) : 주변 카메라 / 이동 경로 / 전체 보기
      이동 경로는 **단일 대상일 때 비활성** (그룹·경로비교에서만 사용) */
@@ -5568,7 +5575,7 @@ function renderMapView() {
   /* 바인딩 */
   $$('#mvwBody [data-mm]').forEach(b => b.onclick = () => {
     DT.map = b.dataset.mm;
-    $('#dtMapImg').src = DT.map === 'map' ? 'assets/img/map.png?v=202609171314' : 'assets/img/floor.png?v=202609171314';
+    $('#dtMapImg').src = DT.map === 'map' ? 'assets/img/map.png?v=202609181040' : 'assets/img/floor.png?v=202609181040';
     $('#dtFloor').hidden = DT.map === 'map';
     renderMapView();
   });
@@ -6022,6 +6029,17 @@ function applyDemo() {
     setMode('text'); S.q = '검정색 모자를 쓴 배송기사'; qText.value = S.q; buildFilters('text'); runSearch(false);
     openCompareTab(d === 'cmp4' ? ['o01', 'o11', 'o16', 'o19'] : ['o01', 'o11']);
     if (d === 'cmpopen') { CMP.openLane = 'B'; renderCmpView(S.tabs[S.tabs.length - 1]); }
+  }
+  /* ---- 인물 칩 호버 메뉴 (2026-09-18) ----
+     호버 상태는 정적 캡처로 확인할 수 없어, 시안과 같이 **인물 B** 칩에 올린 상태로 열어 준다. */
+  if (d === 'chipmenu') {
+    setMode('text'); S.q = '검정색 모자를 쓴 배송기사'; qText.value = S.q; buildFilters('text'); runSearch(false);
+    openCompareTab(['o01', 'o11']);
+    setTimeout(() => {
+      const chips = document.querySelectorAll('#cmpTl .tl-row .tl-obj, #dtTl .tl-row .tl-obj');
+      const c = chips[1] || chips[0];
+      if (c) c.dispatchEvent(new MouseEvent('mouseenter', { bubbles: false }));
+    }, 500);
   }
   /* ---- 팝업 ---- */
   const POPUPS = {
@@ -6721,7 +6739,7 @@ function csDetailHTML(c) {
           <button class="btn-ghost sm" style="margin-left:auto" data-csmap>전체 보기</button>
         </div>
         <div style="position:relative;height:196px;border-radius:6px;overflow:hidden;background:var(--bg-1);border:1px solid var(--ln-subtle)">
-          <img src="assets/img/map.png?v=202609171314" style="width:100%;height:100%;object-fit:cover;opacity:.85" alt="">
+          <img src="assets/img/map.png?v=202609181040" style="width:100%;height:100%;object-fit:cover;opacity:.85" alt="">
           ${c.path.map((p, i) => {
             const x = 16 + (i * 23) % 68, y = 22 + (i * 17) % 54;
             return `<span style="position:absolute;left:${x}%;top:${y}%;width:9px;height:9px;border-radius:50%;
@@ -8680,7 +8698,7 @@ function renderZoneMap(host, pts, color) {
   /* 경로 비교면 경로 묶음([{ slot, pts, off }])을 받아 인물마다 선·지점을 그린다 */
   const groups = Array.isArray(pts) && pts[0] && pts[0].pts ? pts : [{ slot: '', pts, off: false }];
   const col = g => (g.slot ? slotColor(g.slot) : color);
-  zm.innerHTML = `<div class="zm-stage"><img src="assets/img/map.png?v=202609171314" alt="외부 지도" draggable="false">
+  zm.innerHTML = `<div class="zm-stage"><img src="assets/img/map.png?v=202609181040" alt="외부 지도" draggable="false">
       <svg class="zm-path" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${groups.map(g => {
         const seq = g.pts.slice().sort((a, b) => a.n - b.n);
         return seq.length > 1 ? `<polyline points="${seq.map(t => `${t.x},${t.y}`).join(' ')}" fill="none" stroke="${col(g)}" stroke-width="2.5"
@@ -8779,7 +8797,7 @@ function renderFloorPane(host, pts, color) {
   const mine = pts.filter(t => m3FloorOf(t.cam) === fl).sort((a, b) => a.n - b.n);
   const flb = (M3_FLOORS.find(f => f.key === fl) || {}).label || fl;
   /* GUI 260914 : 도면은 원본 비율로 가운데(흰 판) — 좌표는 flatU 로 도면 기준 */
-  fp.innerHTML = `<div class="zp-stage"><img src="assets/img/floor.png?v=202609171314" alt=""><span class="dt-floor">${flb}</span>
+  fp.innerHTML = `<div class="zp-stage"><img src="assets/img/floor.png?v=202609181040" alt=""><span class="dt-floor">${flb}</span>
     <svg class="zp-path" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${mine.length > 1
       ? `<polyline points="${mine.map(t => `${flatU(t.x)},${t.y}`).join(' ')}" fill="none" stroke="${color}" stroke-width="2" vector-effect="non-scaling-stroke"/>` : ''}</svg>
     ${mine.map(t => `<span class="map-wp" data-cam="${t.cam}" data-hh="${t.hh}" data-x="${flatU(t.x)}" data-y="${t.y}"

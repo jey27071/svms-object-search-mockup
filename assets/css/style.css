@@ -5288,6 +5288,14 @@ body.dt-b #dtVhObj{display:none}
 .tl-tip .tt-i em{font-style:normal;font-size:11px;line-height:14px;color:var(--tx-tertiary);font-family:var(--mono)}
 .tl-tip .tt-cam{font-size:11px;color:var(--tx-secondary)}
 
+/* ── 인물 칩 호버 메뉴 (2026-09-18 구두) ─────────────────────────────────────
+   상세 정보 툴팁(.tl-tip) 대신 `영상추가 · 인물등록 · 삭제` 3단 메뉴.
+   기본 .ctx-menu 를 물려받고 시안 비율에 맞춰 조금 넉넉하게만 키운다. */
+.tl-chip-menu{min-width:132px;padding:6px 0}
+.tl-chip-menu[hidden]{display:none}
+.tl-chip-menu div{padding:10px 16px;font-size:12px;color:var(--tx-secondary)}
+.tl-chip-menu div:hover{color:var(--tx-primary)}
+
 /* 영상 비율 설정 팝오버 (시안 팝오버-영상비율설정) */
 .v-ratio-pop{
   position:fixed;z-index:130;display:flex;flex-direction:column;min-width:140px;padding:4px 0;
