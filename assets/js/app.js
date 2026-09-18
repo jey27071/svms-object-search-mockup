@@ -1280,37 +1280,36 @@ function renderClipPreview() {
   const span = Math.max(1, d1 - d0);
   const pct = t => (+tlTime(t) - d0) / span * 100;
 
-  /* 시각 눈금 — 간격은 renderTimeline 과 같은 tlStep. 자정 눈금은 `24:00` 으로 적는다 */
-  const step = tlStep(span, CP_ZOOM, host.clientWidth);
-  let ticks = '';
-  for (let t = d0; t <= d1; t += step) {
-    const d = new Date(t), p = (t - d0) / span * 100;
-    ticks += `<span class="tk" style="left:${p}%"></span>`;
-    /* 맨 끝 라벨은 오른쪽으로 삐져나가 가로 스크롤을 만든다 — 상세와 같이 99.5% 까지만 */
-    if (p < 99.5) ticks += `<span class="tl-lb" style="left:${p}%">${tlHM(d) === '00:00' ? '24:00' : tlHM(d)}</span>`;
-  }
-  /* ★날짜 라벨·자정 구분선은 **실제 자정** 위치에 세운다 (2026-09-18).
-     종전엔 눈금을 돌면서 '날짜가 바뀐 첫 눈금'에 달았는데, 여러 날이면 눈금 간격이
-     3시간이 되어 자정에 눈금이 떨어지지 않아 라벨·구분선이 02:00 에 붙었다. */
-  let mids = '';
-  ticks += `<span class="tl-day first" style="left:0%">${tlYMD(new Date(d0))}</span>`;
-  {
+  /* 눈금은 폭이 정해진 뒤에야 간격(tlStep)을 정할 수 있으므로 **측정 패스에서** 그린다.
+     자정 눈금은 `24:00`, 날짜 라벨·자정 구분선은 **실제 자정** 위치에. */
+  const buildRuler = W => {
+    const step = tlStep(span, 1, W);
+    let ticks = '', mids = '';
+    for (let t = d0; t <= d1; t += step) {
+      const d = new Date(t), p = (t - d0) / span * 100;
+      ticks += `<span class="tk" style="left:${p}%"></span>`;
+      /* 맨 끝 라벨은 오른쪽으로 삐져나가 가로 스크롤을 만든다 — 상세와 같이 99.5% 까지만 */
+      if (p < 99.5) ticks += `<span class="tl-lb" style="left:${p}%">${tlHM(d) === '00:00' ? '24:00' : tlHM(d)}</span>`;
+    }
+    ticks += `<span class="tl-day first" style="left:0%">${tlYMD(new Date(d0))}</span>`;
     const m = new Date(d0); m.setHours(24, 0, 0, 0);   /* d0(08:00) 다음 자정 */
     for (; +m < d1; m.setDate(m.getDate() + 1)) {
       const p = (+m - d0) / span * 100;
       ticks += `<span class="tl-day" style="left:${p}%">${tlYMD(m)}</span>`;
       mids += `<span class="tl-midnight" style="left:calc(var(--tl-gut, 0px) + (100% - var(--tl-gut, 0px)) * ${p / 100})"></span>`;
     }
-  }
+    return { ticks, mids };
+  };
 
   const frame = o => (typeof srcVideo === 'function' && srcVideo(o.cam)) || o.img;
-  /* 자리(left)는 여기서 정하지 않고 **그린 뒤 실측 폭으로** 정한다 (아래 placeThumbs).
-     시각은 data-p 에 퍼센트로 실어 보낸다. */
+  /* 자리(left)는 여기서 정하지 않고 측정 패스(placeThumbs)에서 **실제 시각 위치**로 놓는다.
+     시각은 data-p 에 퍼센트로 실어 보낸다. `.tl-more` 는 겹쳐 묶인 개수(+N) 자리. */
   const lane = picked.map((o, i) => `
     <div class="tl-bar" data-p="${pct(o.t)}"></div>
     <div class="tl-th" data-p="${pct(o.t)}" data-cpn="${i}" data-cpid="${o.id}" title="${o.cam} · ${o.t}">
       <span class="tl-film" style="background-image:url('${frame(o)}')"></span>
       <span class="tl-n">${i + 1}</span>
+      <span class="tl-more" hidden></span>
       <span class="tl-loc">${o.cam}</span>
       <button type="button" class="tl-del" data-cprm="${o.id}"
               title="이 영상 빼기" aria-label="${o.cam} 영상 빼기">${ICON.trash}</button>
@@ -1319,11 +1318,11 @@ function renderClipPreview() {
   host.innerHTML = `
     <div class="tl-host" id="cpTl">
       <div class="tl-scroll">
-        <div class="tl-inner" style="width:${CP_ZOOM * 100}%">
-          <div class="tl-ruler">${ticks}</div>
+        <div class="tl-inner">
+          <div class="tl-ruler"></div>
           <div class="tl-rows">
             <div class="tl-row" data-tr="0"><div class="tl-lane">${lane}</div></div>
-          </div>${mids}
+          </div>
         </div>
       </div>
     </div>
@@ -1334,41 +1333,79 @@ function renderClipPreview() {
       <button type="button" class="btn-icon" data-cpz="1" title="확대"><svg viewBox="0 0 16 16" class="ic" aria-hidden="true"><circle cx="7" cy="7" r="4.6" fill="none" stroke="currentColor" stroke-width="1.2"/><path d="M10.4 10.4L14 14M5 7h4M7 5v4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></button>
     </div>`;
 
-  /* ★썸네일 자리는 **그려 놓고 레인의 실제 px 폭을 재서** 잡는다 (2026-09-18 지적).
-     종전에는 폭을 미리 어림(host.clientWidth)해 퍼센트 최소간격을 계산했는데,
-     `.tl-inner` 는 기본 CSS 의 `min-width:100%` 때문에 어림한 폭보다 커질 수 있다.
-     그러면 간격 퍼센트가 실제 폭과 어긋나 썸네일이 눈금과 따로 놀고 오른쪽으로 밀려났다.
-     퍼센트를 섞지 않고 처음부터 px 로 놓으면 눈금과 어긋날 여지가 없다. */
+  /* ★시간 축을 계산해서 배치하는 패스 (2026-09-18 재작업).
+     종전에는 **겹칠 때만 104px 씩 오른쪽으로 미는** 보정을 넣었는데, 클립이 몰려 있으면
+     그 밀림이 연쇄로 누적돼 썸네일이 실제 시각과 몇 시간씩 어긋났다(축소하면 특히 심했다).
+     실제 발생 시각과 다른 자리에 놓는 건 겹치는 것보다 나쁘므로 그 보정을 **걷어냈다.**
+     대신 시간 축 자체를 계산한다 :
+       · 썸네일은 **언제나 제 시각 위치**(x = 시각비율 × 폭)에 놓는다
+       · 폭은 배율로 정한다. 배율 1 = 고른 구간 전체가 한 화면,
+         배율 8 = **가장 가까운 두 클립도 겹치지 않는 폭**. 사이는 기하 보간.
+         이러면 하루치든 사흘치든 슬라이더 양 끝의 의미가 같다
+       · 그래도 겹치는 구간(축소했을 때)은 **앞 썸네일에 `+N` 으로 묶어** 표시하고
+         뒤엣것은 감춘다. 확대하면 자연히 풀려 각자 제자리에 선다
+     눈금 간격(tlStep)도 정해진 폭으로 다시 계산해 촘촘함을 맞춘다. */
   const CP_TH = 101, CP_MIN = CP_TH + 3;
   const placeThumbs = () => {
     const sc = host.querySelector('.tl-scroll');
     const inner = host.querySelector('.tl-inner');
-    const lane0 = host.querySelector('.tl-lane');
-    if (!sc || !inner || !lane0) return;
+    const ruler = host.querySelector('.tl-ruler');
+    if (!sc || !inner || !ruler) return;
+    const gut = parseFloat(getComputedStyle(inner).paddingLeft) || 0;
+    const viewW = sc.clientWidth - gut;
     /* 팝업이 아직 배치되지 않아 폭이 0 이면 다음 프레임에 다시 시도한다 */
-    if (lane0.clientWidth < 50) { requestAnimationFrame(placeThumbs); return; }
-    /* 고정 폭 썸네일이 다 안 들어가면 눈금째로 넓혀 가로 스크롤로 넘겨 본다 */
-    const need = CP_MIN * (picked.length - 1) + CP_TH + 8;
-    if (lane0.clientWidth < need) {
-      const gut = parseFloat(getComputedStyle(inner).paddingLeft) || 0;
-      inner.style.width = (need + gut) + 'px';
+    if (viewW < 50) { requestAnimationFrame(placeThumbs); return; }
+
+    /* 가장 가까운 두 클립을 CP_MIN 만큼 벌리는 데 필요한 폭 (배율 8 의 폭) */
+    let fitW = viewW;
+    for (let i = 1; i < cpTs.length; i++) {
+      const dt = cpTs[i] - cpTs[i - 1];
+      if (dt > 0) fitW = Math.max(fitW, CP_MIN * span / dt);
     }
-    const W = lane0.clientWidth;
+    /* 사흘치 눈금에서 3분 간격을 104px 로 벌리려면 약 15만px 가 필요하다 —
+       상한을 낮게 잡으면 확대해도 묶음이 안 풀린다. 눈금 개수는 tlStep 이 폭에 맞춰
+       (간격 48px 이상으로) 줄여 주므로 DOM 이 폭발하지는 않는다. */
+    fitW = Math.min(fitW, 200000);
+    const W = Math.round(viewW * Math.pow(fitW / viewW, (CP_ZOOM - 1) / 7));
+    inner.style.width = (W + gut) + 'px';
+
+    const { ticks, mids } = buildRuler(W);
+    ruler.innerHTML = ticks;
+    inner.querySelectorAll('.tl-midnight').forEach(n => n.remove());
+    if (mids) inner.insertAdjacentHTML('beforeend', mids);
+
+    /* 눈금 라벨은 **눈금 폭의 퍼센트**로 놓이므로, 썸네일 px 도 그 실측 폭을 써야 한다.
+       `.tl-inner` 에는 `min-width:100%` 가 걸려 있어 내가 넣은 px 보다 넓어질 수 있다 —
+       설정값(W)을 그대로 믿으면 또 눈금과 어긋난다. */
+    const Wr = ruler.clientWidth || W;
+
     const ths = [...host.querySelectorAll('.tl-th')];
     const bars = [...host.querySelectorAll('.tl-bar')];
-    /* 시작 시각 위치가 원칙. 다만 클립이 몇 분 안에 몰리면 고정 폭 썸네일이 서로를 완전히
-       덮어 한 장만 보이므로(24시간 눈금에서 1분 ≈ 0.9px), **겹칠 때만** 최소 간격만큼
-       오른쪽으로 민다. 시간 순서는 그대로, 안 겹치는 클립은 정확히 제 시각에 놓인다.
-       정확한 시각 위치를 우선하려면 Math.max(...) 의 `last + CP_MIN` 만 빼면 된다. */
-    let last = -1e9;
+    let leadIdx = -1, leadX = -1e9, grouped = 0;
     ths.forEach((th, i) => {
-      const x = Math.max(+th.dataset.p / 100 * W, last + CP_MIN);
-      last = x;
+      const x = +th.dataset.p / 100 * Wr;
       th.style.left = x + 'px';
       if (bars[i]) bars[i].style.left = x + 'px';
+      const more = th.querySelector('.tl-more');
+      if (more) { more.hidden = true; more.textContent = ''; }
+      if (leadIdx >= 0 && x - leadX < CP_MIN) {
+        /* 앞 썸네일과 겹친다 → 앞 것에 +N 으로 묶고 이건 감춘다 */
+        th.style.display = 'none';
+        if (bars[i]) bars[i].style.display = 'none';
+        grouped++;
+        const lm = ths[leadIdx].querySelector('.tl-more');
+        if (lm) { lm.hidden = false; lm.textContent = '+' + grouped; }
+      } else {
+        th.style.display = '';
+        if (bars[i]) bars[i].style.display = '';
+        leadIdx = i; leadX = x; grouped = 0;
+      }
     });
+
     /* 고른 클립 구간의 가운데가 보이도록 */
-    const mid = ths.length ? (parseFloat(ths[0].style.left) + last + CP_TH) / 2 : 0;
+    const x0 = (cpTs[0] - d0) / span * Wr;
+    const x1 = (cpTs[cpTs.length - 1] - d0) / span * Wr;
+    const mid = gut + (x0 + x1 + CP_TH) / 2;
     sc.scrollLeft = Math.max(0, Math.min(mid - sc.clientWidth / 2, inner.scrollWidth - sc.clientWidth));
   };
   requestAnimationFrame(placeThumbs);
@@ -3603,7 +3640,7 @@ function paneToolsHTML(kind, i) {
 function paneBody(kind, i) {
   if (kind === 'map') {
     return `<div class="pn-map">
-      <img src="assets/img/floor.png?v=202609181233" alt="맵뷰">
+      <img src="assets/img/floor.png?v=202609181246" alt="맵뷰">
       ${PANE.mapTools.includes('path') ? paneMapPathHTML() : ''}
       ${PANE.mapTools.includes('cctv') ? `<div class="pn-cones">${MAP_CCTV.map(c =>
         `<span class="map-cone" style="left:${c.x}%;top:${c.y}%;rotate:${c.deg - 90}deg"><i></i><b></b></span>`).join('')}</div>` : ''}
@@ -3685,7 +3722,7 @@ function renderPanes() {
     if (PANE.kind[0] !== 'map') v.insertAdjacentHTML('beforeend', paneToolsHTML('video', 0));
     if (PANE.kind[0] === 'map') {
       v.insertAdjacentHTML('afterbegin', `<div class="pn-map">
-        <img src="assets/img/floor.png?v=202609181233" alt="맵뷰">
+        <img src="assets/img/floor.png?v=202609181246" alt="맵뷰">
         ${PANE.mapTools.includes('path') ? paneMapPathHTML() : ''}
         ${PANE.mapTools.includes('cctv') ? `<div class="pn-cones">${MAP_CCTV.map(c =>
           `<span class="map-cone" style="left:${c.x}%;top:${c.y}%;rotate:${c.deg - 90}deg"><i></i><b></b></span>`).join('')}</div>` : ''}
@@ -4358,7 +4395,7 @@ function renderArea() {
       const vb = $('#dtVideo').getBoundingClientRect();
       const ang = Math.atan2((y2 - y1) * vb.height, (x2 - x1) * vb.width) * 180 / Math.PI + 90 * (a.dir || 1);
       a.dirOn = true;   /* 방향은 항상 표시 — 기본 한쪽 방향 */
-      h += `<button class="area-dir" data-abarrow title="눌러서 방향 바꾸기" style="left:${(x1 + x2) / 2}%;top:${(y1 + y2) / 2}%"><img src="assets/img/area-direction.svg?v=202609181233" alt="" style="transform:rotate(${ang + 45}deg)"></button>`;
+      h += `<button class="area-dir" data-abarrow title="눌러서 방향 바꾸기" style="left:${(x1 + x2) / 2}%;top:${(y1 + y2) / 2}%"><img src="assets/img/area-direction.svg?v=202609181246" alt="" style="transform:rotate(${ang + 45}deg)"></button>`;
       const ex = x1 >= x2 ? x1 : x2, ey = x1 >= x2 ? y1 : y2;
       h += areaBar(ex, `calc(${ey}% + 14px)`, a, 'r');
     }
@@ -4608,7 +4645,7 @@ function renderMap3d(paths) {
     const poly = polys ? `<svg class="m3-path" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${polys}</svg>` : '';
     /* 위층이 앞(위)에 오도록 쌓는다 — DOM 순서대로면 아래층이 덮는다 */
     return `<div class="m3-floor${pl.some(({ pts }) => onFl(pts).length) ? '' : ' dim'}" data-fl="${f.label}" style="--i:${fi};z-index:${M3_FLOORS.length - fi}">
-      <img src="assets/img/floor.png?v=202609181233" alt="">
+      <img src="assets/img/floor.png?v=202609181246" alt="">
       ${poly}
       ${pl.map(({ p, pts }) => onFl(pts).map(t => `<span class="map-wp" data-pt="${f.key}-${p.slot}-${t.n}" data-cam="${t.cam}"
           data-hh="${t.hh}" data-x="${t.x}" data-y="${t.y}"
@@ -4847,7 +4884,7 @@ function spreadMapLabels(host, sel) {
 $$('#dtMapSeg button').forEach(b => b.onclick = () => {
   $$('#dtMapSeg button').forEach(x => x.classList.toggle('on', x === b));
   DT.map = b.dataset.m;
-  $('#dtMapImg').src = DT.map === 'map' ? 'assets/img/map.png?v=202609181233' : 'assets/img/floor.png?v=202609181233';
+  $('#dtMapImg').src = DT.map === 'map' ? 'assets/img/map.png?v=202609181246' : 'assets/img/floor.png?v=202609181246';
   $('#dtFloor').hidden = true;                 /* 층 배지는 3D 각 층에 붙는다 */
   renderMap3d(MAP_PATHS_CACHE);
 });
@@ -5622,7 +5659,7 @@ function mvwPaths() {
 }
 function renderMapView() {
   const paths = mvwPaths();
-  const mapImg = DT.map === 'map' ? 'assets/img/map.png?v=202609181233' : 'assets/img/floor.png?v=202609181233';
+  const mapImg = DT.map === 'map' ? 'assets/img/map.png?v=202609181246' : 'assets/img/floor.png?v=202609181246';
   const seg = `<div class="seg"><button class="${DT.map === 'map' ? 'on' : ''}" data-mm="map">지도</button><button class="${DT.map === 'map' ? '' : 'on'}" data-mm="floor">층별</button></div>`;
   /* 사양서 Detail_000_4 · 4-4) : 주변 카메라 / 이동 경로 / 전체 보기
      이동 경로는 **단일 대상일 때 비활성** (그룹·경로비교에서만 사용) */
@@ -5684,7 +5721,7 @@ function renderMapView() {
   /* 바인딩 */
   $$('#mvwBody [data-mm]').forEach(b => b.onclick = () => {
     DT.map = b.dataset.mm;
-    $('#dtMapImg').src = DT.map === 'map' ? 'assets/img/map.png?v=202609181233' : 'assets/img/floor.png?v=202609181233';
+    $('#dtMapImg').src = DT.map === 'map' ? 'assets/img/map.png?v=202609181246' : 'assets/img/floor.png?v=202609181246';
     $('#dtFloor').hidden = DT.map === 'map';
     renderMapView();
   });
@@ -6856,7 +6893,7 @@ function csDetailHTML(c) {
           <button class="btn-ghost sm" style="margin-left:auto" data-csmap>전체 보기</button>
         </div>
         <div style="position:relative;height:196px;border-radius:6px;overflow:hidden;background:var(--bg-1);border:1px solid var(--ln-subtle)">
-          <img src="assets/img/map.png?v=202609181233" style="width:100%;height:100%;object-fit:cover;opacity:.85" alt="">
+          <img src="assets/img/map.png?v=202609181246" style="width:100%;height:100%;object-fit:cover;opacity:.85" alt="">
           ${c.path.map((p, i) => {
             const x = 16 + (i * 23) % 68, y = 22 + (i * 17) % 54;
             return `<span style="position:absolute;left:${x}%;top:${y}%;width:9px;height:9px;border-radius:50%;
@@ -8815,7 +8852,7 @@ function renderZoneMap(host, pts, color) {
   /* 경로 비교면 경로 묶음([{ slot, pts, off }])을 받아 인물마다 선·지점을 그린다 */
   const groups = Array.isArray(pts) && pts[0] && pts[0].pts ? pts : [{ slot: '', pts, off: false }];
   const col = g => (g.slot ? slotColor(g.slot) : color);
-  zm.innerHTML = `<div class="zm-stage"><img src="assets/img/map.png?v=202609181233" alt="외부 지도" draggable="false">
+  zm.innerHTML = `<div class="zm-stage"><img src="assets/img/map.png?v=202609181246" alt="외부 지도" draggable="false">
       <svg class="zm-path" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${groups.map(g => {
         const seq = g.pts.slice().sort((a, b) => a.n - b.n);
         return seq.length > 1 ? `<polyline points="${seq.map(t => `${t.x},${t.y}`).join(' ')}" fill="none" stroke="${col(g)}" stroke-width="2.5"
@@ -8914,7 +8951,7 @@ function renderFloorPane(host, pts, color) {
   const mine = pts.filter(t => m3FloorOf(t.cam) === fl).sort((a, b) => a.n - b.n);
   const flb = (M3_FLOORS.find(f => f.key === fl) || {}).label || fl;
   /* GUI 260914 : 도면은 원본 비율로 가운데(흰 판) — 좌표는 flatU 로 도면 기준 */
-  fp.innerHTML = `<div class="zp-stage"><img src="assets/img/floor.png?v=202609181233" alt=""><span class="dt-floor">${flb}</span>
+  fp.innerHTML = `<div class="zp-stage"><img src="assets/img/floor.png?v=202609181246" alt=""><span class="dt-floor">${flb}</span>
     <svg class="zp-path" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${mine.length > 1
       ? `<polyline points="${mine.map(t => `${flatU(t.x)},${t.y}`).join(' ')}" fill="none" stroke="${color}" stroke-width="2" vector-effect="non-scaling-stroke"/>` : ''}</svg>
     ${mine.map(t => `<span class="map-wp" data-cam="${t.cam}" data-hh="${t.hh}" data-x="${flatU(t.x)}" data-y="${t.y}"
