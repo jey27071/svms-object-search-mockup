@@ -5522,101 +5522,101 @@ body.dt-b .dt-map .dt-zoom{right:13px}
    (상세 #dtTl · 비교 #cmpTl 공통. 옛 #dtTl 규칙을 이기도록 :is(#id) 사용)
    ════════════════════════════════════════════════════════════════════ */
 /* 타임라인 틀 (5184:99014 · 100218) : 높이는 JS 가 인원수로 계산 */
-body.dt-b :is(#dtTl,#cmpTl){border-top:2px solid var(--ln-subtle);display:flex;flex-direction:column}
-body.dt-b :is(#dtTl,#cmpTl) .tl-top{flex:0 0 36px}
-body.dt-b :is(#dtTl,#cmpTl) .tl-scroll{flex:1 1 auto;min-height:0;overflow:hidden}
-body.dt-b :is(#dtTl,#cmpTl).tl-zoomed .tl-scroll{overflow-x:auto;overflow-y:hidden}
-body.dt-b :is(#dtTl,#cmpTl) .tl-scroll::-webkit-scrollbar{height:6px}
-body.dt-b :is(#dtTl,#cmpTl) .tl-scroll::-webkit-scrollbar-thumb{background:rgba(255,255,255,.18);border-radius:3px}
-body.dt-b :is(#dtTl,#cmpTl) .tl-inner{box-sizing:border-box;height:100%;padding-left:90px;--tl-gut:90px}
+body.dt-b :is(#dtTl,#cmpTl,#cpTl){border-top:2px solid var(--ln-subtle);display:flex;flex-direction:column}
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-top{flex:0 0 36px}
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-scroll{flex:1 1 auto;min-height:0;overflow:hidden}
+body.dt-b :is(#dtTl,#cmpTl,#cpTl).tl-zoomed .tl-scroll{overflow-x:auto;overflow-y:hidden}
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-scroll::-webkit-scrollbar{height:6px}
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-scroll::-webkit-scrollbar-thumb{background:rgba(255,255,255,.18);border-radius:3px}
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-inner{box-sizing:border-box;height:100%;padding-left:90px;--tl-gut:90px}
 /* 눈금 48 = 날짜 20 + 시각 28(윗선 · 12px 라벨 · 6px 눈금) */
-body.dt-b :is(#dtTl,#cmpTl) .tl-ruler{height:48px;border-bottom:0;overflow:visible}
-body.dt-b :is(#dtTl,#cmpTl) .tl-ruler::before{content:'';position:absolute;left:-90px;right:0;top:20px;border-top:1px solid var(--ln-subtle)}
-body.dt-b :is(#dtTl,#cmpTl) .tl-ruler .tl-day,
-body.dt-b :is(#dtTl,#cmpTl) .tl-ruler .tl-day.first{
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-ruler{height:48px;border-bottom:0;overflow:visible}
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-ruler::before{content:'';position:absolute;left:-90px;right:0;top:20px;border-top:1px solid var(--ln-subtle)}
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-ruler .tl-day,
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-ruler .tl-day.first{
   top:2px;font-size:12px;line-height:16px;font-weight:400;font-family:inherit;
   color:var(--tx-tertiary);border:0;padding:0;transform:translateX(-16px)
 }
-body.dt-b :is(#dtTl,#cmpTl) .tl-ruler .tl-lb{top:24px;font-size:12px;line-height:16px;font-family:inherit;color:var(--tx-secondary);transform:translateX(-50%)}
-body.dt-b :is(#dtTl,#cmpTl) .tl-ruler .tk{top:42px;width:1px;height:6px;background:var(--ln-border)}
-body.dt-b :is(#dtTl,#cmpTl) .tl-midnight{position:absolute;top:0;bottom:0;width:1px;background:var(--ln-subtle);z-index:1;pointer-events:none}
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-ruler .tl-lb{top:24px;font-size:12px;line-height:16px;font-family:inherit;color:var(--tx-secondary);transform:translateX(-50%)}
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-ruler .tk{top:42px;width:1px;height:6px;background:var(--ln-border)}
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-midnight{position:absolute;top:0;bottom:0;width:1px;background:var(--ln-subtle);z-index:1;pointer-events:none}
 /* 트랙 행 65 · 간격 2 · 행 배경은 칩 자리까지 */
-body.dt-b :is(#dtTl,#cmpTl) .tl-rows{position:relative;display:flex;flex-direction:column;gap:2px;padding-top:8px}
-body.dt-b :is(#dtTl,#cmpTl) .tl-row,
-body.dt-b :is(#dtTl,#cmpTl) .tl-row:nth-child(even){flex:0 0 65px;height:65px;border:0;background:none;overflow:visible}
-body.dt-b :is(#dtTl,#cmpTl) .tl-row::before{content:'';position:absolute;top:0;bottom:0;left:-90px;right:0;background:rgba(255,255,255,.035);pointer-events:none}
-body.dt-b :is(#dtTl,#cmpTl) .tl-lane{position:absolute;inset:0;margin:0}
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-rows{position:relative;display:flex;flex-direction:column;gap:2px;padding-top:8px}
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-row,
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-row:nth-child(even){flex:0 0 65px;height:65px;border:0;background:none;overflow:visible}
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-row::before{content:'';position:absolute;top:0;bottom:0;left:-90px;right:0;background:rgba(255,255,255,.035);pointer-events:none}
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-lane{position:absolute;inset:0;margin:0}
 /* 인물 칩 80×65 : 사진 + (■ 이름) */
-body.dt-b :is(#dtTl,#cmpTl) .tl-obj{
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-obj{
   left:-86px;top:0;width:80px;height:65px;box-sizing:border-box;
   border:1px solid var(--slot,var(--primary));border-radius:4px;background:var(--bg-2);
   display:flex;flex-direction:column;overflow:hidden
 }
-body.dt-b :is(#dtTl,#cmpTl) .tl-obj img{flex:1 1 auto;width:100%;height:auto;min-height:0;object-fit:cover}
-body.dt-b :is(#dtTl,#cmpTl) .tl-obj .nm{
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-obj img{flex:1 1 auto;width:100%;height:auto;min-height:0;object-fit:cover}
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-obj .nm{
   flex:0 0 auto;height:auto;display:flex;align-items:center;justify-content:center;gap:4px;
   padding:2px 4px;background:var(--bg-2);color:var(--tx-secondary);
   font-size:12px;font-weight:500;line-height:1.3
 }
-body.dt-b :is(#dtTl,#cmpTl) .tl-obj .nm i{width:8px;height:8px;flex:0 0 8px;border-radius:2px;background:var(--slot,var(--primary))}
-body.dt-b :is(#dtTl,#cmpTl) .tl-obj .rm{opacity:0;top:3px;right:3px;width:16px;height:16px}
-body.dt-b :is(#dtTl,#cmpTl) .tl-obj:hover .rm{opacity:1}
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-obj .nm i{width:8px;height:8px;flex:0 0 8px;border-radius:2px;background:var(--slot,var(--primary))}
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-obj .rm{opacity:0;top:3px;right:3px;width:16px;height:16px}
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-obj:hover .rm{opacity:1}
 /* 구간 = 막대 8 + 테두리 1px 창(좌·우·아래) 안에 100×56 프레임이 1px 간격으로 */
-body.dt-b :is(#dtTl,#cmpTl) .tl-bar,
-body.dt-b :is(#dtTl,#cmpTl) .tl-bar:hover,
-body.dt-b :is(#dtTl,#cmpTl) .tl-bar.on{top:0;height:8px;border-radius:2px 2px 0 0;opacity:1;box-shadow:none}
-body.dt-b :is(#dtTl,#cmpTl) .tl-th,
-body.dt-b :is(#dtTl,#cmpTl) .tl-th:hover,
-body.dt-b :is(#dtTl,#cmpTl) .tl-th.on,
-body.dt-b :is(#dtTl,#cmpTl) .tl-th.pass{
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-bar,
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-bar:hover,
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-bar.on{top:0;height:8px;border-radius:2px 2px 0 0;opacity:1;box-shadow:none}
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-th,
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-th:hover,
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-th.on,
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-th.pass{
   top:8px;height:57px;min-width:8px;box-sizing:border-box;
   border:1px solid var(--bc,var(--primary));border-top:0;border-radius:0 0 2px 2px;
   background:var(--bc,var(--primary));overflow:hidden;transform:none !important;box-shadow:none
 }
-body.dt-b :is(#dtTl,#cmpTl) .tl-th .tl-film{
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-th .tl-film{
   position:absolute;inset:0;border-radius:0;background-color:#000;
   background-repeat:repeat-x;background-size:101px 56px;background-position:0 0
 }
-body.dt-b :is(#dtTl,#cmpTl) .tl-th .tl-film::after{
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-th .tl-film::after{
   content:'';position:absolute;inset:0;
   background:repeating-linear-gradient(90deg,transparent 0 100px,var(--bg-1) 100px 101px)
 }
-body.dt-b :is(#dtTl,#cmpTl) .tl-n{
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-n{
   left:4px;top:4px;width:16px;min-width:16px;height:16px;box-sizing:border-box;padding:0;
   border:1px solid #fff;border-radius:50%;background:var(--bc,var(--primary));color:#fff;
   font-family:inherit;font-size:10px;font-weight:500;line-height:14px;text-align:center;z-index:2
 }
-body.dt-b :is(#dtTl,#cmpTl) .tl-more{
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-more{
   left:78px;right:auto;top:4px;bottom:auto;height:13px;line-height:13px;padding:0 4px;
   border-radius:999px;background:rgba(0,0,0,.5);color:#fff;font-size:9px;font-weight:400;z-index:2
 }
-body.dt-b :is(#dtTl,#cmpTl) .tl-cam{display:none}
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-cam{display:none}
 /* 커서 : 시각 줄 윗선에서 시작하는 흰 1px 선 + 아래 향한 삼각형 */
-body.dt-b :is(#dtTl,#cmpTl) .tl-cursor{top:20px;bottom:0;width:1px;background:#fff;opacity:1}
-body.dt-b :is(#dtTl,#cmpTl) .tl-cursor::before{display:none}
-body.dt-b :is(#dtTl,#cmpTl) .tl-cur-mk{
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-cursor{top:20px;bottom:0;width:1px;background:#fff;opacity:1}
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-cursor::before{display:none}
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-cur-mk{
   top:0;left:50%;transform:translateX(-50%);width:0;height:0;border-radius:0;background:none;box-shadow:none;
   border-left:5px solid transparent;border-right:5px solid transparent;border-top:6px solid #fff
 }
-body.dt-b :is(#dtTl,#cmpTl) .tl-cursor .tl-cur-t{top:32px}
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-cursor .tl-cur-t{top:32px}
 /* 하단 컨트롤 51 : 좌 편집 2(28) · 가운데 − 슬라이더 96 + · 우 버튼 34 */
-body.dt-b :is(#dtTl,#cmpTl) .tl-foot{
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-foot{
   flex:0 0 51px;height:51px;box-sizing:border-box;margin-top:auto;
   display:flex;align-items:center;justify-content:space-between;gap:0;
   padding:8px 10px;border-top:1px solid var(--ln-subtle)
 }
-body.dt-b :is(#dtTl,#cmpTl) .tl-foot .tf-l{width:142px;gap:16px}
-body.dt-b :is(#dtTl,#cmpTl) .tl-foot .tf-l .btn-icon{width:28px;height:28px;padding:2px}
-body.dt-b :is(#dtTl,#cmpTl) .tl-foot .tf-l .btn-icon .ic{width:22px;height:22px}
-body.dt-b :is(#dtTl,#cmpTl) .tl-foot .tf-zoom{gap:2px;margin:0}
-body.dt-b :is(#dtTl,#cmpTl) .tl-foot .tf-zoom .zb{width:24px;height:24px;padding:0}
-body.dt-b :is(#dtTl,#cmpTl) .tl-foot .tf-zoom .zb .ic{width:20px;height:20px}
-body.dt-b :is(#dtTl,#cmpTl) .tl-foot .tf-zoom .tl-zr{width:96px;height:2px;background:var(--ln-border)}
-body.dt-b :is(#dtTl,#cmpTl) .tl-foot .tf-zoom .tl-zr::-webkit-slider-thumb{
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-foot .tf-l{width:142px;gap:16px}
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-foot .tf-l .btn-icon{width:28px;height:28px;padding:2px}
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-foot .tf-l .btn-icon .ic{width:22px;height:22px}
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-foot .tf-zoom{gap:2px;margin:0}
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-foot .tf-zoom .zb{width:24px;height:24px;padding:0}
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-foot .tf-zoom .zb .ic{width:20px;height:20px}
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-foot .tf-zoom .tl-zr{width:96px;height:2px;background:var(--ln-border)}
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-foot .tf-zoom .tl-zr::-webkit-slider-thumb{
   width:10px;height:10px;background:#c4c4c4;border:1px solid #fff;box-shadow:4px 4px 5px rgba(0,0,0,.25)
 }
-body.dt-b :is(#dtTl,#cmpTl) .tl-foot .tf-r{width:142px;justify-content:flex-end;gap:8px}
-body.dt-b :is(#dtTl,#cmpTl) .tl-foot .tf-r button{
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-foot .tf-r{width:142px;justify-content:flex-end;gap:8px}
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-foot .tf-r button{
   height:34px;min-width:64px;padding:0 8px;border-radius:4px;
   font-size:14px;font-weight:500;letter-spacing:-.28px
 }
@@ -5671,15 +5671,15 @@ body.dt-b .cmp-head .vh-ic .ic{width:20px;height:20px}
   font-size:10px;font-weight:500;letter-spacing:.2px;line-height:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis
 }
 /* 하단 우측 버튼이 두 줄로 꺾이던 문제 — 고정 폭 대신 최소 폭 */
-body.dt-b :is(#dtTl,#cmpTl) .tl-foot .tf-l,
-body.dt-b :is(#dtTl,#cmpTl) .tl-foot .tf-r{flex:1 1 0;width:auto;min-width:142px}
-body.dt-b :is(#dtTl,#cmpTl) .tl-foot .tf-zoom{flex:0 0 auto}
-body.dt-b :is(#dtTl,#cmpTl) .tl-foot .tf-r button{white-space:nowrap;flex:0 0 auto}
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-foot .tf-l,
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-foot .tf-r{flex:1 1 0;width:auto;min-width:142px}
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-foot .tf-zoom{flex:0 0 auto}
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-foot .tf-r button{white-space:nowrap;flex:0 0 auto}
 /* 타임라인 확대 시 가로 스크롤바 : 트랙 아래 10px 자리에 (트랙을 가리지 않게) */
-body.dt-b :is(#dtTl,#cmpTl) .tl-scroll{scrollbar-width:thin}
-body.dt-b :is(#dtTl,#cmpTl) .tl-scroll::-webkit-scrollbar{height:10px}
-body.dt-b :is(#dtTl,#cmpTl) .tl-scroll::-webkit-scrollbar-track{background:transparent}
-body.dt-b :is(#dtTl,#cmpTl) .tl-scroll::-webkit-scrollbar-thumb{background:rgba(255,255,255,.22);border:2px solid transparent;background-clip:padding-box;border-radius:5px}
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-scroll{scrollbar-width:thin}
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-scroll::-webkit-scrollbar{height:10px}
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-scroll::-webkit-scrollbar-track{background:transparent}
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-scroll::-webkit-scrollbar-thumb{background:rgba(255,255,255,.22);border:2px solid transparent;background-clip:padding-box;border-radius:5px}
 
 /* ── 영상 조작 바 : 설정 삭제 후 재배치 — 좌·우 도구가 같은 폭을 나눠 가져
    재생 조작은 항상 가운데, 오른쪽 도구는 우측 끝에 붙는다 ── */
@@ -5723,11 +5723,11 @@ body.dt-b :is(#dtCtrl,#cmpCtrl) .grp.c{flex:0 0 auto}
 #mdVideo .vw-ctrl .grp.c{flex:0 0 auto}
 
 /* 재생 시점 커서는 모든 트랙(썸네일·배지·호버된 클립)보다 위 */
-body.dt-b :is(#dtTl,#cmpTl) .tl-cursor{z-index:30}
-body.dt-b :is(#dtTl,#cmpTl) .tl-th,
-body.dt-b :is(#dtTl,#cmpTl) .tl-th:hover,
-body.dt-b :is(#dtTl,#cmpTl) .tl-th.on,
-body.dt-b :is(#dtTl,#cmpTl) .tl-th.pass{z-index:auto}
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-cursor{z-index:30}
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-th,
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-th:hover,
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-th.on,
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-th.pass{z-index:auto}
 /* 인물 칩 툴팁의 `인물등록 ›` */
 .tl-tip .tt-reg{
   display:inline-flex;align-items:center;gap:2px;align-self:flex-start;margin-top:4px;padding:0;
@@ -5753,31 +5753,31 @@ body.dt-b :is(#dtTl,#cmpTl) .tl-th.pass{z-index:auto}
   color:#fff;font-size:14px;font-weight:500;letter-spacing:-.28px;line-height:1.3;white-space:nowrap
 }
 /* 시각은 미리보기가 보여주므로 커서 옆 배지는 숨김 · 1px 선이라 잡기 쉽게 좌우 5px 여유 */
-body.dt-b :is(#dtTl,#cmpTl) .tl-cursor .tl-cur-t{display:none}
-body.dt-b :is(#dtTl,#cmpTl) .tl-cursor::after{content:'';position:absolute;top:-2px;bottom:0;left:-5px;right:-5px;cursor:ew-resize}
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-cursor .tl-cur-t{display:none}
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-cursor::after{content:'';position:absolute;top:-2px;bottom:0;left:-5px;right:-5px;cursor:ew-resize}
 /* 이미지 160×90 은 테두리 안쪽 크기 (바깥 164×94) */
 .tl-cur-pop .cp-img{box-sizing:content-box;width:160px;height:90px}
 /* 편집 상태 취소·저장 등 하단 우측 버튼 글자 가운데 정렬 (저장이 왼쪽으로 쏠렸다) */
-body.dt-b :is(#dtTl,#cmpTl) .tl-foot .tf-r button{display:inline-flex;align-items:center;justify-content:center;text-align:center}
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-foot .tf-r button{display:inline-flex;align-items:center;justify-content:center;text-align:center}
 
 /* ── 타임라인 가로 스크롤바 : 브라우저 막대 숨김 → 반투명 오버레이 막대 (자리 차지 없음) ── */
-body.dt-b :is(#dtTl,#cmpTl){position:relative}
-body.dt-b :is(#dtTl,#cmpTl) .tl-scroll{scrollbar-width:none}
-body.dt-b :is(#dtTl,#cmpTl) .tl-scroll::-webkit-scrollbar{display:none;width:0;height:0}
-body.dt-b :is(#dtTl,#cmpTl) > .tl-sb{
+body.dt-b :is(#dtTl,#cmpTl,#cpTl){position:relative}
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-scroll{scrollbar-width:none}
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-scroll::-webkit-scrollbar{display:none;width:0;height:0}
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) > .tl-sb{
   position:absolute;left:90px;right:4px;bottom:53px;height:8px;z-index:35;cursor:pointer;
   opacity:.45;transition:opacity .2s
 }
-body.dt-b :is(#dtTl,#cmpTl) > .tl-sb[hidden]{display:none}
-body.dt-b :is(#dtTl,#cmpTl):hover > .tl-sb,
-body.dt-b :is(#dtTl,#cmpTl) > .tl-sb.act,
-body.dt-b :is(#dtTl,#cmpTl) > .tl-sb.drag{opacity:1}
-body.dt-b :is(#dtTl,#cmpTl) > .tl-sb > i{
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) > .tl-sb[hidden]{display:none}
+body.dt-b :is(#dtTl,#cmpTl,#cpTl):hover > .tl-sb,
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) > .tl-sb.act,
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) > .tl-sb.drag{opacity:1}
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) > .tl-sb > i{
   position:absolute;left:0;top:3px;height:3px;border-radius:3px;
   background:rgba(255,255,255,.28);transition:height .12s,top .12s,background .12s
 }
-body.dt-b :is(#dtTl,#cmpTl) > .tl-sb:hover > i,
-body.dt-b :is(#dtTl,#cmpTl) > .tl-sb.drag > i{top:1px;height:6px;background:rgba(255,255,255,.45)}
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) > .tl-sb:hover > i,
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) > .tl-sb.drag > i{top:1px;height:6px;background:rgba(255,255,255,.45)}
 
 /* ── 멀티 뷰 (사양 PTS_DTL_004_1) : 한 인물 · 2×2 · 칸 머리말(카메라명·일시·아이콘) ── */
 body.dt-b #dtTools > [data-tool="multi"]{display:flex}
@@ -5860,15 +5860,15 @@ body.dt-b .dt-ctrl .vm1.on .vmi text,
 body.dt-b .dt-ctrl .vm4.on .vmi text{fill:currentColor}
 
 /* ── 경로 비교 인물 활성/비활성 (사양 4759:35111 · 시안 5223:58528) ── */
-body.dt-b :is(#dtTl,#cmpTl) .tl-obj[title]{cursor:pointer}
-body.dt-b :is(#dtTl,#cmpTl) .tl-row.off .tl-obj{border-color:var(--ln-border)}
-body.dt-b :is(#dtTl,#cmpTl) .tl-row.off .tl-obj img{opacity:.35;filter:grayscale(.7)}
-body.dt-b :is(#dtTl,#cmpTl) .tl-row.off .tl-obj .nm{color:var(--tx-helper)}
-body.dt-b :is(#dtTl,#cmpTl) .tl-row.off .tl-obj .nm i{opacity:.35}
-body.dt-b :is(#dtTl,#cmpTl) .tl-row.off .tl-bar,
-body.dt-b :is(#dtTl,#cmpTl) .tl-row.off .tl-th{opacity:.25}
-body.dt-b :is(#dtTl,#cmpTl) .tl-row.off .tl-grip,
-body.dt-b :is(#dtTl,#cmpTl) .tl-row.off .tl-del{display:none}
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-obj[title]{cursor:pointer}
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-row.off .tl-obj{border-color:var(--ln-border)}
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-row.off .tl-obj img{opacity:.35;filter:grayscale(.7)}
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-row.off .tl-obj .nm{color:var(--tx-helper)}
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-row.off .tl-obj .nm i{opacity:.35}
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-row.off .tl-bar,
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-row.off .tl-th{opacity:.25}
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-row.off .tl-grip,
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-row.off .tl-del{display:none}
 .cmp-tile.off::after{content:'';position:absolute;inset:0;background:rgba(0,0,0,.62);z-index:6;pointer-events:none}
 
 /* ── 동시 포착 PIP (시안 5223:57285 · 58374 · 57679) ── */
@@ -5935,11 +5935,11 @@ body.dt-swap .dt-side #dtTools{display:none !important}
 @keyframes pipFlash{from{opacity:1}to{opacity:0}}
 
 /* 클립 길이 편집 : 잘려 나간 원래 구간 (흐린 썸네일 · 점선) */
-body.dt-b :is(#dtTl,#cmpTl) .tl-ghost{
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-ghost{
   position:absolute;top:8px;height:57px;box-sizing:border-box;overflow:hidden;pointer-events:none;
   border:1px dashed var(--bc,var(--primary));border-top:0;border-radius:0 0 2px 2px;opacity:.35
 }
-body.dt-b :is(#dtTl,#cmpTl) .tl-ghost .tl-film{position:absolute;inset:0;background-color:#000;background-repeat:repeat-x;background-size:101px 56px}
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-ghost .tl-film{position:absolute;inset:0;background-color:#000;background-repeat:repeat-x;background-size:101px 56px}
 /* 3D · 적층 뷰 : 인물이 검출되지 않은 층은 50% */
 .m3-floor.dim{opacity:.5}
 .m3g-tag.dim{opacity:.5}
@@ -6115,28 +6115,28 @@ body.dt-swap .dt-side #dtMulti[data-n="4"]{grid-template-rows:repeat(4,1fr) !imp
 
 /* ── 사양 v0.8 청크 C : 타임라인 ── */
 /* 클립 카드 위치명 (3-4) */
-body.dt-b :is(#dtTl,#cmpTl) .tl-th .tl-loc{
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-th .tl-loc{
   position:absolute;left:0;right:0;bottom:0;z-index:2;height:18px;box-sizing:border-box;padding:3px 4px 0 22px;
   background:linear-gradient(0deg,rgba(0,0,0,.78),rgba(0,0,0,0));color:#fff;font-size:10px;line-height:14px;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none
 }
-body.dt-b :is(#dtTl,#cmpTl) .tl-th.narrow .tl-loc,
-body.dt-b :is(#dtTl,#cmpTl) .tl-th.narrow .tl-more{display:none}
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-th.narrow .tl-loc,
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-th.narrow .tl-more{display:none}
 /* 이미지까지 생략하는 건 표기 자체가 불가능한 아주 좁은 구간만 (썸네일 유지 지시) */
-body.dt-b :is(#dtTl,#cmpTl) .tl-th.tiny .tl-film{background-image:none !important;background:var(--bc,var(--primary));opacity:.55}
-body.dt-b :is(#dtTl,#cmpTl) .tl-th.tiny .tl-film::after{display:none}
-body.dt-b :is(#dtTl,#cmpTl) .tl-th.tiny .tl-n{display:none}
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-th.tiny .tl-film{background-image:none !important;background:var(--bc,var(--primary));opacity:.55}
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-th.tiny .tl-film::after{display:none}
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-th.tiny .tl-n{display:none}
 /* 칩 : 이름 영역 호버 시 ✕ */
-body.dt-b :is(#dtTl,#cmpTl) .tl-obj .nm{position:relative}
-body.dt-b :is(#dtTl,#cmpTl) .tl-obj .nm em{font-style:normal;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-body.dt-b :is(#dtTl,#cmpTl) .tl-obj .nm .rm,
-body.dt-b :is(#dtTl,#cmpTl) .tl-obj:hover .nm .rm{
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-obj .nm{position:relative}
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-obj .nm em{font-style:normal;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-obj .nm .rm,
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-obj:hover .nm .rm{
   position:absolute;right:2px;top:50%;transform:translateY(-50%);width:14px;height:14px;padding:0;
   display:flex;align-items:center;justify-content:center;border:0;border-radius:50%;background:rgba(0,0,0,.55);color:#fff;opacity:0;cursor:pointer
 }
-body.dt-b :is(#dtTl,#cmpTl) .tl-obj .nm:hover .rm{opacity:1}
-body.dt-b :is(#dtTl,#cmpTl) .tl-obj .nm:hover em{padding-right:14px}
-body.dt-b :is(#dtTl,#cmpTl) .tl-foot .tf-r button:disabled{opacity:.4;cursor:default}
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-obj .nm:hover .rm{opacity:1}
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-obj .nm:hover em{padding-right:14px}
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-foot .tf-r button:disabled{opacity:.4;cursor:default}
 
 /* ── 사양 v0.8 청크 D : 경로 비교 칸 — 현재 시점에 영상이 없는 인물 ── */
 .cmp-tile.noclip{background:#000}
@@ -6671,14 +6671,14 @@ body.dt-b .cmp-tile.off > .cmp-vid{visibility:hidden}
 body.dt-b .cmp-tile.off .cmp-head{background:none}
 body.dt-b .cmp-tile.off .cmp-head .nm{color:var(--tx-helper)}
 /* 인물 칩 빼기 : 썸네일 우상단 ⊗ 16 · 칩에 마우스를 올리면 보임 */
-body.dt-b :is(#dtTl,#cmpTl) .tl-obj .nm{position:static}
-body.dt-b :is(#dtTl,#cmpTl) .tl-obj .nm .rm,
-body.dt-b :is(#dtTl,#cmpTl) .tl-obj:hover .nm .rm{top:3px;right:3px;transform:none;width:16px;height:16px;background:none;border-radius:0;opacity:0;z-index:3}
-body.dt-b :is(#dtTl,#cmpTl) .tl-obj:hover .nm .rm{opacity:1}
-body.dt-b :is(#dtTl,#cmpTl) .tl-obj .nm .rm .i{width:16px;height:16px;color:#fff;filter:drop-shadow(0 0 2px rgba(0,0,0,.6))}
-body.dt-b :is(#dtTl,#cmpTl) .tl-obj .nm:hover em{padding-right:0}
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-obj .nm{position:static}
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-obj .nm .rm,
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-obj:hover .nm .rm{top:3px;right:3px;transform:none;width:16px;height:16px;background:none;border-radius:0;opacity:0;z-index:3}
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-obj:hover .nm .rm{opacity:1}
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-obj .nm .rm .i{width:16px;height:16px;color:#fff;filter:drop-shadow(0 0 2px rgba(0,0,0,.6))}
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-obj .nm:hover em{padding-right:0}
 /* 이름 앞 색 네모(.nm i) 규칙이 ⊗ 아이콘에도 걸려 주황 8px 로 보이던 문제 */
-body.dt-b :is(#dtTl,#cmpTl) .tl-obj .nm .rm i.i{width:16px !important;height:16px !important;flex:0 0 16px;background:#fff !important;border-radius:0;opacity:1 !important;margin:0}
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-obj .nm .rm i.i{width:16px !important;height:16px !important;flex:0 0 16px;background:#fff !important;border-radius:0;opacity:1 !important;margin:0}
 
 /* ── GUI 260914 반영 10 : 이동경로 리스트 · 경로 비교 추가 팝업 · 지도 다층 뷰 안내 (5254:71091 · 71360) ── */
 /* 이동경로 리스트 : 위치명 12R · 시각/카메라 10R · 층 이동 띠는 회색 바탕 */
@@ -6811,28 +6811,28 @@ body.dt-b #cmpMain{gap:0}
    편집 중 구간 = 인물 색 **두꺼운 틀**(좌우 12 · 위아래 6, 모서리 4) 안에 영상 띠가 들어가고,
    좌우 틀 가운데에 흰 막대(3×24, 둥근 끝) 손잡이. 위의 8px 색 막대는 틀과 합쳐져 숨긴다.
    (이전 : 2px 테두리 + 영상 위에 겹친 흰 막대) */
-body.dt-b :is(#dtTl,#cmpTl).tl-editing .tl-lane .tl-bar{visibility:hidden}
-body.dt-b :is(#dtTl,#cmpTl) .tl-lane .tl-th.edit{
+body.dt-b :is(#dtTl,#cmpTl,#cpTl).tl-editing .tl-lane .tl-bar{visibility:hidden}
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-lane .tl-th.edit{
   top:0 !important;height:65px !important;border:0 !important;border-radius:4px !important;
   background:var(--bc,var(--primary)) !important;box-shadow:none !important;overflow:hidden;container-type:normal
 }
-body.dt-b :is(#dtTl,#cmpTl) .tl-lane .tl-th.edit .tl-film{inset:6px 12px;border-radius:1px}
-body.dt-b :is(#dtTl,#cmpTl) .tl-lane .tl-th.edit .tl-grip{
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-lane .tl-th.edit .tl-film{inset:6px 12px;border-radius:1px}
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-lane .tl-th.edit .tl-grip{
   top:0;bottom:0;height:auto;width:12px;display:flex;align-items:center;justify-content:center;
   background:transparent;border-radius:0;opacity:1;z-index:3;cursor:ew-resize
 }
-body.dt-b :is(#dtTl,#cmpTl) .tl-lane .tl-th.edit .tl-grip.s{left:0;right:auto}
-body.dt-b :is(#dtTl,#cmpTl) .tl-lane .tl-th.edit .tl-grip.e{right:0;left:auto}
-body.dt-b :is(#dtTl,#cmpTl) .tl-lane .tl-th.edit .tl-grip::before{
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-lane .tl-th.edit .tl-grip.s{left:0;right:auto}
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-lane .tl-th.edit .tl-grip.e{right:0;left:auto}
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-lane .tl-th.edit .tl-grip::before{
   content:'';display:block !important;width:3px;height:24px;border-radius:2px;background:#fff;box-shadow:none
 }
-body.dt-b :is(#dtTl,#cmpTl) .tl-lane .tl-th.edit .tl-n{left:16px;top:10px}
-body.dt-b :is(#dtTl,#cmpTl) .tl-lane .tl-th.edit .tl-more{top:10px;left:90px}
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-lane .tl-th.edit .tl-n{left:16px;top:10px}
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-lane .tl-th.edit .tl-more{top:10px;left:90px}
 /* 좁은 구간(64 미만)은 좌우 틀 12 가 영상을 거의 덮어 막대 두 개가 붙어 보였다 — 틀 7 · 막대 2×20 */
-body.dt-b :is(#dtTl,#cmpTl) .tl-lane .tl-th.edit.narrow .tl-film{inset:6px 7px}
-body.dt-b :is(#dtTl,#cmpTl) .tl-lane .tl-th.edit.narrow .tl-grip{width:7px}
-body.dt-b :is(#dtTl,#cmpTl) .tl-lane .tl-th.edit.narrow .tl-grip::before{width:2px;height:20px}
-body.dt-b :is(#dtTl,#cmpTl) .tl-lane .tl-th.edit.narrow .tl-n{left:9px}
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-lane .tl-th.edit.narrow .tl-film{inset:6px 7px}
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-lane .tl-th.edit.narrow .tl-grip{width:7px}
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-lane .tl-th.edit.narrow .tl-grip::before{width:2px;height:20px}
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-lane .tl-th.edit.narrow .tl-n{left:9px}
 
 /* 탭 줄 `＋` 새 탭 버튼 — 시안에 없고 탭은 상세 진입으로 생기므로 숨김 (2026-09-15 구두, 코드는 유지) */
 .tabbar #btnTabAdd{display:none !important}
@@ -6877,8 +6877,8 @@ body:not(.in-detail) .content-col > .tabbar{padding-right:15px}
    인물 색 구분은 이름 앞 점(.nm i)과 클립 막대·썸네일 틀(--bc)이 계속 맡는다.
    테두리만큼 안쪽이 넓어지지 않도록 칸 크기는 border-box 로 유지. */
 .tl-obj,
-body.dt-b :is(#dtTl,#cmpTl) .tl-obj,
-body.dt-b :is(#dtTl,#cmpTl) .tl-row.off .tl-obj{border:0;box-sizing:border-box}
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-obj,
+body.dt-b :is(#dtTl,#cmpTl,#cpTl) .tl-row.off .tl-obj{border:0;box-sizing:border-box}
 
 /* ── 타임라인 인물 칩 상세 정보 (2026-09-15 구두) ─────────────────────
    칩을 누르면 뜨는 고정 카드. 호버 툴팁(.tl-tip)과 같은 상자를 쓰되
@@ -7815,3 +7815,33 @@ body.dt-swap #dtMapSec > #dtCtrl{
 /* 칩 줄 ↔ 입력창 간격은 시안 실측 16 (종전 24 — 래퍼에 margin-top:8 이 더 붙어 있었다) */
 .mode-panel[data-panel="text"] .textarea-wrap,
 .mode-panel[data-panel="car"] .textarea-wrap{margin-top:0}
+
+/* ══ 영상 선택 팝업 하단 타임라인 (2026-09-18 구두) ════════════════════════════
+   하단 미리보기를 **상세 화면 타임라인과 같은 구조**(눈금 + 레인 + 썸네일)로 바꿨다.
+   썸네일 디자인(필름 반복 · 흰 테두리 원형 번호 · 위치명)은 위쪽
+   `:is(#dtTl,#cmpTl,#cpTl)` 규칙에 #cpTl 을 함께 묶어 **그대로** 물려받는다.
+   여기서는 팝업이라 달라지는 것만 재정의한다.
+     · 인물 칩(.tl-obj)을 안 그린다 → 좌측 칩 여백(90px · --tl-gut)을 0 으로
+     · 이 팝업엔 클립 길이 정보가 없다 → 폭으로 길이를 나타낼 수 없으므로
+       **시작 시각 위치에 고정 폭**(필름 타일 1장 = 101px). 위에 얹는 8px 막대도
+       같은 고정 폭이며, 길이가 아니라 '시작 지점' 표시다
+     · 재생 커서(.tl-cursor)는 없다 — 이 팝업은 재생을 하지 않는다
+   ※ 아래 재정의는 `body.dt-b :is(...)` 와 특이도가 같아 **뒤에 와야** 이긴다. */
+/* 눈금 48 + .tl-rows 위여백 8 + 트랙 행 65 = 121, 아래로 12 숨돌릴 틈 */
+#cpTl{height:133px;flex:0 0 auto;min-height:0}
+/* 칩이 없으니 칩 자리(90)는 걷어내되, 맨 왼쪽 날짜(-16)·시각(-50%) 라벨이
+   잘리지 않을 만큼(24)은 남긴다. --tl-gut 은 자정 구분선 좌표에 쓰인다. */
+body.dt-b #cpTl .tl-inner{padding-left:24px;--tl-gut:24px}
+/* 눈금 윗선·행 배경은 칩 자리 대신 **팝업 좌우 끝**까지 */
+body.dt-b #cpTl .tl-ruler::before{left:-24px}
+body.dt-b #cpTl .tl-row::before{left:-24px}
+/* 시작 시각 위치에 고정 폭 */
+body.dt-b #cpTl .tl-th,
+body.dt-b #cpTl .tl-bar{width:101px}
+/* 빼기(✕)는 타임라인 편집 모드의 .tl-del 을 그대로 쓰되 호버에만 */
+body.dt-b #cpTl .tl-th .tl-del{left:auto;right:3px;top:3px;opacity:0;transition:opacity .12s;z-index:4}
+body.dt-b #cpTl .tl-th:hover .tl-del{opacity:1}
+/* 확대/축소를 **다시 켠다**(2026-09-16 에 `display:none !important` 로 껐던 것).
+   고른 클립이 한두 시간에 몰리면 24시간 눈금에서 고정 폭 썸네일이 서로 덮으므로,
+   상세 타임라인처럼 배율(1~8)로 펼쳐 볼 수 있어야 한다. */
+#clipsPreview:has(#cpTl) .cp-zoom{display:flex !important}

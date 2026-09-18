@@ -1247,39 +1247,96 @@ function renderClipPreview() {
     return;
   }
 
-  const fmt = o => String(o.t).slice(11, 19);
-  /* 새 시안 5476:107477 Timeline : 날짜가 바뀌는 지점마다 세로선 + 날짜를 세우고,
-     썸네일(192×108)은 시각을 머리에 달고 파란 축 위에 놓인다.
-     번호 배지·닫기·위치명은 썸네일 **안**에 (위·아래 그라데이션 위) 얹힌다. */
-  const days = picked.map(o => String(o.t).slice(0, 10));
-  const marks = days.map((d0, i) => (i === 0 || d0 !== days[i - 1]) ? { i, d: d0 } : null).filter(Boolean);
+  /* 2026-09-18 구두 : 하단을 **상세 화면 타임라인과 같은 구조**로 바꿨다.
+     눈금(날짜 + 시각) → 레인 → 썸네일. **인물 칩(.tl-obj)은 그리지 않는다.**
+     이 팝업엔 클립 길이 정보(to)가 없어 폭으로 길이를 나타낼 수 없으므로
+     **시작 시각 위치에 고정 폭 썸네일**을 놓는다(폭은 CSS `#cpTl .tl-th` = 101px,
+     필름 타일 1장). 위에 얹는 8px 막대도 같은 고정 폭 — 길이가 아니라 시작 지점 표시다.
+     썸네일 디자인(필름 반복·흰 테두리 원형 번호·위치명)은 타임라인 것을 그대로 쓴다:
+     style.css 의 `:is(#dtTl,#cmpTl)` 규칙에 `#cpTl` 을 함께 묶어 두었다.
+     재생 커서(.tl-cursor)는 없다 — 이 팝업은 재생을 하지 않는다.
+     (종전 `.cp-scroll/.cp-inner/.cp-node` 배치와 fitClipPreview 의 √간격 압축은 폐기.
+      되돌릴 때를 위해 fitClipPreview 함수와 .cp-* 스타일은 남겨 둔다) */
+  /* tlDomain 은 `from` 만 보므로 시작 시각만 채운 가상 트랙으로 하루(08:00~다음날 07:00)를 잡는다 */
+  const [d0, d1] = tlDomain([{ clips: picked.map(o => ({ from: o.t, to: o.t })) }]);
+  const span = Math.max(1, d1 - d0);
+  const pct = t => (+tlTime(t) - d0) / span * 100;
+
+  /* 눈금·날짜 규칙은 renderTimeline 과 같다 (자정은 24:00, 날짜 바뀌는 지점에 구분선) */
+  const step = tlStep(span, CP_ZOOM, host.clientWidth);
+  let ticks = '', lastDay = '', mids = '';
+  for (let t = d0; t <= d1; t += step) {
+    const d = new Date(t), p = (t - d0) / span * 100;
+    const day = tlYMD(d), isNewDay = day !== lastDay;
+    ticks += `<span class="tk" style="left:${p}%"></span>`;
+    if (p < 99.5) ticks += `<span class="tl-lb" style="left:${p}%">${isNewDay && lastDay && tlHM(d) === '00:00' ? '24:00' : tlHM(d)}</span>`;
+    if (isNewDay && lastDay) {
+      ticks += `<span class="tl-day" style="left:${p}%">${day}</span>`;
+      mids += `<span class="tl-midnight" style="left:calc(var(--tl-gut, 0px) + (100% - var(--tl-gut, 0px)) * ${p / 100})"></span>`;
+    }
+    else if (isNewDay && !lastDay) ticks += `<span class="tl-day first" style="left:${p}%">${day}</span>`;
+    lastDay = day;
+  }
+
+  /* 눈금 좌표계의 실제 폭(px). 고른 클립이 많아 고정 폭 썸네일이 다 안 들어가면 그만큼 넓힌다. */
+  const CP_TH = 101, CP_MIN = CP_TH + 3;
+  const baseVw = Math.max((host.clientWidth || 1280) - 24, 240) * CP_ZOOM;
+  const vw = Math.max(baseVw, CP_MIN * picked.length + 8);
+  const minGap = CP_MIN / vw * 100;
+  /* ★시작 시각 그 위치에 놓는 것이 원칙이지만, 클립이 몇 분 안에 몰리면 고정 폭 썸네일이
+     서로를 완전히 덮어 **한 장만 보인다**(목업 데이터가 12:58~14:52 에 몰려 있어 실제로 그랬다.
+     24시간 눈금에서 1분 ≈ 0.9px, 썸네일 101px → 2시간 안쪽은 배율 8배로도 안 펼쳐진다).
+     고른 영상을 빠짐없이 보여주는 것이 이 팝업의 역할이라, **겹칠 때만** 최소 간격(104px)만큼
+     오른쪽으로 밀어 둔다. 시간 순서는 그대로고, 안 겹치는 클립은 정확히 제 시각에 놓인다.
+     (2026-09-18 — 정확한 시각 위치를 우선하려면 이 보정만 빼면 된다) */
+  let lastP = -1e9;
+  const xs = picked.map(o => {
+    const p = Math.max(pct(o.t), lastP + minGap);
+    lastP = p; return p;
+  });
+
+  const frame = o => (typeof srcVideo === 'function' && srcVideo(o.cam)) || o.img;
+  const lane = picked.map((o, i) => `
+    <div class="tl-bar" style="left:${xs[i]}%"></div>
+    <div class="tl-th" style="left:${xs[i]}%" data-cpn="${i}" data-cpid="${o.id}" title="${o.cam} · ${o.t}">
+      <span class="tl-film" style="background-image:url('${frame(o)}')"></span>
+      <span class="tl-n">${i + 1}</span>
+      <span class="tl-loc">${o.cam}</span>
+      <button type="button" class="tl-del" data-cprm="${o.id}"
+              title="이 영상 빼기" aria-label="${o.cam} 영상 빼기">${ICON.trash}</button>
+    </div>`).join('');
+
   host.innerHTML = `
-    <div class="cp-scroll">
-      <div class="cp-inner">
-        <div class="cp-box"></div>
-        <div class="cp-axis"></div>
-        ${marks.map(m => `<i class="cp-vline" data-cpv="${m.i}"></i>
-          <b class="cp-dlabel" data-cpd="${m.i}">${m.d}</b>`).join('')}
-        ${picked.map((o, i) => `
-          <div class="cp-node" data-cpn="${i}" data-cpid="${o.id}" title="${o.cam} · ${o.t}">
-            <span class="cp-t">${fmt(o)}</span>
-            <div class="cp-shot">
-              <img src="${o.img}" alt="">
-              <span class="cp-n">${i + 1}</span>
-              <button class="cp-rm" data-cprm="${o.id}" type="button"
-                      title="이 클립을 경로에서 빼기" aria-label="${o.cam} 클립 빼기">
-                <i class="i i-close-x"></i></button>
-              <span class="cp-cam">${o.cam}</span>
-            </div>
-          </div>`).join('')}
+    <div class="tl-host" id="cpTl">
+      <div class="tl-scroll">
+        <div class="tl-inner" style="width:${Math.round(vw + 24)}px">
+          <div class="tl-ruler">${ticks}</div>
+          <div class="tl-rows">
+            <div class="tl-row" data-tr="0"><div class="tl-lane">${lane}</div></div>
+          </div>${mids}
+        </div>
       </div>
     </div>
     <!-- 시안 경로 편집(5184:99829) : 미리보기 아래 확대/축소 -->
     <div class="cp-zoom">
       <button type="button" class="btn-icon" data-cpz="-1" title="축소"><svg viewBox="0 0 16 16" class="ic" aria-hidden="true"><circle cx="7" cy="7" r="4.6" fill="none" stroke="currentColor" stroke-width="1.2"/><path d="M10.4 10.4L14 14M5 7h4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></button>
-      <input type="range" class="cp-zr" min="1" max="4" step="1" value="${CP_ZOOM}" aria-label="미리보기 확대">
+      <input type="range" class="cp-zr" min="1" max="8" step="1" value="${CP_ZOOM}" aria-label="미리보기 확대">
       <button type="button" class="btn-icon" data-cpz="1" title="확대"><svg viewBox="0 0 16 16" class="ic" aria-hidden="true"><circle cx="7" cy="7" r="4.6" fill="none" stroke="currentColor" stroke-width="1.2"/><path d="M10.4 10.4L14 14M5 7h4M7 5v4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></button>
     </div>`;
+
+  /* 확대하면 고른 클립이 있는 구간이 화면 밖으로 밀린다 — 그 가운데가 보이도록 스크롤한다.
+     (종전 fitClipPreview 가 하던 '보던 가운데 유지'를 대신하는 처리)
+     .tl-inner 왼쪽 여백(24)은 눈금 좌표에 들어가지 않으므로 따로 더한다. */
+  {
+    const sc = host.querySelector('.tl-scroll');
+    const mid = (xs[0] + xs[xs.length - 1]) / 200;
+    if (sc) requestAnimationFrame(() => {
+      const inner = sc.querySelector('.tl-inner'); if (!inner) return;
+      const gut = parseFloat(getComputedStyle(inner).paddingLeft) || 0;
+      const x = gut + mid * (inner.scrollWidth - gut);
+      sc.scrollLeft = Math.max(0, Math.min(x - sc.clientWidth / 2, inner.scrollWidth - sc.clientWidth));
+    });
+  }
 
   /* 미리보기에서 바로 빼기 — 목록의 체크와 선택 수도 함께 갱신된다 */
   host.querySelectorAll('[data-cprm]').forEach(b => b.onclick = e => {
@@ -1292,12 +1349,13 @@ function renderClipPreview() {
   });
 
   /* 미리보기 썸네일을 누르면 **위 목록에서 그 클립을 포커스**한다 (2026-09-16 구두).
-     이미 선택돼 있는 파란 테두리보다 더 두꺼운 테두리로 한 장만 강조하고, 보이도록 스크롤한다. */
+     이미 선택돼 있는 파란 테두리보다 더 두꺼운 테두리로 한 장만 강조하고, 보이도록 스크롤한다.
+     강조는 타임라인의 `.tl-th.on` 을 그대로 쓴다(종전 `.cp-node.on`). */
   host.querySelectorAll('[data-cpn]').forEach(n => n.onclick = e => {
     if (e.target.closest('[data-cprm]')) return;   /* ✕(빼기)는 제외 */
     const id = n.dataset.cpid;
     document.querySelectorAll('#clipsBody .reid-card.focus').forEach(c => c.classList.remove('focus'));
-    host.querySelectorAll('.cp-node.on').forEach(x => x.classList.remove('on'));
+    host.querySelectorAll('.tl-th.on').forEach(x => x.classList.remove('on'));
     n.classList.add('on');
     const cb = document.querySelector(`#clipsBody [data-pick="${id}"]`);
     const card = cb && cb.closest('.reid-card');
@@ -1306,14 +1364,21 @@ function renderClipPreview() {
     card.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
   });
 
-  /* 확대하면 가상 폭이 넓어져 간격이 벌어지고 가로 스크롤로 넘겨 본다 */
+  /* 확대하면 가상 폭(.tl-inner width)이 넓어져 눈금 간격이 벌어지고 가로 스크롤로 넘겨 본다
+     — 상세 타임라인의 TL.zoom 과 같은 방식. 눈금 촘촘함도 tlStep 이 다시 계산하므로 재렌더한다. */
+  /* 배율 상한은 상세 타임라인(.tl-zr)과 같은 8 — 종전 4 였다.
+     고른 클립이 1~2시간에 몰리면 24시간 눈금에서 고정 폭 썸네일이 서로 덮는데,
+     8배까지 늘릴 수 있으면 그 경우에도 다 펼쳐 볼 수 있다 (2026-09-18). */
   const zr = host.querySelector('.cp-zr');
-  const setZ = v => { CP_ZOOM = Math.max(1, Math.min(4, v)); if (zr) zr.value = CP_ZOOM; fitClipPreview(); };
+  const setZ = v => {
+    const z = Math.max(1, Math.min(8, v));
+    if (z === CP_ZOOM) return;
+    CP_ZOOM = z; renderClipPreview();
+  };
   if (zr) zr.oninput = e => setZ(+e.target.value);
   host.querySelectorAll('[data-cpz]').forEach(b => b.onclick = e => { e.preventDefault(); setZ(CP_ZOOM + +b.dataset.cpz); });
 
   CP_TIMES = picked.map(o => +tlTime(o.t));
-  fitClipPreview();
 }
 
 let CP_TIMES = [];
@@ -2713,7 +2778,11 @@ function openClipReselect(host, tracks, opt, ti = 0) {
   };
   renderClips(ids);
   openModal('#mdClips');
-  requestAnimationFrame(() => renderClipStrip());
+  /* 2026-09-18 : 종전엔 여기서 renderClipStrip() 으로 하단을 옛 `.pe-strip` 으로 덮어썼다.
+     renderClips 가 이미 renderClipPreview(= 상세와 같은 구조의 새 타임라인)를 그리므로
+     덮어쓰지 않고, 모달이 열려 실제 폭이 잡힌 뒤 한 번 더 그려 눈금 간격을 맞춘다.
+     (renderClipStrip 은 경로 편집 팝업 renderClipsPath 전용으로 남는다) */
+  requestAnimationFrame(() => renderClipPreview());
 }
 
 /* 타임라인 인물 칩 상세 정보 (2026-09-15 구두)
@@ -3494,7 +3563,7 @@ function paneToolsHTML(kind, i) {
 function paneBody(kind, i) {
   if (kind === 'map') {
     return `<div class="pn-map">
-      <img src="assets/img/floor.png?v=202609181040" alt="맵뷰">
+      <img src="assets/img/floor.png?v=202609181103" alt="맵뷰">
       ${PANE.mapTools.includes('path') ? paneMapPathHTML() : ''}
       ${PANE.mapTools.includes('cctv') ? `<div class="pn-cones">${MAP_CCTV.map(c =>
         `<span class="map-cone" style="left:${c.x}%;top:${c.y}%;rotate:${c.deg - 90}deg"><i></i><b></b></span>`).join('')}</div>` : ''}
@@ -3576,7 +3645,7 @@ function renderPanes() {
     if (PANE.kind[0] !== 'map') v.insertAdjacentHTML('beforeend', paneToolsHTML('video', 0));
     if (PANE.kind[0] === 'map') {
       v.insertAdjacentHTML('afterbegin', `<div class="pn-map">
-        <img src="assets/img/floor.png?v=202609181040" alt="맵뷰">
+        <img src="assets/img/floor.png?v=202609181103" alt="맵뷰">
         ${PANE.mapTools.includes('path') ? paneMapPathHTML() : ''}
         ${PANE.mapTools.includes('cctv') ? `<div class="pn-cones">${MAP_CCTV.map(c =>
           `<span class="map-cone" style="left:${c.x}%;top:${c.y}%;rotate:${c.deg - 90}deg"><i></i><b></b></span>`).join('')}</div>` : ''}
@@ -4249,7 +4318,7 @@ function renderArea() {
       const vb = $('#dtVideo').getBoundingClientRect();
       const ang = Math.atan2((y2 - y1) * vb.height, (x2 - x1) * vb.width) * 180 / Math.PI + 90 * (a.dir || 1);
       a.dirOn = true;   /* 방향은 항상 표시 — 기본 한쪽 방향 */
-      h += `<button class="area-dir" data-abarrow title="눌러서 방향 바꾸기" style="left:${(x1 + x2) / 2}%;top:${(y1 + y2) / 2}%"><img src="assets/img/area-direction.svg?v=202609181040" alt="" style="transform:rotate(${ang + 45}deg)"></button>`;
+      h += `<button class="area-dir" data-abarrow title="눌러서 방향 바꾸기" style="left:${(x1 + x2) / 2}%;top:${(y1 + y2) / 2}%"><img src="assets/img/area-direction.svg?v=202609181103" alt="" style="transform:rotate(${ang + 45}deg)"></button>`;
       const ex = x1 >= x2 ? x1 : x2, ey = x1 >= x2 ? y1 : y2;
       h += areaBar(ex, `calc(${ey}% + 14px)`, a, 'r');
     }
@@ -4499,7 +4568,7 @@ function renderMap3d(paths) {
     const poly = polys ? `<svg class="m3-path" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${polys}</svg>` : '';
     /* 위층이 앞(위)에 오도록 쌓는다 — DOM 순서대로면 아래층이 덮는다 */
     return `<div class="m3-floor${pl.some(({ pts }) => onFl(pts).length) ? '' : ' dim'}" data-fl="${f.label}" style="--i:${fi};z-index:${M3_FLOORS.length - fi}">
-      <img src="assets/img/floor.png?v=202609181040" alt="">
+      <img src="assets/img/floor.png?v=202609181103" alt="">
       ${poly}
       ${pl.map(({ p, pts }) => onFl(pts).map(t => `<span class="map-wp" data-pt="${f.key}-${p.slot}-${t.n}" data-cam="${t.cam}"
           data-hh="${t.hh}" data-x="${t.x}" data-y="${t.y}"
@@ -4738,7 +4807,7 @@ function spreadMapLabels(host, sel) {
 $$('#dtMapSeg button').forEach(b => b.onclick = () => {
   $$('#dtMapSeg button').forEach(x => x.classList.toggle('on', x === b));
   DT.map = b.dataset.m;
-  $('#dtMapImg').src = DT.map === 'map' ? 'assets/img/map.png?v=202609181040' : 'assets/img/floor.png?v=202609181040';
+  $('#dtMapImg').src = DT.map === 'map' ? 'assets/img/map.png?v=202609181103' : 'assets/img/floor.png?v=202609181103';
   $('#dtFloor').hidden = true;                 /* 층 배지는 3D 각 층에 붙는다 */
   renderMap3d(MAP_PATHS_CACHE);
 });
@@ -5513,7 +5582,7 @@ function mvwPaths() {
 }
 function renderMapView() {
   const paths = mvwPaths();
-  const mapImg = DT.map === 'map' ? 'assets/img/map.png?v=202609181040' : 'assets/img/floor.png?v=202609181040';
+  const mapImg = DT.map === 'map' ? 'assets/img/map.png?v=202609181103' : 'assets/img/floor.png?v=202609181103';
   const seg = `<div class="seg"><button class="${DT.map === 'map' ? 'on' : ''}" data-mm="map">지도</button><button class="${DT.map === 'map' ? '' : 'on'}" data-mm="floor">층별</button></div>`;
   /* 사양서 Detail_000_4 · 4-4) : 주변 카메라 / 이동 경로 / 전체 보기
      이동 경로는 **단일 대상일 때 비활성** (그룹·경로비교에서만 사용) */
@@ -5575,7 +5644,7 @@ function renderMapView() {
   /* 바인딩 */
   $$('#mvwBody [data-mm]').forEach(b => b.onclick = () => {
     DT.map = b.dataset.mm;
-    $('#dtMapImg').src = DT.map === 'map' ? 'assets/img/map.png?v=202609181040' : 'assets/img/floor.png?v=202609181040';
+    $('#dtMapImg').src = DT.map === 'map' ? 'assets/img/map.png?v=202609181103' : 'assets/img/floor.png?v=202609181103';
     $('#dtFloor').hidden = DT.map === 'map';
     renderMapView();
   });
@@ -6739,7 +6808,7 @@ function csDetailHTML(c) {
           <button class="btn-ghost sm" style="margin-left:auto" data-csmap>전체 보기</button>
         </div>
         <div style="position:relative;height:196px;border-radius:6px;overflow:hidden;background:var(--bg-1);border:1px solid var(--ln-subtle)">
-          <img src="assets/img/map.png?v=202609181040" style="width:100%;height:100%;object-fit:cover;opacity:.85" alt="">
+          <img src="assets/img/map.png?v=202609181103" style="width:100%;height:100%;object-fit:cover;opacity:.85" alt="">
           ${c.path.map((p, i) => {
             const x = 16 + (i * 23) % 68, y = 22 + (i * 17) % 54;
             return `<span style="position:absolute;left:${x}%;top:${y}%;width:9px;height:9px;border-radius:50%;
@@ -8698,7 +8767,7 @@ function renderZoneMap(host, pts, color) {
   /* 경로 비교면 경로 묶음([{ slot, pts, off }])을 받아 인물마다 선·지점을 그린다 */
   const groups = Array.isArray(pts) && pts[0] && pts[0].pts ? pts : [{ slot: '', pts, off: false }];
   const col = g => (g.slot ? slotColor(g.slot) : color);
-  zm.innerHTML = `<div class="zm-stage"><img src="assets/img/map.png?v=202609181040" alt="외부 지도" draggable="false">
+  zm.innerHTML = `<div class="zm-stage"><img src="assets/img/map.png?v=202609181103" alt="외부 지도" draggable="false">
       <svg class="zm-path" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${groups.map(g => {
         const seq = g.pts.slice().sort((a, b) => a.n - b.n);
         return seq.length > 1 ? `<polyline points="${seq.map(t => `${t.x},${t.y}`).join(' ')}" fill="none" stroke="${col(g)}" stroke-width="2.5"
@@ -8797,7 +8866,7 @@ function renderFloorPane(host, pts, color) {
   const mine = pts.filter(t => m3FloorOf(t.cam) === fl).sort((a, b) => a.n - b.n);
   const flb = (M3_FLOORS.find(f => f.key === fl) || {}).label || fl;
   /* GUI 260914 : 도면은 원본 비율로 가운데(흰 판) — 좌표는 flatU 로 도면 기준 */
-  fp.innerHTML = `<div class="zp-stage"><img src="assets/img/floor.png?v=202609181040" alt=""><span class="dt-floor">${flb}</span>
+  fp.innerHTML = `<div class="zp-stage"><img src="assets/img/floor.png?v=202609181103" alt=""><span class="dt-floor">${flb}</span>
     <svg class="zp-path" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${mine.length > 1
       ? `<polyline points="${mine.map(t => `${flatU(t.x)},${t.y}`).join(' ')}" fill="none" stroke="${color}" stroke-width="2" vector-effect="non-scaling-stroke"/>` : ''}</svg>
     ${mine.map(t => `<span class="map-wp" data-cam="${t.cam}" data-hh="${t.hh}" data-x="${flatU(t.x)}" data-y="${t.y}"
