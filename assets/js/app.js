@@ -1262,25 +1262,45 @@ function renderClipPreview() {
      재생 커서(.tl-cursor)는 없다 — 이 팝업은 재생을 하지 않는다.
      (종전 `.cp-scroll/.cp-inner/.cp-node` 배치와 fitClipPreview 의 √간격 압축은 폐기.
       되돌릴 때를 위해 fitClipPreview 함수와 .cp-* 스타일은 남겨 둔다) */
-  /* tlDomain 은 `from` 만 보므로 시작 시각만 채운 가상 트랙으로 하루(08:00~다음날 07:00)를 잡는다 */
-  const [d0, d1] = tlDomain([{ clips: picked.map(o => ({ from: o.t, to: o.t })) }]);
+  /* ★눈금 범위는 **고른 클립 전체를 감싸야** 한다 (2026-09-18 지적).
+     상세 화면의 tlDomain 은 한 사람의 하루를 보는 화면이라 늘 `하루`(08:00~다음날 08:00)만
+     돌려준다. 그런데 이 팝업은 여러 날에 걸친 영상을 함께 고를 수 있어서(목록에 06-28·
+     06-29·06-30 이 섞여 있다) 하루로 잘라 두면 범위를 벗어난 클립의 퍼센트가 100% 를
+     넘어 **눈금 오른쪽 밖**에 놓였다. 그래서 여기서는 고른 것의 처음~끝을 덮는
+     **날 수만큼** 넓힌다(하루 경계는 상세와 같은 08:00 기준). */
+  const CP_DAY = 864e5;
+  const cpDayStart = ms => {
+    const d = new Date(ms); d.setHours(TL_DAY_START, 0, 0, 0);
+    if (ms < +d) d.setDate(d.getDate() - 1);
+    return +d;
+  };
+  const cpTs = picked.map(o => +tlTime(o.t));
+  const d0 = cpDayStart(Math.min(...cpTs));
+  const d1 = cpDayStart(Math.max(...cpTs)) + CP_DAY;
   const span = Math.max(1, d1 - d0);
   const pct = t => (+tlTime(t) - d0) / span * 100;
 
-  /* 눈금·날짜 규칙은 renderTimeline 과 같다 (자정은 24:00, 날짜 바뀌는 지점에 구분선) */
+  /* 시각 눈금 — 간격은 renderTimeline 과 같은 tlStep. 자정 눈금은 `24:00` 으로 적는다 */
   const step = tlStep(span, CP_ZOOM, host.clientWidth);
-  let ticks = '', lastDay = '', mids = '';
+  let ticks = '';
   for (let t = d0; t <= d1; t += step) {
     const d = new Date(t), p = (t - d0) / span * 100;
-    const day = tlYMD(d), isNewDay = day !== lastDay;
     ticks += `<span class="tk" style="left:${p}%"></span>`;
-    if (p < 99.5) ticks += `<span class="tl-lb" style="left:${p}%">${isNewDay && lastDay && tlHM(d) === '00:00' ? '24:00' : tlHM(d)}</span>`;
-    if (isNewDay && lastDay) {
-      ticks += `<span class="tl-day" style="left:${p}%">${day}</span>`;
+    /* 맨 끝 라벨은 오른쪽으로 삐져나가 가로 스크롤을 만든다 — 상세와 같이 99.5% 까지만 */
+    if (p < 99.5) ticks += `<span class="tl-lb" style="left:${p}%">${tlHM(d) === '00:00' ? '24:00' : tlHM(d)}</span>`;
+  }
+  /* ★날짜 라벨·자정 구분선은 **실제 자정** 위치에 세운다 (2026-09-18).
+     종전엔 눈금을 돌면서 '날짜가 바뀐 첫 눈금'에 달았는데, 여러 날이면 눈금 간격이
+     3시간이 되어 자정에 눈금이 떨어지지 않아 라벨·구분선이 02:00 에 붙었다. */
+  let mids = '';
+  ticks += `<span class="tl-day first" style="left:0%">${tlYMD(new Date(d0))}</span>`;
+  {
+    const m = new Date(d0); m.setHours(24, 0, 0, 0);   /* d0(08:00) 다음 자정 */
+    for (; +m < d1; m.setDate(m.getDate() + 1)) {
+      const p = (+m - d0) / span * 100;
+      ticks += `<span class="tl-day" style="left:${p}%">${tlYMD(m)}</span>`;
       mids += `<span class="tl-midnight" style="left:calc(var(--tl-gut, 0px) + (100% - var(--tl-gut, 0px)) * ${p / 100})"></span>`;
     }
-    else if (isNewDay && !lastDay) ticks += `<span class="tl-day first" style="left:${p}%">${day}</span>`;
-    lastDay = day;
   }
 
   const frame = o => (typeof srcVideo === 'function' && srcVideo(o.cam)) || o.img;
@@ -3583,7 +3603,7 @@ function paneToolsHTML(kind, i) {
 function paneBody(kind, i) {
   if (kind === 'map') {
     return `<div class="pn-map">
-      <img src="assets/img/floor.png?v=202609181121" alt="맵뷰">
+      <img src="assets/img/floor.png?v=202609181233" alt="맵뷰">
       ${PANE.mapTools.includes('path') ? paneMapPathHTML() : ''}
       ${PANE.mapTools.includes('cctv') ? `<div class="pn-cones">${MAP_CCTV.map(c =>
         `<span class="map-cone" style="left:${c.x}%;top:${c.y}%;rotate:${c.deg - 90}deg"><i></i><b></b></span>`).join('')}</div>` : ''}
@@ -3665,7 +3685,7 @@ function renderPanes() {
     if (PANE.kind[0] !== 'map') v.insertAdjacentHTML('beforeend', paneToolsHTML('video', 0));
     if (PANE.kind[0] === 'map') {
       v.insertAdjacentHTML('afterbegin', `<div class="pn-map">
-        <img src="assets/img/floor.png?v=202609181121" alt="맵뷰">
+        <img src="assets/img/floor.png?v=202609181233" alt="맵뷰">
         ${PANE.mapTools.includes('path') ? paneMapPathHTML() : ''}
         ${PANE.mapTools.includes('cctv') ? `<div class="pn-cones">${MAP_CCTV.map(c =>
           `<span class="map-cone" style="left:${c.x}%;top:${c.y}%;rotate:${c.deg - 90}deg"><i></i><b></b></span>`).join('')}</div>` : ''}
@@ -4338,7 +4358,7 @@ function renderArea() {
       const vb = $('#dtVideo').getBoundingClientRect();
       const ang = Math.atan2((y2 - y1) * vb.height, (x2 - x1) * vb.width) * 180 / Math.PI + 90 * (a.dir || 1);
       a.dirOn = true;   /* 방향은 항상 표시 — 기본 한쪽 방향 */
-      h += `<button class="area-dir" data-abarrow title="눌러서 방향 바꾸기" style="left:${(x1 + x2) / 2}%;top:${(y1 + y2) / 2}%"><img src="assets/img/area-direction.svg?v=202609181121" alt="" style="transform:rotate(${ang + 45}deg)"></button>`;
+      h += `<button class="area-dir" data-abarrow title="눌러서 방향 바꾸기" style="left:${(x1 + x2) / 2}%;top:${(y1 + y2) / 2}%"><img src="assets/img/area-direction.svg?v=202609181233" alt="" style="transform:rotate(${ang + 45}deg)"></button>`;
       const ex = x1 >= x2 ? x1 : x2, ey = x1 >= x2 ? y1 : y2;
       h += areaBar(ex, `calc(${ey}% + 14px)`, a, 'r');
     }
@@ -4588,7 +4608,7 @@ function renderMap3d(paths) {
     const poly = polys ? `<svg class="m3-path" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${polys}</svg>` : '';
     /* 위층이 앞(위)에 오도록 쌓는다 — DOM 순서대로면 아래층이 덮는다 */
     return `<div class="m3-floor${pl.some(({ pts }) => onFl(pts).length) ? '' : ' dim'}" data-fl="${f.label}" style="--i:${fi};z-index:${M3_FLOORS.length - fi}">
-      <img src="assets/img/floor.png?v=202609181121" alt="">
+      <img src="assets/img/floor.png?v=202609181233" alt="">
       ${poly}
       ${pl.map(({ p, pts }) => onFl(pts).map(t => `<span class="map-wp" data-pt="${f.key}-${p.slot}-${t.n}" data-cam="${t.cam}"
           data-hh="${t.hh}" data-x="${t.x}" data-y="${t.y}"
@@ -4827,7 +4847,7 @@ function spreadMapLabels(host, sel) {
 $$('#dtMapSeg button').forEach(b => b.onclick = () => {
   $$('#dtMapSeg button').forEach(x => x.classList.toggle('on', x === b));
   DT.map = b.dataset.m;
-  $('#dtMapImg').src = DT.map === 'map' ? 'assets/img/map.png?v=202609181121' : 'assets/img/floor.png?v=202609181121';
+  $('#dtMapImg').src = DT.map === 'map' ? 'assets/img/map.png?v=202609181233' : 'assets/img/floor.png?v=202609181233';
   $('#dtFloor').hidden = true;                 /* 층 배지는 3D 각 층에 붙는다 */
   renderMap3d(MAP_PATHS_CACHE);
 });
@@ -5602,7 +5622,7 @@ function mvwPaths() {
 }
 function renderMapView() {
   const paths = mvwPaths();
-  const mapImg = DT.map === 'map' ? 'assets/img/map.png?v=202609181121' : 'assets/img/floor.png?v=202609181121';
+  const mapImg = DT.map === 'map' ? 'assets/img/map.png?v=202609181233' : 'assets/img/floor.png?v=202609181233';
   const seg = `<div class="seg"><button class="${DT.map === 'map' ? 'on' : ''}" data-mm="map">지도</button><button class="${DT.map === 'map' ? '' : 'on'}" data-mm="floor">층별</button></div>`;
   /* 사양서 Detail_000_4 · 4-4) : 주변 카메라 / 이동 경로 / 전체 보기
      이동 경로는 **단일 대상일 때 비활성** (그룹·경로비교에서만 사용) */
@@ -5664,7 +5684,7 @@ function renderMapView() {
   /* 바인딩 */
   $$('#mvwBody [data-mm]').forEach(b => b.onclick = () => {
     DT.map = b.dataset.mm;
-    $('#dtMapImg').src = DT.map === 'map' ? 'assets/img/map.png?v=202609181121' : 'assets/img/floor.png?v=202609181121';
+    $('#dtMapImg').src = DT.map === 'map' ? 'assets/img/map.png?v=202609181233' : 'assets/img/floor.png?v=202609181233';
     $('#dtFloor').hidden = DT.map === 'map';
     renderMapView();
   });
@@ -6155,6 +6175,14 @@ function applyDemo() {
     setMode('text'); S.q = '검정색 모자를 쓴 배송기사'; qText.value = S.q; buildFilters('text'); runSearch(false);
     openReid(OBJECTS[0].id);
     REID.clipSel = new Set(OBJECTS.slice(0, 5).map(o => o.id));
+    renderClips([...REID.sel]);
+  }
+  /* 여러 날에 걸쳐 고른 경우 (2026-09-18) — 눈금을 하루로 자르면 뒤쪽 클립이 100% 를 넘어
+     눈금 오른쪽 밖으로 나갔다. 06-28 · 06-29 · 06-30 에서 골라 3일치 눈금을 만든다. */
+  if (d === 'clipselmulti') {
+    setMode('text'); S.q = '검정색 모자를 쓴 배송기사'; qText.value = S.q; buildFilters('text'); runSearch(false);
+    openReid(OBJECTS[0].id);
+    REID.clipSel = new Set(['o25', 'o26', 'o13', 'o14', 'o01', 'o02'].filter(id => findObj(id)));
     renderClips([...REID.sel]);
   }
   if (d === 'personmgr') { switchMode('person'); renderPersonGrid(); openPersonMgr(); }
@@ -6828,7 +6856,7 @@ function csDetailHTML(c) {
           <button class="btn-ghost sm" style="margin-left:auto" data-csmap>전체 보기</button>
         </div>
         <div style="position:relative;height:196px;border-radius:6px;overflow:hidden;background:var(--bg-1);border:1px solid var(--ln-subtle)">
-          <img src="assets/img/map.png?v=202609181121" style="width:100%;height:100%;object-fit:cover;opacity:.85" alt="">
+          <img src="assets/img/map.png?v=202609181233" style="width:100%;height:100%;object-fit:cover;opacity:.85" alt="">
           ${c.path.map((p, i) => {
             const x = 16 + (i * 23) % 68, y = 22 + (i * 17) % 54;
             return `<span style="position:absolute;left:${x}%;top:${y}%;width:9px;height:9px;border-radius:50%;
@@ -8787,7 +8815,7 @@ function renderZoneMap(host, pts, color) {
   /* 경로 비교면 경로 묶음([{ slot, pts, off }])을 받아 인물마다 선·지점을 그린다 */
   const groups = Array.isArray(pts) && pts[0] && pts[0].pts ? pts : [{ slot: '', pts, off: false }];
   const col = g => (g.slot ? slotColor(g.slot) : color);
-  zm.innerHTML = `<div class="zm-stage"><img src="assets/img/map.png?v=202609181121" alt="외부 지도" draggable="false">
+  zm.innerHTML = `<div class="zm-stage"><img src="assets/img/map.png?v=202609181233" alt="외부 지도" draggable="false">
       <svg class="zm-path" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${groups.map(g => {
         const seq = g.pts.slice().sort((a, b) => a.n - b.n);
         return seq.length > 1 ? `<polyline points="${seq.map(t => `${t.x},${t.y}`).join(' ')}" fill="none" stroke="${col(g)}" stroke-width="2.5"
@@ -8886,7 +8914,7 @@ function renderFloorPane(host, pts, color) {
   const mine = pts.filter(t => m3FloorOf(t.cam) === fl).sort((a, b) => a.n - b.n);
   const flb = (M3_FLOORS.find(f => f.key === fl) || {}).label || fl;
   /* GUI 260914 : 도면은 원본 비율로 가운데(흰 판) — 좌표는 flatU 로 도면 기준 */
-  fp.innerHTML = `<div class="zp-stage"><img src="assets/img/floor.png?v=202609181121" alt=""><span class="dt-floor">${flb}</span>
+  fp.innerHTML = `<div class="zp-stage"><img src="assets/img/floor.png?v=202609181233" alt=""><span class="dt-floor">${flb}</span>
     <svg class="zp-path" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${mine.length > 1
       ? `<polyline points="${mine.map(t => `${flatU(t.x)},${t.y}`).join(' ')}" fill="none" stroke="${color}" stroke-width="2" vector-effect="non-scaling-stroke"/>` : ''}</svg>
     ${mine.map(t => `<span class="map-wp" data-cam="${t.cam}" data-hh="${t.hh}" data-x="${flatU(t.x)}" data-y="${t.y}"
