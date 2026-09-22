@@ -3642,7 +3642,7 @@ function paneToolsHTML(kind, i) {
 function paneBody(kind, i) {
   if (kind === 'map') {
     return `<div class="pn-map">
-      <img src="assets/img/floor.png?v=202609221004" alt="맵뷰">
+      <img src="assets/img/floor.png?v=202609221010" alt="맵뷰">
       ${PANE.mapTools.includes('path') ? paneMapPathHTML() : ''}
       ${PANE.mapTools.includes('cctv') ? `<div class="pn-cones">${MAP_CCTV.map(c =>
         `<span class="map-cone" style="left:${c.x}%;top:${c.y}%;rotate:${c.deg - 90}deg"><i></i><b></b></span>`).join('')}</div>` : ''}
@@ -3724,7 +3724,7 @@ function renderPanes() {
     if (PANE.kind[0] !== 'map') v.insertAdjacentHTML('beforeend', paneToolsHTML('video', 0));
     if (PANE.kind[0] === 'map') {
       v.insertAdjacentHTML('afterbegin', `<div class="pn-map">
-        <img src="assets/img/floor.png?v=202609221004" alt="맵뷰">
+        <img src="assets/img/floor.png?v=202609221010" alt="맵뷰">
         ${PANE.mapTools.includes('path') ? paneMapPathHTML() : ''}
         ${PANE.mapTools.includes('cctv') ? `<div class="pn-cones">${MAP_CCTV.map(c =>
           `<span class="map-cone" style="left:${c.x}%;top:${c.y}%;rotate:${c.deg - 90}deg"><i></i><b></b></span>`).join('')}</div>` : ''}
@@ -4397,7 +4397,7 @@ function renderArea() {
       const vb = $('#dtVideo').getBoundingClientRect();
       const ang = Math.atan2((y2 - y1) * vb.height, (x2 - x1) * vb.width) * 180 / Math.PI + 90 * (a.dir || 1);
       a.dirOn = true;   /* 방향은 항상 표시 — 기본 한쪽 방향 */
-      h += `<button class="area-dir" data-abarrow title="눌러서 방향 바꾸기" style="left:${(x1 + x2) / 2}%;top:${(y1 + y2) / 2}%"><img src="assets/img/area-direction.svg?v=202609221004" alt="" style="transform:rotate(${ang + 45}deg)"></button>`;
+      h += `<button class="area-dir" data-abarrow title="눌러서 방향 바꾸기" style="left:${(x1 + x2) / 2}%;top:${(y1 + y2) / 2}%"><img src="assets/img/area-direction.svg?v=202609221010" alt="" style="transform:rotate(${ang + 45}deg)"></button>`;
       const ex = x1 >= x2 ? x1 : x2, ey = x1 >= x2 ? y1 : y2;
       h += areaBar(ex, `calc(${ey}% + 14px)`, a, 'r');
     }
@@ -4647,7 +4647,7 @@ function renderMap3d(paths) {
     const poly = polys ? `<svg class="m3-path" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${polys}</svg>` : '';
     /* 위층이 앞(위)에 오도록 쌓는다 — DOM 순서대로면 아래층이 덮는다 */
     return `<div class="m3-floor${pl.some(({ pts }) => onFl(pts).length) ? '' : ' dim'}" data-fl="${f.label}" style="--i:${fi};z-index:${M3_FLOORS.length - fi}">
-      <img src="assets/img/floor.png?v=202609221004" alt="">
+      <img src="assets/img/floor.png?v=202609221010" alt="">
       ${poly}
       ${pl.map(({ p, pts }) => onFl(pts).map(t => `<span class="map-wp" data-pt="${f.key}-${p.slot}-${t.n}" data-cam="${t.cam}"
           data-hh="${t.hh}" data-x="${t.x}" data-y="${t.y}"
@@ -4886,7 +4886,7 @@ function spreadMapLabels(host, sel) {
 $$('#dtMapSeg button').forEach(b => b.onclick = () => {
   $$('#dtMapSeg button').forEach(x => x.classList.toggle('on', x === b));
   DT.map = b.dataset.m;
-  $('#dtMapImg').src = DT.map === 'map' ? 'assets/img/map.png?v=202609221004' : 'assets/img/floor.png?v=202609221004';
+  $('#dtMapImg').src = DT.map === 'map' ? 'assets/img/map.png?v=202609221010' : 'assets/img/floor.png?v=202609221010';
   $('#dtFloor').hidden = true;                 /* 층 배지는 3D 각 층에 붙는다 */
   renderMap3d(MAP_PATHS_CACHE);
 });
@@ -5661,7 +5661,7 @@ function mvwPaths() {
 }
 function renderMapView() {
   const paths = mvwPaths();
-  const mapImg = DT.map === 'map' ? 'assets/img/map.png?v=202609221004' : 'assets/img/floor.png?v=202609221004';
+  const mapImg = DT.map === 'map' ? 'assets/img/map.png?v=202609221010' : 'assets/img/floor.png?v=202609221010';
   const seg = `<div class="seg"><button class="${DT.map === 'map' ? 'on' : ''}" data-mm="map">지도</button><button class="${DT.map === 'map' ? '' : 'on'}" data-mm="floor">층별</button></div>`;
   /* 사양서 Detail_000_4 · 4-4) : 주변 카메라 / 이동 경로 / 전체 보기
      이동 경로는 **단일 대상일 때 비활성** (그룹·경로비교에서만 사용) */
@@ -5723,7 +5723,7 @@ function renderMapView() {
   /* 바인딩 */
   $$('#mvwBody [data-mm]').forEach(b => b.onclick = () => {
     DT.map = b.dataset.mm;
-    $('#dtMapImg').src = DT.map === 'map' ? 'assets/img/map.png?v=202609221004' : 'assets/img/floor.png?v=202609221004';
+    $('#dtMapImg').src = DT.map === 'map' ? 'assets/img/map.png?v=202609221010' : 'assets/img/floor.png?v=202609221010';
     $('#dtFloor').hidden = DT.map === 'map';
     renderMapView();
   });
@@ -6083,7 +6083,10 @@ function renderCaseFoot() {
 let bmForm = null;
 function openBookmark() {
   const o = (DT._tab && DT._tab.obj) || OBJECTS[0];
-  bmForm = { img: $('#dtVideoImg').src || o.img, place: '2층 로비/택배보관함', cam: 'cam 01-234', memo: '' };
+  /* 사양서 Bookmark_001_01 1-3 : 저장할 **그룹**을 고른다. 기본은 `기본 그룹`. */
+  const def = (typeof BM_G !== 'undefined' && (BM_G.find(g => g.name === '기본 그룹') || BM_G[0])) || null;
+  bmForm = { img: $('#dtVideoImg').src || o.img, place: '2층 로비/택배보관함', cam: 'cam 01-234', memo: '',
+    grp: def ? def.id : null, obj: o.id };
   renderBookmark(); openModal('#mdBookmark');
 }
 function renderBookmark() {
@@ -6109,11 +6112,34 @@ function renderBookmark() {
       <div class="bm-field"><span class="k">장소</span><span class="v">${f.place}</span></div>
       <div class="bm-field"><span class="k">카메라명</span><span class="v">${f.cam}</span></div>
       <div class="bm-field"><span class="k">메모</span><span class="v"><input class="fm-in" id="bmMemo" placeholder="메모" value="${f.memo}"></span></div>
+      <!-- 사양 1-3) 그룹 드롭다운 + 새 그룹 — 종전에는 그룹을 고르는 자리가 없었다 -->
+      <div class="bm-field"><span class="k">그룹</span><span class="v bmf-grp">
+        <div class="select sm" id="bmGrp" data-value="${bmGrpName(f.grp)}">
+          <button class="select-btn">${bmGrpName(f.grp)}<i class="i i-16 i-chevron i-down caret"></i></button>
+          <div class="select-menu">${BM_G.map(g => `<div data-v="${g.name}">${g.name}</div>`).join('')}</div>
+        </div>
+        <button class="btn-ghost sm" id="bmNewG2">새 그룹</button>
+      </span></div>
     </div>`;
-  $('#bmFoot').innerHTML = `<button class="btn-ghost" data-close>취소</button><button class="btn-primary" id="bmOk">등록</button>`;
+  $('#bmFoot').innerHTML = `<button class="btn-ghost" data-close>취소</button><button class="btn-primary" id="bmOk">완료</button>`;
   $('#bmMemo').oninput = e => f.memo = e.target.value;
+  bindSelect('#bmGrp', v => { const g = BM_G.find(x => x.name === v); if (g) f.grp = g.id; });
+  /* 새 그룹은 이 팝업 **위 레이어**로 열리고, 만들면 그 그룹이 바로 선택된다 */
+  $('#bmNewG2').onclick = () => openBmGroup(null, made => { f.grp = made.id; renderBookmark(); });
   $$('#mdBookmark [data-close]').forEach(b => b.onclick = () => closeModal('#mdBookmark'));
-  $('#bmOk').onclick = () => { closeModal('#mdBookmark'); toast('현재 영상 구간을 북마크에 저장했습니다.'); };
+  $('#bmOk').onclick = () => {
+    const g = BM_G.find(x => x.id === f.grp);
+    if (g && f.obj) {                       /* 고른 그룹에 실제로 담는다 */
+      const src = BOOKMARKS.find(x => x.obj === f.obj) || BOOKMARKS[0];
+      if (src && !g.ids.includes(src.id)) { g.ids.push(src.id); BM.removed.delete(src.id); }
+    }
+    closeModal('#mdBookmark');
+    toast(`${g ? g.name : '북마크'}에 저장했습니다.`);
+  };
+}
+function bmGrpName(id) {
+  const g = (typeof BM_G !== 'undefined') && BM_G.find(x => x.id === id);
+  return g ? g.name : '기본 그룹';
 }
 
 /* 사건 등록 버튼 */
@@ -6550,6 +6576,7 @@ function bmList() {
 function bmCur() {
   const L = bmList();
   if (!L.length) return null;
+  if (BM.detailOff) return null;              /* 상세를 접어 둔 상태 (상단 X) */
   let c = L.find(b => b.id === BM.sel);
   if (!c) { c = L[0]; BM.sel = c.id; }         /* 최초 진입 시 최신 항목 자동 선택 */
   return c;
@@ -6695,7 +6722,8 @@ function renderBmView() {
       </div>
       <div class="mn-body">${body}</div>
     </div>
-    <div class="mn-panel mn-detail">${cur ? bmDetailHTML(cur) : `<div class="mn-head"><h3>북마크 상세</h3></div><div class="mn-empty">선택된 북마크가 없습니다.</div>`}</div>`;
+    ${BM.detailOff ? '' : `<div class="mn-panel mn-detail">${cur ? bmDetailHTML(cur)
+      : `<div class="mn-head"><h3>북마크 상세</h3></div><div class="mn-empty">선택된 북마크가 없습니다.</div>`}</div>`}`;
 
   /* --- 그룹 이벤트 --- */
   $$('#menuView [data-bmg]').forEach(r => r.onclick = e => {
@@ -6732,7 +6760,8 @@ function renderBmView() {
   $$('#menuView [data-bmf]').forEach(b => b.onclick = () => { BM.filter = b.dataset.bmf; BM.edit = false; renderBmView(); });
   $$('#menuView [data-bmk]').forEach(c => c.onclick = e => {
     if (e.target.closest('[data-bmdel]')) return;
-    BM.sel = c.dataset.bmk; BM.edit = false; BM.dirty = false; BM.rep = 0; renderBmView();
+    /* 접어 둔 상태에서 카드를 고르면 상세가 다시 열린다 (사양 Bookmark_001_03 2) */
+    BM.sel = c.dataset.bmk; BM.detailOff = false; BM.edit = false; BM.dirty = false; BM.rep = 0; renderBmView();
   });
   $$('#menuView [data-bmdel]').forEach(b => b.onclick = e => {
     e.stopPropagation();
@@ -6808,13 +6837,18 @@ function bmDetailHTML(b) {
       </div>`;
   }
 
-  /* ---- 영상 북마크 : 상세(조회) ---- */
+  /* ---- 영상 북마크 : 상세(조회) ----
+     사양서 Bookmark_001_03 : 2-1 영상 / 2-2 인물 정보(+전체 경로 보기) / 2-3 상세 정보(위치·맵·메모).
+     상단 `X` 를 누르면 이 영역이 접히고, 카드를 다시 고르면 열린다. */
+  const trips = BOOKMARKS.filter(x => x.target === b.target && x.kind === 'video').length;
   return `<div class="mn-head">
       <h3>북마크 상세</h3>
       <div class="mn-head-btns">
         <button class="btn-ghost sm" data-bmact="orig">원본 보기</button>
         <button class="btn-ghost sm" data-bmact="edit">편집</button>
         <button class="btn-primary sm" data-bmact="case">사건 등록</button>
+        <button class="btn-icon" data-bmact="fold" title="상세 접기">
+          <svg viewBox="0 0 16 16" class="ic"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.3"/></svg></button>
       </div>
     </div>
     <div class="mn-body bmk-dt">
@@ -6826,12 +6860,28 @@ function bmDetailHTML(b) {
           <div class="bm-ctrl">${playCtrlHTML({ clips: false })}</div>
         </div>
       </div>
+      <!-- 2-2) 인물 정보 : 대표 썸네일 · 이름 · 경로 영상 개수 · 출현 일시 -->
+      <div class="bmd-obj">
+        <img src="${b.img}" alt="">
+        <div class="bmd-oi">
+          <b>${b.target}</b>
+          <span>경로 영상 <em>${trips}</em>건 · ${b.shot}</span>
+        </div>
+        <button class="btn-ghost sm" data-bmact="path">전체 경로 보기</button>
+      </div>
       <div style="margin-top:12px">
-        <div class="bm-field"><span class="k">대상</span><span class="v">${b.target}</span></div>
-        <div class="bm-field"><span class="k">위치</span><span class="v">${b.place}</span></div>
-        <div class="bm-field"><span class="k">카메라명</span><span class="v">${b.cam}</span></div>
+        <div class="bm-field"><span class="k">카메라(위치)명</span><span class="v">${b.place} · ${b.cam}</span></div>
         <div class="bm-field"><span class="k">출현 일시</span><span class="v">${b.shot} ~ ${b.shot.slice(0, 11)}${addMin(b.shot, 10)}</span></div>
-        <div class="bm-field"><span class="k">메모</span><span class="v">${b.memo || '-'}</span></div>
+      </div>
+      <!-- 2-3) 맵 뷰어 : 등록된 맵 위에 출현 지점과 위치명을 찍는다 -->
+      <div class="bmd-map">
+        <img src="assets/img/floor.png?v=202609221010" alt="">
+        <span class="pin" style="left:46%;top:52%"></span>
+        <span class="pin-lb" style="left:46%;top:52%">${b.place}</span>
+      </div>
+      <div style="margin-top:12px">
+        <!-- 메모가 없으면 빈 영역을 그대로 둔다 (사양) — 종전에는 가운뎃줄을 찍었다 -->
+        <div class="bm-field"><span class="k">메모</span><span class="v">${b.memo || ''}</span></div>
       </div>
     </div>`;
 }
@@ -6852,6 +6902,15 @@ function bindBmDetail(b) {
       return;
     }
     if (a === 'case') { openCase(); return; }
+    /* 사양 2-2) `전체 경로 보기` : 검색 탭으로 옮겨 그 인물의 상세를 **새 탭**으로 열고 포커스 */
+    if (a === 'path') {
+      const o = OBJECTS.find(x => x.id === b.obj) || OBJECTS[0];
+      setMenu(null);
+      newTab(`${b.target} ${b.place}`, o);
+      return;
+    }
+    /* 사양 2) 상단 `X` : 상세 영역을 접는다. 카드를 다시 고르면 열린다 */
+    if (a === 'fold') { BM.sel = null; BM.detailOff = true; renderBmView(); return; }
     if (a === 'edit') { BM.edit = true; BM.memo = b.memo || ''; BM.range = b.range.slice(); BM.dirty = false; renderBmView(); return; }
     if (a === 'done') {
       b.memo = BM.memo; b.range = (BM.range || b.range).slice();
@@ -7048,7 +7107,7 @@ function csDetailHTML(c) {
           <button class="btn-ghost sm" style="margin-left:auto" data-csmap>전체 보기</button>
         </div>
         <div style="position:relative;height:196px;border-radius:6px;overflow:hidden;background:var(--bg-1);border:1px solid var(--ln-subtle)">
-          <img src="assets/img/map.png?v=202609221004" style="width:100%;height:100%;object-fit:cover;opacity:.85" alt="">
+          <img src="assets/img/map.png?v=202609221010" style="width:100%;height:100%;object-fit:cover;opacity:.85" alt="">
           ${c.path.map((p, i) => {
             const x = 16 + (i * 23) % 68, y = 22 + (i * 17) % 54;
             return `<span style="position:absolute;left:${x}%;top:${y}%;width:9px;height:9px;border-radius:50%;
@@ -9007,7 +9066,7 @@ function renderZoneMap(host, pts, color) {
   /* 경로 비교면 경로 묶음([{ slot, pts, off }])을 받아 인물마다 선·지점을 그린다 */
   const groups = Array.isArray(pts) && pts[0] && pts[0].pts ? pts : [{ slot: '', pts, off: false }];
   const col = g => (g.slot ? slotColor(g.slot) : color);
-  zm.innerHTML = `<div class="zm-stage"><img src="assets/img/map.png?v=202609221004" alt="외부 지도" draggable="false">
+  zm.innerHTML = `<div class="zm-stage"><img src="assets/img/map.png?v=202609221010" alt="외부 지도" draggable="false">
       <svg class="zm-path" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${groups.map(g => {
         const seq = g.pts.slice().sort((a, b) => a.n - b.n);
         return seq.length > 1 ? `<polyline points="${seq.map(t => `${t.x},${t.y}`).join(' ')}" fill="none" stroke="${col(g)}" stroke-width="2.5"
@@ -9106,7 +9165,7 @@ function renderFloorPane(host, pts, color) {
   const mine = pts.filter(t => m3FloorOf(t.cam) === fl).sort((a, b) => a.n - b.n);
   const flb = (M3_FLOORS.find(f => f.key === fl) || {}).label || fl;
   /* GUI 260914 : 도면은 원본 비율로 가운데(흰 판) — 좌표는 flatU 로 도면 기준 */
-  fp.innerHTML = `<div class="zp-stage"><img src="assets/img/floor.png?v=202609221004" alt=""><span class="dt-floor">${flb}</span>
+  fp.innerHTML = `<div class="zp-stage"><img src="assets/img/floor.png?v=202609221010" alt=""><span class="dt-floor">${flb}</span>
     <svg class="zp-path" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${mine.length > 1
       ? `<polyline points="${mine.map(t => `${flatU(t.x)},${t.y}`).join(' ')}" fill="none" stroke="${color}" stroke-width="2" vector-effect="non-scaling-stroke"/>` : ''}</svg>
     ${mine.map(t => `<span class="map-wp" data-cam="${t.cam}" data-hh="${t.hh}" data-x="${flatU(t.x)}" data-y="${t.y}"
