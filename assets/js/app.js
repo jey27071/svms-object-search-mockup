@@ -3642,7 +3642,7 @@ function paneToolsHTML(kind, i) {
 function paneBody(kind, i) {
   if (kind === 'map') {
     return `<div class="pn-map">
-      <img src="assets/img/floor.png?v=202609221052" alt="맵뷰">
+      <img src="assets/img/floor.png?v=202609221348" alt="맵뷰">
       ${PANE.mapTools.includes('path') ? paneMapPathHTML() : ''}
       ${PANE.mapTools.includes('cctv') ? `<div class="pn-cones">${MAP_CCTV.map(c =>
         `<span class="map-cone" style="left:${c.x}%;top:${c.y}%;rotate:${c.deg - 90}deg"><i></i><b></b></span>`).join('')}</div>` : ''}
@@ -3724,7 +3724,7 @@ function renderPanes() {
     if (PANE.kind[0] !== 'map') v.insertAdjacentHTML('beforeend', paneToolsHTML('video', 0));
     if (PANE.kind[0] === 'map') {
       v.insertAdjacentHTML('afterbegin', `<div class="pn-map">
-        <img src="assets/img/floor.png?v=202609221052" alt="맵뷰">
+        <img src="assets/img/floor.png?v=202609221348" alt="맵뷰">
         ${PANE.mapTools.includes('path') ? paneMapPathHTML() : ''}
         ${PANE.mapTools.includes('cctv') ? `<div class="pn-cones">${MAP_CCTV.map(c =>
           `<span class="map-cone" style="left:${c.x}%;top:${c.y}%;rotate:${c.deg - 90}deg"><i></i><b></b></span>`).join('')}</div>` : ''}
@@ -4397,7 +4397,7 @@ function renderArea() {
       const vb = $('#dtVideo').getBoundingClientRect();
       const ang = Math.atan2((y2 - y1) * vb.height, (x2 - x1) * vb.width) * 180 / Math.PI + 90 * (a.dir || 1);
       a.dirOn = true;   /* 방향은 항상 표시 — 기본 한쪽 방향 */
-      h += `<button class="area-dir" data-abarrow title="눌러서 방향 바꾸기" style="left:${(x1 + x2) / 2}%;top:${(y1 + y2) / 2}%"><img src="assets/img/area-direction.svg?v=202609221052" alt="" style="transform:rotate(${ang + 45}deg)"></button>`;
+      h += `<button class="area-dir" data-abarrow title="눌러서 방향 바꾸기" style="left:${(x1 + x2) / 2}%;top:${(y1 + y2) / 2}%"><img src="assets/img/area-direction.svg?v=202609221348" alt="" style="transform:rotate(${ang + 45}deg)"></button>`;
       const ex = x1 >= x2 ? x1 : x2, ey = x1 >= x2 ? y1 : y2;
       h += areaBar(ex, `calc(${ey}% + 14px)`, a, 'r');
     }
@@ -4647,7 +4647,7 @@ function renderMap3d(paths) {
     const poly = polys ? `<svg class="m3-path" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${polys}</svg>` : '';
     /* 위층이 앞(위)에 오도록 쌓는다 — DOM 순서대로면 아래층이 덮는다 */
     return `<div class="m3-floor${pl.some(({ pts }) => onFl(pts).length) ? '' : ' dim'}" data-fl="${f.label}" style="--i:${fi};z-index:${M3_FLOORS.length - fi}">
-      <img src="assets/img/floor.png?v=202609221052" alt="">
+      <img src="assets/img/floor.png?v=202609221348" alt="">
       ${poly}
       ${pl.map(({ p, pts }) => onFl(pts).map(t => `<span class="map-wp" data-pt="${f.key}-${p.slot}-${t.n}" data-cam="${t.cam}"
           data-hh="${t.hh}" data-x="${t.x}" data-y="${t.y}"
@@ -4886,7 +4886,7 @@ function spreadMapLabels(host, sel) {
 $$('#dtMapSeg button').forEach(b => b.onclick = () => {
   $$('#dtMapSeg button').forEach(x => x.classList.toggle('on', x === b));
   DT.map = b.dataset.m;
-  $('#dtMapImg').src = DT.map === 'map' ? 'assets/img/map.png?v=202609221052' : 'assets/img/floor.png?v=202609221052';
+  $('#dtMapImg').src = DT.map === 'map' ? 'assets/img/map.png?v=202609221348' : 'assets/img/floor.png?v=202609221348';
   $('#dtFloor').hidden = true;                 /* 층 배지는 3D 각 층에 붙는다 */
   renderMap3d(MAP_PATHS_CACHE);
 });
@@ -5661,7 +5661,7 @@ function mvwPaths() {
 }
 function renderMapView() {
   const paths = mvwPaths();
-  const mapImg = DT.map === 'map' ? 'assets/img/map.png?v=202609221052' : 'assets/img/floor.png?v=202609221052';
+  const mapImg = DT.map === 'map' ? 'assets/img/map.png?v=202609221348' : 'assets/img/floor.png?v=202609221348';
   const seg = `<div class="seg"><button class="${DT.map === 'map' ? 'on' : ''}" data-mm="map">지도</button><button class="${DT.map === 'map' ? '' : 'on'}" data-mm="floor">층별</button></div>`;
   /* 사양서 Detail_000_4 · 4-4) : 주변 카메라 / 이동 경로 / 전체 보기
      이동 경로는 **단일 대상일 때 비활성** (그룹·경로비교에서만 사용) */
@@ -5723,7 +5723,7 @@ function renderMapView() {
   /* 바인딩 */
   $$('#mvwBody [data-mm]').forEach(b => b.onclick = () => {
     DT.map = b.dataset.mm;
-    $('#dtMapImg').src = DT.map === 'map' ? 'assets/img/map.png?v=202609221052' : 'assets/img/floor.png?v=202609221052';
+    $('#dtMapImg').src = DT.map === 'map' ? 'assets/img/map.png?v=202609221348' : 'assets/img/floor.png?v=202609221348';
     $('#dtFloor').hidden = DT.map === 'map';
     renderMapView();
   });
@@ -6875,7 +6875,7 @@ function bmDetailHTML(b) {
       </div>
       <!-- 2-3) 맵 뷰어 : 등록된 맵 위에 출현 지점과 위치명을 찍는다 -->
       <div class="bmd-map">
-        <img src="assets/img/floor.png?v=202609221052" alt="">
+        <img src="assets/img/floor.png?v=202609221348" alt="">
         <span class="pin" style="left:46%;top:52%"></span>
         <span class="pin-lb" style="left:46%;top:52%">${b.place}</span>
       </div>
@@ -7151,7 +7151,7 @@ function csDetailHTML(c) {
       <div class="cs-zh">${z} <em>(${rows.length}건)</em><span class="cv">${ICON2.chev}</span></div>
       <div class="cs-zb">
         <div class="cs-zmap">
-          <img src="assets/img/map.png?v=202609221052" alt="">
+          <img src="assets/img/map.png?v=202609221348" alt="">
           ${rows.map((p, i) => {
             const x = 18 + (i * 27) % 64, y = 24 + (i * 19) % 52;
             return `<span class="zp" style="left:${x}%;top:${y}%;background:${whoColor(c, p.who)}"></span>
@@ -7228,10 +7228,7 @@ function bindCsDetail(c) {
     const a = b.dataset.csact;
     if (a === 'del') alertSpec('caseDel', () => { const i = CASE_DB.findIndex(x => x.id === c.id); CASE_DB.splice(i, 1); CS.sel = null; renderCsView(); });
     if (a === 'edit') { CS.mode = 'edit'; CS.form = csForm(c); renderCsView(); }
-    if (a === 'export') alertBox({
-      title: '내보내기', desc: 'AI 생성 보고서와 증거 자료(대상 정보 · 영상 클립)를 ZIP으로 패키징합니다.',
-      ok: '내보내기', danger: false
-    });
+    if (a === 'export') openExport(c);
   });
 }
 /* ============================================================
@@ -7760,14 +7757,17 @@ function csEditHTML() {
   const chips = (arr, cur, attr) => `<div class="chipset">${arr.map(v =>
     `<button class="mn-chip${cur === v ? ' on' : ''}" data-${attr}="${v}">${v}</button>`).join('')}</div>`;
 
+  /* 사양 Case_004 1-4) : 카드를 고르면 활성화되고 `편집 중` 을 단다. 기본은 첫 카드. */
+  if (f.selT == null || f.selT >= f.targets.length) f.selT = f.targets.length ? 0 : null;
+  const sel = f.selT != null ? f.targets[f.selT] : null;
   const tg = `<div class="tg-row">${f.targets.map((t, i) => `
-    <div class="tg-card" style="position:relative">
+    <div class="tg-card${i === f.selT ? ' on' : ''}" style="position:relative" data-cstsel="${i}">
       <button class="bmk-star" style="color:var(--tx-tertiary)" data-cstx="${i}" title="제외">✕</button>
       <img src="${t.img}" alt="">
       <div class="info">
-        <div class="nm">${ICON2.person}${t.name}</div>
+        <div class="nm">${ICON2.person}${t.name}${i === f.selT ? '<span class="cs-editing">편집 중</span>' : ''}</div>
+        <div class="tg-kv">카메라(위치) <b>${(f.videos[0] && f.videos[0].place) || '-'}</b></div>
         <div class="tg-kv">출현 일시 <b>${t.at.slice(5)}</b></div>
-        <div class="tg-kv">이벤트 <b>${t.ev}</b></div>
       </div>
     </div>`).join('')}</div>`;
 
@@ -7786,10 +7786,13 @@ function csEditHTML() {
       </div>
     </div>`).join('');
 
-  return `<div class="mn-head"><h3>사건 수정</h3>
+  /* 사양서 Case_003 1-2) : 종료 일시는 시작 일시보다 **이전으로 둘 수 없다** →
+     경고만 띄우던 것을 저장까지 막는다 */
+  const okSave = f.name.trim() && f.desc.trim() && f.to > f.from;
+  return `<div class="mn-head"><h3>사건 편집</h3>
       <div class="mn-head-btns">
         <button class="btn-ghost sm" data-csact="ecancel">취소</button>
-        <button class="btn-primary sm" data-csact="save" ${f.name.trim() && f.desc.trim() ? '' : 'disabled'}>저장</button>
+        <button class="btn-primary sm" data-csact="save" ${okSave ? '' : 'disabled'}>저장</button>
       </div></div>
     <div class="mn-body cs-edit">
       <div class="fm-row"><span class="k">사건명<span class="req">*</span></span>
@@ -7801,23 +7804,38 @@ function csEditHTML() {
       <div class="fm-row"><span class="k">종료 일시<span class="req">*</span></span>
         <span class="v"><input class="fm-in" id="cfTo" value="${f.to}">
           <p class="hintline" id="cfWarn" ${f.to > f.from ? 'hidden' : ''}>종료 일시는 시작 일시 이후만 선택할 수 있습니다.</p></span></div>
-      <div class="fm-row"><span class="k">설명<span class="req">*</span></span>
-        <span class="v"><textarea class="fm-in bmk-memo" id="cfDesc">${f.desc}</textarea></span></div>
+      <!-- 사양 1-3) 사건 내용 : 서식을 손볼 수 있는 에디터 + AI 자동 완성 -->
+      <div class="fm-row"><span class="k">사건 내용<span class="req">*</span></span>
+        <span class="v">
+          <div class="cf-ed">
+            <div class="cf-tb">
+              <button type="button" data-cffmt="b"><b>B</b></button>
+              <button type="button" data-cffmt="i"><i>I</i></button>
+              <button type="button" data-cffmt="u"><u>U</u></button>
+              <span class="sp"></span>
+              <button type="button" class="cf-ai" data-csact="ai"><i class="i-ai"></i>AI 자동 완성</button>
+            </div>
+            <textarea class="fm-in bmk-memo" id="cfDesc">${f.desc}</textarea>
+          </div>
+        </span></div>
 
+      <!-- 사양 Case_004 1-4) 인물 목록 : 사건당 **최대 4명** -->
       <div class="acc open" style="margin-top:10px">
-        <div class="acc-h">${ICON2.person}<span class="tt">대상 정보 (${f.targets.length}/4)</span>
-          <button class="btn-ghost sm" style="margin-left:auto" data-csact="addT" ${f.targets.length >= 4 ? 'disabled' : ''}>대상 추가</button></div>
-        <div class="acc-b">${f.targets.length ? tg : '<div class="mn-empty">추가된 대상이 없습니다.</div>'}</div>
+        <div class="acc-h">${ICON2.person}<span class="tt">인물 (${f.targets.length}/4)</span>
+          <button class="btn-ghost sm" style="margin-left:auto" data-csact="addT" ${f.targets.length >= 4 ? 'disabled' : ''}>인물 추가</button></div>
+        <div class="acc-b">${f.targets.length ? tg : '<div class="mn-empty">추가된 인물이 없습니다.</div>'}</div>
       </div>
-      <div class="acc open">
-        <div class="acc-h">${ICON2.cam}<span class="tt">증거 영상 (${f.videos.length})</span>
+      <!-- 사양 1-5) 인물 상세 : 고른 인물의 조사 정보를 고친다 (메모 · 영상 추가 · 이동경로) -->
+      ${sel ? `<div class="acc open cs-tdt">
+        <div class="acc-h">${ICON2.person}<span class="tt">${sel.name} 조사 정보</span>
           <button class="btn-ghost sm" style="margin-left:auto" data-csact="addV">영상 추가</button></div>
-        <div class="acc-b">${f.videos.length ? ev : '<div class="mn-empty">등록된 증거 영상이 없습니다.</div>'}</div>
-      </div>
-      <div class="acc open">
-        <div class="acc-h">${ICON2.cctv}<span class="tt">이동 경로</span></div>
-        <div class="acc-b"><p class="hintline">추가한 대상과 영상 정보에 맞춰 경로가 자동으로 구성됩니다.</p></div>
-      </div>
+        <div class="acc-b">
+          <div class="fm-row"><span class="k">메모</span>
+            <span class="v"><textarea class="fm-in bmk-memo" id="cfTMemo" placeholder="메모">${sel.memo || ''}</textarea></span></div>
+          <div>${f.videos.length ? ev : '<div class="mn-empty">등록된 영상이 없습니다.</div>'}</div>
+          <p class="hintline">추가한 영상에 맞춰 이동 경로가 자동으로 구성됩니다.</p>
+        </div>
+      </div>` : ''}
     </div>`;
 }
 
@@ -7833,10 +7851,22 @@ function bindCsEdit() {
   keep('#cfName', 'name'); keep('#cfFrom', 'from'); keep('#cfTo', 'to'); keep('#cfDesc', 'desc');
   $$('#menuView [data-csst]').forEach(b => b.onclick = () => { f.status = b.dataset.csst; renderCsView(); });
   $$('#menuView [data-cskd]').forEach(b => b.onclick = () => { f.kind = b.dataset.cskd; renderCsView(); });
-  $$('#menuView [data-cstx]').forEach(b => b.onclick = () => {
-    const i = +b.dataset.cstx, t = f.targets[i];
-    alertSpec('personDel', () => { f.targets.splice(i, 1); renderCsView(); });
+  $$('#menuView [data-cstx]').forEach(b => b.onclick = e => {
+    e.stopPropagation();
+    const i = +b.dataset.cstx;
+    alertSpec('personDel', () => { f.targets.splice(i, 1); f.selT = null; renderCsView(); });
   });
+  /* 인물 카드를 고르면 아래에 그 인물의 조사 정보가 열린다 (사양 Case_004 1-4) */
+  $$('#menuView [data-cstsel]').forEach(c => c.onclick = e => {
+    if (e.target.closest('[data-cstx]')) return;
+    f.selT = +c.dataset.cstsel; renderCsView();
+  });
+  const tm = $('#cfTMemo');
+  if (tm) tm.oninput = e => {
+    const t = f.targets[f.selT]; if (!t) return;
+    t.memo = e.target.value; const s = e.target.selectionStart;
+    renderCsView(); const n = $('#cfTMemo'); if (n) { n.focus(); try { n.setSelectionRange(s, s); } catch (_) { } }
+  };
   $$('#menuView [data-csvdel]').forEach(b => b.onclick = () => {
     const i = +b.dataset.csvdel;
     alertSpec('vidDel', () => { f.videos.splice(i, 1); renderCsView(); });
@@ -7846,6 +7876,16 @@ function bindCsEdit() {
     const a = b.dataset.csact;
     if (a === 'addT') return openCaseAdd('target');
     if (a === 'addV') return openCaseAdd('video');
+    /* 사양 1-3) AI 자동 완성 : 적어 둔 내용과 사건 정보로 문장을 다시 써서 에디터에 채운다.
+       채운 뒤에도 손으로 고칠 수 있다. */
+    if (a === 'ai') {
+      const who = f.targets.map(t => t.name).join(', ') || '대상';
+      f.desc = `${f.from.slice(0, 16)} ~ ${f.to.slice(0, 16)} 사이 ${who}이(가) `
+        + `${(f.videos[0] && f.videos[0].place) || '현장'} 등 ${f.videos.length}개 지점에서 포착되었다. `
+        + `${f.desc.trim() || '특이 행동이 관찰되어 조사 중이다.'} `
+        + `분류는 ${f.kind}이며 현재 상태는 ${f.status}이다.`;
+      renderCsView(); return;
+    }
     if (a === 'save') {
       const c = CASE_DB.find(x => x.id === f.id);
       Object.assign(c, { name: f.name, status: f.status, kind: f.kind, from: f.from, to: f.to, desc: f.desc, targets: f.targets, videos: f.videos });
@@ -7856,6 +7896,55 @@ function bindCsEdit() {
       alertSpec('editCancel', () => { CS.mode = 'view'; renderCsView(); });
     }
   });
+}
+
+/* ============================================================
+   내보내기 팝업 (사양서 Case_002_popup_01)
+   PDF / 영상 파일을 각각 켜고, 그 아래 세부 항목을 다중으로 고른다.
+   상위를 끄면 하위는 통째로 비활성. 둘 다 꺼져 있으면 `내보내기` 가 잠긴다.
+   종전에는 alert 한 장으로 갈음하고 있었다.
+   ============================================================ */
+const EX_PDF = ['개요', '내용', '인물정보', '동선 맵', '영상 썸네일'];
+const EX_VID = ['미검증 영상 제외', '얼굴 마스킹 처리', '브리프 영상으로 내보내기'];
+let exForm = null;
+function openExport(c) {
+  /* Default : 둘 다 켜고 하위도 전체 (사양) */
+  exForm = { c, pdf: true, vid: true, pdfOn: EX_PDF.slice(), vidOn: EX_VID.slice() };
+  renderExport(); openModal('#mdExport');
+}
+function renderExport() {
+  const f = exForm; if (!f) return;
+  const sub = (list, on, key, off) => `<div class="ex-sub${off ? ' off' : ''}">${list.map(v =>
+    `<label class="check sm"><input type="checkbox" data-ex${key}="${v}" ${on.includes(v) ? 'checked' : ''} ${off ? 'disabled' : ''}><i></i>${v}</label>`).join('')}</div>`;
+  $('#exBody').innerHTML = `
+    <div class="ex-grp">
+      <label class="check"><input type="checkbox" id="exPdf" ${f.pdf ? 'checked' : ''}><i></i>PDF</label>
+      ${sub(EX_PDF, f.pdfOn, 'p', !f.pdf)}
+    </div>
+    <div class="ex-grp">
+      <label class="check"><input type="checkbox" id="exVid" ${f.vid ? 'checked' : ''}><i></i>영상 파일</label>
+      ${sub(EX_VID, f.vidOn, 'v', !f.vid)}
+    </div>`;
+  $('#exPdf').onchange = e => { f.pdf = e.target.checked; renderExport(); };
+  $('#exVid').onchange = e => { f.vid = e.target.checked; renderExport(); };
+  $$('#exBody [data-exp]').forEach(b => b.onchange = () => {
+    const v = b.dataset.exp;
+    f.pdfOn = f.pdfOn.includes(v) ? f.pdfOn.filter(x => x !== v) : [...f.pdfOn, v];
+    renderExport();
+  });
+  $$('#exBody [data-exv]').forEach(b => b.onchange = () => {
+    const v = b.dataset.exv;
+    f.vidOn = f.vidOn.includes(v) ? f.vidOn.filter(x => x !== v) : [...f.vidOn, v];
+    renderExport();
+  });
+  /* 보고서 유형 중 최소 하나는 켜져 있어야 내보낼 수 있다 */
+  $('#exGo').disabled = !(f.pdf || f.vid);
+  $('#exGo').onclick = () => {
+    const kinds = [f.pdf ? 'PDF' : '', f.vid ? '영상 파일' : ''].filter(Boolean).join(' · ');
+    closeModal('#mdExport');
+    toast(`${kinds} 로 사건 파일을 만들고 있습니다.`);
+  };
+  $$('#mdExport [data-close]').forEach(b => b.onclick = () => closeModal('#mdExport'));
 }
 
 /* ---- 대상 추가 / 영상 추가 팝업 ---- */
@@ -7870,27 +7959,38 @@ function renderCaseAdd() {
   const tabs = isT ? ['검색', '북마크'] : ['대상', '북마크'];
   const picked = isT ? CA.pickT : CA.pickV;
 
-  head.innerHTML = `<div><h3>${isT ? '대상 추가' : '영상 추가'}</h3>
-      <p>${isT ? '사건과 연관된 대상을 추가하여 함께 관리할 수 있습니다.'
-              : '추가된 대상 또는 북마크한 영상을 사건 증거 자료로 등록할 수 있습니다.'}</p></div>
+  /* 사양서 Case_004_popup_01 1-1 / 2-1 : 타이틀과 안내 문구를 사양 문구 그대로 쓴다.
+     (종전 문구는 아카이브 — 대상 추가 / 사건과 연관된 대상을 …) */
+  head.innerHTML = `<div><h3>${isT ? '인물 추가' : '영상 추가'}</h3>
+      <p>${isT ? '사건에 등록할 인물을 추가해 주세요. (최대 3명)'
+              : '증거로 등록할 영상을 선택해 주세요.'}</p></div>
     <button class="btn-icon md-x" id="caX"><svg viewBox="0 0 16 16" class="ic"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.3"/></svg></button>`;
 
   let inner = '';
   if (isT) {
     if (CA.tab === '검색') {
+      /* 사양 1-2) : 이미 추가된 인물은 **체크된 채로** 같이 보여 주고,
+         총 4명(기존 포함)이 차면 아직 고르지 않은 후보의 체크박스를 **일괄 비활성**한다. */
       const q = CA.q.trim();
-      const pool = OBJECTS.filter(o => !CS.form.targets.some(t => t.obj === o.id));
-      const L = q ? pool.slice(0, 8) : [];
+      const already = CS.form.targets.map(t => t.obj);
+      const cand = OBJECTS.filter(o => !already.includes(o.id));
+      const L = already.map(id => OBJECTS.find(o => o.id === id)).filter(Boolean)
+        .concat(q ? cand.slice(0, 8) : cand.slice(0, 6));
+      const full = already.length + CA.pickT.length >= 4;
       inner = `<div class="mn-searchbox" style="margin-bottom:10px">
           <input class="fm-in" id="caQ" placeholder="검색어를 입력해 주세요." value="${CA.q}">
           <span class="sic">${GICON.search}</span></div>
-        <div class="mn-count" style="margin-bottom:8px">총 <em>${L.length}</em></div>
-        ${L.length ? `<div class="bmk-grid">${L.map(o => `
-          <div class="bmk-card obj${CA.pickT.includes(o.id) ? ' on' : ''}" data-capt="${o.id}">
+        <div class="mn-count" style="margin-bottom:8px">총 <em>${already.length + CA.pickT.length}</em> / 4</div>
+        ${L.length ? `<div class="bmk-grid">${L.map(o => {
+          const fixed = already.includes(o.id);                    /* 기존 인물 = 항상 체크 */
+          const on = fixed || CA.pickT.includes(o.id);
+          const lock = fixed || (full && !on);
+          return `<div class="bmk-card obj${on ? ' on' : ''}${lock ? ' off' : ''}"${lock ? '' : ` data-capt="${o.id}"`}>
+            <input type="checkbox" class="cb ca-cb" ${on ? 'checked' : ''} ${lock ? 'disabled' : ''}>
             <div class="bmk-thumb"><img src="${o.img}" alt=""></div>
             <div class="bmk-meta"><div class="bmk-place">인물 ${o.id.slice(-2)}</div>
               <div class="bmk-sub">${o.cam}</div><div class="bmk-time">${o.t}</div></div>
-          </div>`).join('')}</div>`
+          </div>`; }).join('')}</div>`
           : `<div class="mn-empty">검색어를 입력해 주세요.</div>`}`;
     } else {
       const L = BOOKMARKS.filter(b => b.kind === 'object' && !BM.removed.has(b.id));
@@ -7904,6 +8004,34 @@ function renderCaseAdd() {
     }
   } else {
     if (CA.tab === '대상') {
+      /* 사양서 Case_004_popup_01 2-2 / 2-3 :
+         위에 **인물 정보**(대표 썸네일 · 이름 · 카메라 위치 · 포착 일시),
+         아래에 **타임라인** — 기준 일자(YYYY.MM.DD) · 카드마다 순서 · 썸네일 ·
+         카메라(위치)명 · HH:MM. 체크를 풀면 카드가 흐려지고 **순번에서 빠진다**. */
+      const t0 = CS.form.targets[CS.form.selT || 0] || CS.form.targets[0];
+      const clips = CS.form.videos.slice();
+      const day = String((clips[0] && clips[0].at) || t0 && t0.at || '').slice(0, 10).replace(/-/g, '.');
+      const keyOf = i => 'tl-' + i;
+      const offList = clips.map((_, i) => keyOf(i)).filter(k => CA.pickV.includes(k));   /* 체크 해제한 것 */
+      let seq = 0;
+      inner = `${t0 ? `<div class="bmd-obj" style="margin:0 0 12px">
+          <img src="${t0.img}" alt="">
+          <div class="bmd-oi"><b>${t0.name}</b>
+            <span>${(clips[0] && clips[0].place) || '-'} · ${t0.at}</span></div>
+        </div>` : ''}
+        <div class="ca-day">${day || '-'}</div>
+        <div class="ca-tl">${clips.map((v, i) => {
+          const off = offList.includes(keyOf(i));
+          if (!off) seq++;
+          return `<label class="ca-clip${off ? ' off' : ''}">
+            <input type="checkbox" class="cb" data-capv="${keyOf(i)}" ${off ? '' : 'checked'}>
+            <span class="no">${off ? '-' : seq}</span>
+            <span class="th"><img src="${v.img}" alt=""></span>
+            <span class="cm">${v.cam || v.place}</span>
+            <span class="tm">${String(v.at).slice(11, 16)}</span>
+          </label>`; }).join('')}</div>`;
+    }
+    if (false) {
       inner = `<div class="mn-count" style="margin-bottom:8px">총 <em>${CA.pickV.length}</em>건 선택</div>` +
         CS.form.targets.map((t, gi) => {
           const clips = (CASE_DB.find(c => c.id === CS.form.id).videos.concat(
@@ -7926,7 +8054,9 @@ function renderCaseAdd() {
                 </label>`).join('')}
             </div></div>`;
         }).join('');
-    } else {
+    }
+    /* 북마크 탭 — 종전 `대상` 탭 마크업은 위 if(false) 블록에 아카이브해 두었다 */
+    if (CA.tab !== '대상') {
       const L = BOOKMARKS.filter(b => b.kind === 'video' && !BM.removed.has(b.id));
       /* 사양 §10-6 : 북마크 영상을 고르면 그 인물이 사건 대상 정보에 자동 추가된다.
          그래서 대상이 이미 4개면 **아직 추가되지 않은 인물**의 영상은 더 고를 수 없다. */
@@ -9147,7 +9277,7 @@ function renderZoneMap(host, pts, color) {
   /* 경로 비교면 경로 묶음([{ slot, pts, off }])을 받아 인물마다 선·지점을 그린다 */
   const groups = Array.isArray(pts) && pts[0] && pts[0].pts ? pts : [{ slot: '', pts, off: false }];
   const col = g => (g.slot ? slotColor(g.slot) : color);
-  zm.innerHTML = `<div class="zm-stage"><img src="assets/img/map.png?v=202609221052" alt="외부 지도" draggable="false">
+  zm.innerHTML = `<div class="zm-stage"><img src="assets/img/map.png?v=202609221348" alt="외부 지도" draggable="false">
       <svg class="zm-path" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${groups.map(g => {
         const seq = g.pts.slice().sort((a, b) => a.n - b.n);
         return seq.length > 1 ? `<polyline points="${seq.map(t => `${t.x},${t.y}`).join(' ')}" fill="none" stroke="${col(g)}" stroke-width="2.5"
@@ -9246,7 +9376,7 @@ function renderFloorPane(host, pts, color) {
   const mine = pts.filter(t => m3FloorOf(t.cam) === fl).sort((a, b) => a.n - b.n);
   const flb = (M3_FLOORS.find(f => f.key === fl) || {}).label || fl;
   /* GUI 260914 : 도면은 원본 비율로 가운데(흰 판) — 좌표는 flatU 로 도면 기준 */
-  fp.innerHTML = `<div class="zp-stage"><img src="assets/img/floor.png?v=202609221052" alt=""><span class="dt-floor">${flb}</span>
+  fp.innerHTML = `<div class="zp-stage"><img src="assets/img/floor.png?v=202609221348" alt=""><span class="dt-floor">${flb}</span>
     <svg class="zp-path" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${mine.length > 1
       ? `<polyline points="${mine.map(t => `${flatU(t.x)},${t.y}`).join(' ')}" fill="none" stroke="${color}" stroke-width="2" vector-effect="non-scaling-stroke"/>` : ''}</svg>
     ${mine.map(t => `<span class="map-wp" data-cam="${t.cam}" data-hh="${t.hh}" data-x="${flatU(t.x)}" data-y="${t.y}"
