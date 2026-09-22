@@ -88,7 +88,9 @@ const ALERT = {
   personDel:  { title: '인물 삭제',      desc: '선택한 인물이 삭제됩니다. 삭제하시겠습니까?',                   ok: '삭제', danger: true  },
   editCancel: { title: '편집 취소',      desc: '저장하지 않고 나가시겠습니까? 현재 편집 중인 내용은 저장되지 않습니다.', ok: '확인', danger: false },
   caseDel:    { title: '사건 삭제',      desc: '선택한 사건이 삭제됩니다. 삭제하시겠습니까?',                   ok: '삭제', danger: true  },
-  mapDel:     { title: '맵 삭제',        desc: '선택한 맵이 삭제됩니다. 삭제하시겠습니까?',                     ok: '삭제', danger: true  }
+  mapDel:     { title: '맵 삭제',        desc: '선택한 맵이 삭제됩니다. 삭제하시겠습니까?',                     ok: '삭제', danger: true  },
+  /* 사양서 Bookmark_001_02 2-2) : 그룹을 지우면 그 안의 북마크도 같이 지워진다 */
+  bmGroupDel: { title: '북마크 그룹 삭제', desc: '그룹에 담긴 북마크도 함께 삭제됩니다. 삭제하시겠습니까?',      ok: '삭제', danger: true  }
 };
 const alertSpec = (key, onOk) => alertBox({ ...ALERT[key], onOk });
 
@@ -3640,7 +3642,7 @@ function paneToolsHTML(kind, i) {
 function paneBody(kind, i) {
   if (kind === 'map') {
     return `<div class="pn-map">
-      <img src="assets/img/floor.png?v=202609211040" alt="맵뷰">
+      <img src="assets/img/floor.png?v=202609221004" alt="맵뷰">
       ${PANE.mapTools.includes('path') ? paneMapPathHTML() : ''}
       ${PANE.mapTools.includes('cctv') ? `<div class="pn-cones">${MAP_CCTV.map(c =>
         `<span class="map-cone" style="left:${c.x}%;top:${c.y}%;rotate:${c.deg - 90}deg"><i></i><b></b></span>`).join('')}</div>` : ''}
@@ -3722,7 +3724,7 @@ function renderPanes() {
     if (PANE.kind[0] !== 'map') v.insertAdjacentHTML('beforeend', paneToolsHTML('video', 0));
     if (PANE.kind[0] === 'map') {
       v.insertAdjacentHTML('afterbegin', `<div class="pn-map">
-        <img src="assets/img/floor.png?v=202609211040" alt="맵뷰">
+        <img src="assets/img/floor.png?v=202609221004" alt="맵뷰">
         ${PANE.mapTools.includes('path') ? paneMapPathHTML() : ''}
         ${PANE.mapTools.includes('cctv') ? `<div class="pn-cones">${MAP_CCTV.map(c =>
           `<span class="map-cone" style="left:${c.x}%;top:${c.y}%;rotate:${c.deg - 90}deg"><i></i><b></b></span>`).join('')}</div>` : ''}
@@ -4395,7 +4397,7 @@ function renderArea() {
       const vb = $('#dtVideo').getBoundingClientRect();
       const ang = Math.atan2((y2 - y1) * vb.height, (x2 - x1) * vb.width) * 180 / Math.PI + 90 * (a.dir || 1);
       a.dirOn = true;   /* 방향은 항상 표시 — 기본 한쪽 방향 */
-      h += `<button class="area-dir" data-abarrow title="눌러서 방향 바꾸기" style="left:${(x1 + x2) / 2}%;top:${(y1 + y2) / 2}%"><img src="assets/img/area-direction.svg?v=202609211040" alt="" style="transform:rotate(${ang + 45}deg)"></button>`;
+      h += `<button class="area-dir" data-abarrow title="눌러서 방향 바꾸기" style="left:${(x1 + x2) / 2}%;top:${(y1 + y2) / 2}%"><img src="assets/img/area-direction.svg?v=202609221004" alt="" style="transform:rotate(${ang + 45}deg)"></button>`;
       const ex = x1 >= x2 ? x1 : x2, ey = x1 >= x2 ? y1 : y2;
       h += areaBar(ex, `calc(${ey}% + 14px)`, a, 'r');
     }
@@ -4645,7 +4647,7 @@ function renderMap3d(paths) {
     const poly = polys ? `<svg class="m3-path" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${polys}</svg>` : '';
     /* 위층이 앞(위)에 오도록 쌓는다 — DOM 순서대로면 아래층이 덮는다 */
     return `<div class="m3-floor${pl.some(({ pts }) => onFl(pts).length) ? '' : ' dim'}" data-fl="${f.label}" style="--i:${fi};z-index:${M3_FLOORS.length - fi}">
-      <img src="assets/img/floor.png?v=202609211040" alt="">
+      <img src="assets/img/floor.png?v=202609221004" alt="">
       ${poly}
       ${pl.map(({ p, pts }) => onFl(pts).map(t => `<span class="map-wp" data-pt="${f.key}-${p.slot}-${t.n}" data-cam="${t.cam}"
           data-hh="${t.hh}" data-x="${t.x}" data-y="${t.y}"
@@ -4884,7 +4886,7 @@ function spreadMapLabels(host, sel) {
 $$('#dtMapSeg button').forEach(b => b.onclick = () => {
   $$('#dtMapSeg button').forEach(x => x.classList.toggle('on', x === b));
   DT.map = b.dataset.m;
-  $('#dtMapImg').src = DT.map === 'map' ? 'assets/img/map.png?v=202609211040' : 'assets/img/floor.png?v=202609211040';
+  $('#dtMapImg').src = DT.map === 'map' ? 'assets/img/map.png?v=202609221004' : 'assets/img/floor.png?v=202609221004';
   $('#dtFloor').hidden = true;                 /* 층 배지는 3D 각 층에 붙는다 */
   renderMap3d(MAP_PATHS_CACHE);
 });
@@ -5659,7 +5661,7 @@ function mvwPaths() {
 }
 function renderMapView() {
   const paths = mvwPaths();
-  const mapImg = DT.map === 'map' ? 'assets/img/map.png?v=202609211040' : 'assets/img/floor.png?v=202609211040';
+  const mapImg = DT.map === 'map' ? 'assets/img/map.png?v=202609221004' : 'assets/img/floor.png?v=202609221004';
   const seg = `<div class="seg"><button class="${DT.map === 'map' ? 'on' : ''}" data-mm="map">지도</button><button class="${DT.map === 'map' ? '' : 'on'}" data-mm="floor">층별</button></div>`;
   /* 사양서 Detail_000_4 · 4-4) : 주변 카메라 / 이동 경로 / 전체 보기
      이동 경로는 **단일 대상일 때 비활성** (그룹·경로비교에서만 사용) */
@@ -5721,7 +5723,7 @@ function renderMapView() {
   /* 바인딩 */
   $$('#mvwBody [data-mm]').forEach(b => b.onclick = () => {
     DT.map = b.dataset.mm;
-    $('#dtMapImg').src = DT.map === 'map' ? 'assets/img/map.png?v=202609211040' : 'assets/img/floor.png?v=202609211040';
+    $('#dtMapImg').src = DT.map === 'map' ? 'assets/img/map.png?v=202609221004' : 'assets/img/floor.png?v=202609221004';
     $('#dtFloor').hidden = DT.map === 'map';
     renderMapView();
   });
@@ -6499,13 +6501,51 @@ function renderMenu() {
 const BM = { filter: '전체', q: '', sel: null, removed: new Set(), edit: false, memo: '', range: null, dirty: false, rep: 0 };
 const BM_HOURS = [11, 12, 13, 14, 15, 16, 17];
 
+/* ── 북마크 그룹 (사양서 Bookmark_001_02 2026-09-22) ─────────────────────────
+   목록은 `그룹 > 북마크 > 상세` 3단이다. 종전에는 그룹 개념 없이
+   `전체/대상/영상` 칩으로만 걸렀다 (칩 코드는 남기고 화면에서만 내린다). */
+BM.grp = null;                 /* 고른 그룹 */
+BM.sort = '최신순';            /* 최신순 · 인물순 · 위치순 (Default 최신순) */
+BM.size = '소';                /* 카드 크기 소·중·대 3단계 (Default 소) */
+BM.thumb = '크롭 이미지';      /* 썸네일 유형 (Default 크롭 이미지) */
+BM.gmenu = null;               /* 더보기 팝오버가 열린 그룹 */
+let BM_G = BM_GROUPS.map(g => ({ ...g, ids: g.ids.slice() }));
+
+/* 고정된 그룹이 위로, 그 밖에는 **등록 일시 오래된 순** (사양 2-1) */
+function bmGroups() {
+  return BM_G.slice().sort((a, b) => (b.pin - a.pin) || (a.reg < b.reg ? -1 : 1));
+}
+function bmGroupCur() {
+  const L = bmGroups(); if (!L.length) return null;
+  let g = L.find(x => x.id === BM.grp);
+  if (!g) { g = L[0]; BM.grp = g.id; }   /* 최초 진입 시 최상위 그룹 자동 선택 */
+  return g;
+}
+/* 그룹에 담긴 살아 있는 북마크 */
+function bmOfGroup(g) {
+  if (!g) return [];
+  return g.ids.map(id => BOOKMARKS.find(b => b.id === id)).filter(b => b && !BM.removed.has(b.id));
+}
+/* 정렬 기준별 묶음 이름 — 최신순은 날짜, 인물순은 이름, 위치순은 카메라(위치)명 */
+function bmDay(b) { return String(b.shot || b.first || b.reg).slice(0, 10).replace(/-/g, '.'); }
+function bmPlace(b) { return b.place || b.cam || '위치 미지정'; }
+function bmGroupKey(b) {
+  if (BM.sort === '인물순') return b.target || '이름 미지정';
+  if (BM.sort === '위치순') return bmPlace(b);
+  return bmDay(b);
+}
+function bmSortFn(a, b) {
+  if (BM.sort === '인물순') return String(a.target || '').localeCompare(String(b.target || ''), 'ko');
+  if (BM.sort === '위치순') return bmPlace(a).localeCompare(bmPlace(b), 'ko');
+  return bmDay(a) < bmDay(b) ? 1 : bmDay(a) > bmDay(b) ? -1 : (a.reg < b.reg ? 1 : -1);
+}
+
 function bmList() {
   const q = BM.q.trim();
-  return BOOKMARKS
-    .filter(b => !BM.removed.has(b.id))
+  return bmOfGroup(bmGroupCur())
     .filter(b => BM.filter === '전체' || (BM.filter === '영상' ? b.kind === 'video' : b.kind === 'object'))
     .filter(b => !q || (b.target || '').includes(q) || (b.place || '').includes(q))
-    .sort((a, b) => a.reg < b.reg ? 1 : -1);   /* 등록 일시 최신순 */
+    .sort(bmSortFn);
 }
 function bmCur() {
   const L = bmList();
@@ -6528,15 +6568,55 @@ function bmRulerHTML(range, head) {
   return h;
 }
 
+/* ── `새 그룹` / `그룹명 수정` 팝업 (사양서 Bookmark_001_01 2 · _02 2-2) ──────────
+   같은 모양이라 팝업 하나를 돌려 쓴다. g 를 주면 수정, 없으면 새로 만든다.
+   그룹명을 적어야 `완료` 가 열리고, 새로 만든 그룹은 **목록 맨 아래에 생기며
+   그대로 선택**된다. */
+function openBmGroup(g, after) {
+  const md = document.getElementById('mdBmGroup'); if (!md) return;
+  document.getElementById('bmgTitle').textContent = g ? '그룹명 수정' : '새 그룹';
+  const inp = document.getElementById('bmgName'), go = document.getElementById('bmgGo');
+  inp.value = g ? g.name : '';                  /* 수정은 이전 이름이 기본값 */
+  const sync = () => { go.disabled = !inp.value.trim(); };
+  sync();
+  inp.oninput = sync;
+  inp.onkeydown = e => { if (e.key === 'Enter' && !go.disabled) go.click(); };
+  go.onclick = () => {
+    const nm = inp.value.trim(); if (!nm) return;
+    let made = g;
+    if (g) g.name = nm;
+    else {
+      made = { id: 'g' + Date.now().toString(36), name: nm, reg: nowStamp(), pin: false, ids: [] };
+      BM_G.push(made);                          /* 리스트 최하단에 신규 생성 */
+      BM.grp = made.id;                         /* 해당 그룹 자동 선택 */
+    }
+    closeModal('#mdBmGroup');
+    if (typeof after === 'function') after(made);
+    else if (S.menu === 'bookmark') renderBmView();
+  };
+  openModal('#mdBmGroup');
+  setTimeout(() => inp.focus(), 30);
+}
+function nowStamp() {
+  const d = new Date(), p = n => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
+}
+
+/* 썸네일 유형 : 크롭 이미지 = 대상 위주 잘라낸 그림 / 원본 = 카메라 전체 화각 */
+function bmThumbSrc(b) {
+  if (BM.thumb === '원본' && typeof srcVideo === 'function') return srcVideo(b.cam || b.place);
+  return b.img;
+}
+
 function renderBmView() {
   const L = bmList(), cur = bmCur();
   const chip = t => `<button class="mn-chip${BM.filter === t ? ' on' : ''}" data-bmf="${t}">${t}</button>`;
 
-  const cards = L.map(b => {
+  const cardHTML = b => {
     const on = cur && b.id === cur.id;
     if (b.kind === 'video') {
       return `<div class="bmk-card${on ? ' on' : ''}" data-bmk="${b.id}">
-        <div class="bmk-thumb"><img src="${b.img}" alt=""><span class="bmk-dur">${b.dur}</span></div>
+        <div class="bmk-thumb"><img src="${bmThumbSrc(b)}" alt=""><span class="bmk-dur">${b.dur}</span></div>
         <div class="bmk-meta">
           <div class="bmk-place">${b.place}</div>
           <div class="bmk-sub">${b.target}</div>
@@ -6546,7 +6626,7 @@ function renderBmView() {
       </div>`;
     }
     return `<div class="bmk-card obj${on ? ' on' : ''}" data-bmk="${b.id}">
-      <div class="bmk-thumb"><img src="${b.img}" alt=""></div>
+      <div class="bmk-thumb"><img src="${bmThumbSrc(b)}" alt=""></div>
       <div class="bmk-meta">
         <div class="bmk-place">${b.target}</div>
         <div class="bmk-sub">${b.guid || '-'}</div>
@@ -6554,9 +6634,43 @@ function renderBmView() {
       </div>
       <button class="bmk-star" data-bmdel="${b.id}" title="북마크 해제">${BM_STAR}</button>
     </div>`;
-  }).join('');
+  };
+
+  /* 정렬 유형에 따라 묶고, 묶음마다 `이름 (N)` 머리말을 둔다 (사양 3-2) */
+  let body = '';
+  if (L.length) {
+    let key = null, buf = [];
+    const flush = () => {
+      if (!buf.length) return;
+      body += `<div class="bmk-gh">${key} <em>(${buf.length})</em></div>
+        <div class="bmk-grid" data-size="${BM.size}">${buf.map(cardHTML).join('')}</div>`;
+      buf = [];
+    };
+    L.forEach(b => { const k = bmGroupKey(b); if (k !== key) { flush(); key = k; } buf.push(b); });
+    flush();
+  } else {
+    body = `<div class="mn-empty">북마크한 영상이 없어요.</div>`;   /* 사양 PTS_SRC_000_4 */
+  }
+
+  /* 좌측 : 북마크 그룹 목록 (사양 2-1 ~ 2-3) */
+  const gs = bmGroups();
+  const groupRows = gs.map(g => `
+    <div class="bmg-li${g.id === BM.grp ? ' on' : ''}${g.pin ? ' pin' : ''}" data-bmg="${g.id}">
+      <span class="t">${g.name} <em>(${bmOfGroup(g).length})</em></span>
+      <button class="bmg-more" data-bmgm="${g.id}" title="더보기">${ICON.more}</button>
+      ${BM.gmenu === g.id ? `<div class="bmg-menu">
+        <div data-bmga="rename">이름 바꾸기</div>
+        <div data-bmga="pin">${g.pin ? '고정 해제' : '고정'}</div>
+        <div data-bmga="del">삭제</div></div>` : ''}
+    </div>`).join('');
 
   $('#menuView').innerHTML = `
+    <div class="mn-panel mn-groups">
+      <div class="mn-head"><h3>북마크</h3>
+        <div class="mn-head-btns"><button class="btn-ghost sm" id="bmNewG">새 그룹</button></div>
+      </div>
+      <div class="mn-body bmg-body">${groupRows}</div>
+    </div>
     <div class="mn-panel mn-list">
       <div class="mn-tools">
         <div class="mn-searchbox">
@@ -6564,16 +6678,57 @@ function renderBmView() {
           <span class="sic">${GICON.search}</span>
         </div>
         <div class="mn-chips">${['전체', '대상', '영상'].map(chip).join('')}</div>
-        <div class="mn-count">총 <em>${L.length}</em></div>
+        <div class="bmk-tools">
+          <div class="mn-count">총 <em>${L.length}</em></div>
+          <div class="bmk-rt">
+            <div class="select xs" id="bmSort" data-value="${BM.sort}">
+              <button class="select-btn">${BM.sort}<i class="i i-16 i-chevron i-down caret"></i></button>
+              <div class="select-menu">${['최신순', '인물순', '위치순'].map(v => `<div data-v="${v}">${v}</div>`).join('')}</div>
+            </div>
+            <label class="bmk-size" title="카드 크기">
+              <input type="range" id="bmSize" min="0" max="2" step="1" value="${['소', '중', '대'].indexOf(BM.size)}">
+            </label>
+            <div class="seg bmk-seg">${['크롭 이미지', '원본'].map(v =>
+              `<button class="${BM.thumb === v ? 'on' : ''}" data-bmth="${v}">${v}</button>`).join('')}</div>
+          </div>
+        </div>
       </div>
-      <div class="mn-body">${L.length ? `<div class="bmk-grid">${cards}</div>`
-        : `<div class="mn-empty">북마크한 항목이 없습니다.</div>`}</div>
+      <div class="mn-body">${body}</div>
     </div>
     <div class="mn-panel mn-detail">${cur ? bmDetailHTML(cur) : `<div class="mn-head"><h3>북마크 상세</h3></div><div class="mn-empty">선택된 북마크가 없습니다.</div>`}</div>`;
+
+  /* --- 그룹 이벤트 --- */
+  $$('#menuView [data-bmg]').forEach(r => r.onclick = e => {
+    if (e.target.closest('[data-bmgm]') || e.target.closest('.bmg-menu')) return;
+    BM.grp = r.dataset.bmg; BM.gmenu = null; BM.sel = null; BM.edit = false; renderBmView();
+  });
+  $$('#menuView [data-bmgm]').forEach(b => b.onclick = e => {
+    e.stopPropagation();
+    BM.gmenu = BM.gmenu === b.dataset.bmgm ? null : b.dataset.bmgm; renderBmView();
+  });
+  $$('#menuView .bmg-menu [data-bmga]').forEach(m => m.onclick = e => {
+    e.stopPropagation();
+    const gid = m.closest('[data-bmg]').dataset.bmg, g = BM_G.find(x => x.id === gid);
+    BM.gmenu = null;
+    if (!g) return renderBmView();
+    if (m.dataset.bmga === 'pin') { g.pin = !g.pin; renderBmView(); }
+    else if (m.dataset.bmga === 'rename') openBmGroup(g);
+    /* 그룹을 지우면 그 안의 북마크도 함께 사라진다 (사양 2-2) */
+    else alertSpec('bmGroupDel', () => {
+      g.ids.forEach(id => BM.removed.add(id));
+      BM_G = BM_G.filter(x => x.id !== gid);
+      if (BM.grp === gid) BM.grp = null;
+      BM.sel = null; renderBmView();
+    });
+  });
+  $('#bmNewG').onclick = () => openBmGroup(null);
 
   /* --- 목록 이벤트 --- */
   const q = $('#bmQ');
   q.oninput = e => { BM.q = e.target.value; const s = e.target.selectionStart; renderBmView(); const n = $('#bmQ'); n.focus(); n.setSelectionRange(s, s); };
+  bindSelect('#bmSort', v => { BM.sort = v; renderBmView(); });
+  $('#bmSize').oninput = e => { BM.size = ['소', '중', '대'][+e.target.value] || '소'; renderBmView(); };
+  $$('#menuView [data-bmth]').forEach(b => b.onclick = () => { BM.thumb = b.dataset.bmth; renderBmView(); });
   $$('#menuView [data-bmf]').forEach(b => b.onclick = () => { BM.filter = b.dataset.bmf; BM.edit = false; renderBmView(); });
   $$('#menuView [data-bmk]').forEach(c => c.onclick = e => {
     if (e.target.closest('[data-bmdel]')) return;
@@ -6893,7 +7048,7 @@ function csDetailHTML(c) {
           <button class="btn-ghost sm" style="margin-left:auto" data-csmap>전체 보기</button>
         </div>
         <div style="position:relative;height:196px;border-radius:6px;overflow:hidden;background:var(--bg-1);border:1px solid var(--ln-subtle)">
-          <img src="assets/img/map.png?v=202609211040" style="width:100%;height:100%;object-fit:cover;opacity:.85" alt="">
+          <img src="assets/img/map.png?v=202609221004" style="width:100%;height:100%;object-fit:cover;opacity:.85" alt="">
           ${c.path.map((p, i) => {
             const x = 16 + (i * 23) % 68, y = 22 + (i * 17) % 54;
             return `<span style="position:absolute;left:${x}%;top:${y}%;width:9px;height:9px;border-radius:50%;
@@ -8852,7 +9007,7 @@ function renderZoneMap(host, pts, color) {
   /* 경로 비교면 경로 묶음([{ slot, pts, off }])을 받아 인물마다 선·지점을 그린다 */
   const groups = Array.isArray(pts) && pts[0] && pts[0].pts ? pts : [{ slot: '', pts, off: false }];
   const col = g => (g.slot ? slotColor(g.slot) : color);
-  zm.innerHTML = `<div class="zm-stage"><img src="assets/img/map.png?v=202609211040" alt="외부 지도" draggable="false">
+  zm.innerHTML = `<div class="zm-stage"><img src="assets/img/map.png?v=202609221004" alt="외부 지도" draggable="false">
       <svg class="zm-path" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${groups.map(g => {
         const seq = g.pts.slice().sort((a, b) => a.n - b.n);
         return seq.length > 1 ? `<polyline points="${seq.map(t => `${t.x},${t.y}`).join(' ')}" fill="none" stroke="${col(g)}" stroke-width="2.5"
@@ -8951,7 +9106,7 @@ function renderFloorPane(host, pts, color) {
   const mine = pts.filter(t => m3FloorOf(t.cam) === fl).sort((a, b) => a.n - b.n);
   const flb = (M3_FLOORS.find(f => f.key === fl) || {}).label || fl;
   /* GUI 260914 : 도면은 원본 비율로 가운데(흰 판) — 좌표는 flatU 로 도면 기준 */
-  fp.innerHTML = `<div class="zp-stage"><img src="assets/img/floor.png?v=202609211040" alt=""><span class="dt-floor">${flb}</span>
+  fp.innerHTML = `<div class="zp-stage"><img src="assets/img/floor.png?v=202609221004" alt=""><span class="dt-floor">${flb}</span>
     <svg class="zp-path" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${mine.length > 1
       ? `<polyline points="${mine.map(t => `${flatU(t.x)},${t.y}`).join(' ')}" fill="none" stroke="${color}" stroke-width="2" vector-effect="non-scaling-stroke"/>` : ''}</svg>
     ${mine.map(t => `<span class="map-wp" data-cam="${t.cam}" data-hh="${t.hh}" data-x="${flatU(t.x)}" data-y="${t.y}"

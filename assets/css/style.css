@@ -7941,3 +7941,61 @@ body.dt-b .zone-map .zm-lb,body.dt-b .map-wp .wp-lb,body.dt-b .m3-sp{font-size:1
 .reid-card .rc-lead{font-size:12px;font-weight:400;color:var(--tx-tertiary);font-family:inherit}
 .reid-card .sim{font-size:12px;font-weight:500}
 .reid-card.on,.reid-card:has(input:checked){border:1px solid var(--primary)}
+
+/* ── 북마크를 사양서(Bookmark_001_01~03)대로 (2026-09-22) ──────────────────────
+   종전 : `전체/대상/영상` 칩 + 카드 그리드 + 상세 의 2단.
+   사양 : `그룹 목록 > 북마크 목록 > 상세` 3단. 그룹은 고정이 위, 나머지는 등록 오래된 순.
+   목록 도구는 총 N · 정렬(최신/인물/위치) · 카드 크기(소·중·대) · 썸네일(크롭/원본). */
+.mn-groups{width:228px;flex:0 0 228px}
+.bmg-body{padding:6px}
+.bmg-li{
+  position:relative;display:flex;align-items:center;gap:6px;
+  height:34px;padding:0 6px 0 10px;border-radius:5px;cursor:pointer;
+  font-size:12px;color:var(--tx-secondary)
+}
+.bmg-li:hover{background:var(--bg-3)}
+.bmg-li.on{background:rgba(48,112,216,.16);color:var(--tx-primary)}
+.bmg-li .t{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bmg-li .t em{font-style:normal;color:var(--tx-helper)}
+/* 고정한 그룹은 왼쪽에 표시를 둔다 */
+.bmg-li.pin::before{content:'';position:absolute;left:3px;top:11px;width:3px;height:12px;border-radius:2px;background:var(--primary)}
+.bmg-more{
+  flex:0 0 20px;width:20px;height:20px;display:flex;align-items:center;justify-content:center;
+  border:0;background:none;color:var(--tx-helper);border-radius:4px;opacity:0;cursor:pointer
+}
+.bmg-li:hover .bmg-more,.bmg-li.on .bmg-more{opacity:1}
+.bmg-more:hover{background:rgba(255,255,255,.1);color:var(--tx-primary)}
+.bmg-menu{
+  position:absolute;right:4px;top:30px;z-index:30;min-width:120px;padding:4px;
+  background:var(--bg-3);border:1px solid var(--ln-border);border-radius:6px;
+  box-shadow:0 8px 20px rgba(0,0,0,.5)
+}
+.bmg-menu > div{padding:7px 10px;border-radius:4px;font-size:12px;color:var(--tx-secondary);cursor:pointer}
+.bmg-menu > div:hover{background:var(--bg-2);color:var(--tx-primary)}
+
+/* 목록 도구줄 */
+.bmk-tools{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.bmk-rt{display:flex;align-items:center;gap:8px}
+.bmk-size input[type=range]{width:74px}
+.bmk-seg button{padding:0 8px;height:24px;font-size:11px;white-space:nowrap}
+/* 묶음 머리말 — 최신순은 날짜, 인물순은 이름, 위치순은 카메라(위치)명 */
+.bmk-gh{
+  display:flex;align-items:center;gap:6px;margin:4px 0 8px;
+  font-size:12px;font-weight:500;color:var(--tx-secondary)
+}
+.bmk-gh em{font-style:normal;color:var(--tx-helper)}
+.bmk-gh + .bmk-grid{margin-bottom:14px}
+/* 카드 크기 3단계 — 열 개수로 조절한다 (사양 3-1) */
+.bmk-grid[data-size="소"]{grid-template-columns:repeat(2,minmax(0,1fr))}
+.bmk-grid[data-size="중"]{grid-template-columns:minmax(0,1fr)}
+.bmk-grid[data-size="대"]{grid-template-columns:minmax(0,1fr)}
+.bmk-grid[data-size="중"] .bmk-thumb{width:300px;flex:0 0 300px;height:169px}
+.bmk-grid[data-size="대"] .bmk-thumb{width:420px;flex:0 0 420px;height:236px}
+.bmk-grid[data-size="중"] .bmk-card.obj .bmk-thumb,
+.bmk-grid[data-size="대"] .bmk-card.obj .bmk-thumb{width:140px;flex:0 0 140px}
+/* 사양에 없는 `전체/대상/영상` 칩은 화면에서 내린다 (코드는 남긴다) */
+.mn-panel.mn-list > .mn-tools > .mn-chips{display:none}
+/* 그룹명 입력 팝업 */
+.md-xs{width:360px}
+#mdBmGroup .md-body{padding:16px}
+#mdBmGroup #bmgName{width:100%}
