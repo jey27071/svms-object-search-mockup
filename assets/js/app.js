@@ -3642,7 +3642,7 @@ function paneToolsHTML(kind, i) {
 function paneBody(kind, i) {
   if (kind === 'map') {
     return `<div class="pn-map">
-      <img src="assets/img/floor.png?v=202609221010" alt="맵뷰">
+      <img src="assets/img/floor.png?v=202609221052" alt="맵뷰">
       ${PANE.mapTools.includes('path') ? paneMapPathHTML() : ''}
       ${PANE.mapTools.includes('cctv') ? `<div class="pn-cones">${MAP_CCTV.map(c =>
         `<span class="map-cone" style="left:${c.x}%;top:${c.y}%;rotate:${c.deg - 90}deg"><i></i><b></b></span>`).join('')}</div>` : ''}
@@ -3724,7 +3724,7 @@ function renderPanes() {
     if (PANE.kind[0] !== 'map') v.insertAdjacentHTML('beforeend', paneToolsHTML('video', 0));
     if (PANE.kind[0] === 'map') {
       v.insertAdjacentHTML('afterbegin', `<div class="pn-map">
-        <img src="assets/img/floor.png?v=202609221010" alt="맵뷰">
+        <img src="assets/img/floor.png?v=202609221052" alt="맵뷰">
         ${PANE.mapTools.includes('path') ? paneMapPathHTML() : ''}
         ${PANE.mapTools.includes('cctv') ? `<div class="pn-cones">${MAP_CCTV.map(c =>
           `<span class="map-cone" style="left:${c.x}%;top:${c.y}%;rotate:${c.deg - 90}deg"><i></i><b></b></span>`).join('')}</div>` : ''}
@@ -4397,7 +4397,7 @@ function renderArea() {
       const vb = $('#dtVideo').getBoundingClientRect();
       const ang = Math.atan2((y2 - y1) * vb.height, (x2 - x1) * vb.width) * 180 / Math.PI + 90 * (a.dir || 1);
       a.dirOn = true;   /* 방향은 항상 표시 — 기본 한쪽 방향 */
-      h += `<button class="area-dir" data-abarrow title="눌러서 방향 바꾸기" style="left:${(x1 + x2) / 2}%;top:${(y1 + y2) / 2}%"><img src="assets/img/area-direction.svg?v=202609221010" alt="" style="transform:rotate(${ang + 45}deg)"></button>`;
+      h += `<button class="area-dir" data-abarrow title="눌러서 방향 바꾸기" style="left:${(x1 + x2) / 2}%;top:${(y1 + y2) / 2}%"><img src="assets/img/area-direction.svg?v=202609221052" alt="" style="transform:rotate(${ang + 45}deg)"></button>`;
       const ex = x1 >= x2 ? x1 : x2, ey = x1 >= x2 ? y1 : y2;
       h += areaBar(ex, `calc(${ey}% + 14px)`, a, 'r');
     }
@@ -4647,7 +4647,7 @@ function renderMap3d(paths) {
     const poly = polys ? `<svg class="m3-path" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${polys}</svg>` : '';
     /* 위층이 앞(위)에 오도록 쌓는다 — DOM 순서대로면 아래층이 덮는다 */
     return `<div class="m3-floor${pl.some(({ pts }) => onFl(pts).length) ? '' : ' dim'}" data-fl="${f.label}" style="--i:${fi};z-index:${M3_FLOORS.length - fi}">
-      <img src="assets/img/floor.png?v=202609221010" alt="">
+      <img src="assets/img/floor.png?v=202609221052" alt="">
       ${poly}
       ${pl.map(({ p, pts }) => onFl(pts).map(t => `<span class="map-wp" data-pt="${f.key}-${p.slot}-${t.n}" data-cam="${t.cam}"
           data-hh="${t.hh}" data-x="${t.x}" data-y="${t.y}"
@@ -4886,7 +4886,7 @@ function spreadMapLabels(host, sel) {
 $$('#dtMapSeg button').forEach(b => b.onclick = () => {
   $$('#dtMapSeg button').forEach(x => x.classList.toggle('on', x === b));
   DT.map = b.dataset.m;
-  $('#dtMapImg').src = DT.map === 'map' ? 'assets/img/map.png?v=202609221010' : 'assets/img/floor.png?v=202609221010';
+  $('#dtMapImg').src = DT.map === 'map' ? 'assets/img/map.png?v=202609221052' : 'assets/img/floor.png?v=202609221052';
   $('#dtFloor').hidden = true;                 /* 층 배지는 3D 각 층에 붙는다 */
   renderMap3d(MAP_PATHS_CACHE);
 });
@@ -5661,7 +5661,7 @@ function mvwPaths() {
 }
 function renderMapView() {
   const paths = mvwPaths();
-  const mapImg = DT.map === 'map' ? 'assets/img/map.png?v=202609221010' : 'assets/img/floor.png?v=202609221010';
+  const mapImg = DT.map === 'map' ? 'assets/img/map.png?v=202609221052' : 'assets/img/floor.png?v=202609221052';
   const seg = `<div class="seg"><button class="${DT.map === 'map' ? 'on' : ''}" data-mm="map">지도</button><button class="${DT.map === 'map' ? '' : 'on'}" data-mm="floor">층별</button></div>`;
   /* 사양서 Detail_000_4 · 4-4) : 주변 카메라 / 이동 경로 / 전체 보기
      이동 경로는 **단일 대상일 때 비활성** (그룹·경로비교에서만 사용) */
@@ -5723,7 +5723,7 @@ function renderMapView() {
   /* 바인딩 */
   $$('#mvwBody [data-mm]').forEach(b => b.onclick = () => {
     DT.map = b.dataset.mm;
-    $('#dtMapImg').src = DT.map === 'map' ? 'assets/img/map.png?v=202609221010' : 'assets/img/floor.png?v=202609221010';
+    $('#dtMapImg').src = DT.map === 'map' ? 'assets/img/map.png?v=202609221052' : 'assets/img/floor.png?v=202609221052';
     $('#dtFloor').hidden = DT.map === 'map';
     renderMapView();
   });
@@ -6875,7 +6875,7 @@ function bmDetailHTML(b) {
       </div>
       <!-- 2-3) 맵 뷰어 : 등록된 맵 위에 출현 지점과 위치명을 찍는다 -->
       <div class="bmd-map">
-        <img src="assets/img/floor.png?v=202609221010" alt="">
+        <img src="assets/img/floor.png?v=202609221052" alt="">
         <span class="pin" style="left:46%;top:52%"></span>
         <span class="pin-lb" style="left:46%;top:52%">${b.place}</span>
       </div>
@@ -6994,8 +6994,26 @@ function applyMenuDemo() {
 /* ============================================================
    사건 관리 (Case_001 / Case_002)  — 조회
    ============================================================ */
-const CS = { q: '', status: null, period: '당일', sel: null, acc: { rep: true, tg: true, ev: true, pth: true } };
-const CS_ORDER = { '진행중': 0, '처리전': 1, '처리 완료': 2 };
+const CS = { q: '', status: null, period: null, sel: null, fold: {}, zone: {}, acc: { rep: true, tg: true, ev: true, pth: true } };
+/* 사양서 Case_002 2-3) : 목록은 **처리전 > 진행중 > 처리 완료** 순으로 묶는다
+   (종전에는 진행중이 맨 위였다) */
+const CS_ORDER = { '처리전': 0, '진행중': 1, '처리 완료': 2 };
+/* 사양 2-1) 등록일 필터 — 사건 **최초 등록일** 기준, Default 전체 */
+const CS_PERIODS = ['전체', '오늘', '최근 3일', '최근 7일', '날짜 지정'];
+function csBaseDay() {
+  /* 목업 데이터의 가장 최근 등록일을 `오늘`로 본다 */
+  return CASE_DB.reduce((m, c) => (c.reg > m ? c.reg : m), '').slice(0, 10);
+}
+function csInPeriod(c) {
+  const p = CS.period;
+  if (!p || p === '전체' || p === '날짜 지정') return true;
+  const days = { '오늘': 0, '최근 3일': 2, '최근 7일': 6 }[p];
+  if (days == null) return true;
+  const base = new Date(csBaseDay() + 'T00:00:00');
+  const from = new Date(base); from.setDate(base.getDate() - days);
+  const d = new Date(String(c.reg).slice(0, 10) + 'T00:00:00');
+  return d >= from && d <= base;
+}
 const stClass = s => s === '진행중' ? 'st-ing' : s === '처리전' ? 'st-pre' : 'st-done';
 const CS_COLORS = ['#3070d8', '#e0409a', '#e88038', '#3fbe7e'];
 
@@ -7004,6 +7022,7 @@ function csList() {
   return CASE_DB
     .filter(c => !CS.status || c.status === CS.status)
     .filter(c => !q || c.name.includes(q))
+    .filter(csInPeriod)
     .sort((a, b) => (CS_ORDER[a.status] - CS_ORDER[b.status]) || (a.reg < b.reg ? 1 : -1));
 }
 function csCur() {
@@ -7019,11 +7038,22 @@ function whoColor(c, who) {
 
 function renderCsView() {
   const L = csList(), cur = csCur();
-  const cards = L.map(c => `
+  const card = c => `
     <div class="cs-card${cur && c.id === cur.id ? ' on' : ''}" data-cs="${c.id}">
       <div class="nm">${c.name}<span class="st-chip ${stClass(c.status)}">${c.status}</span></div>
-      <div class="sub">${c.reg}・대상 ${c.targets.length}・증거 ${c.videos.length}</div>
-    </div>`).join('');
+      <!-- 사양 2-3) 카드 : 사건명 · 상태 Chip · **인물 수 · 영상 수 · 최초 등록일** -->
+      <div class="sub">인물 ${c.targets.length}・영상 ${c.videos.length}・${c.reg}</div>
+    </div>`;
+  /* 사양 2-3) : 상태별로 묶어 아코디언으로 — 머리에 (N), 기본 펼침 */
+  const cards = CS_STATUS.slice().sort((a, b) => CS_ORDER[a] - CS_ORDER[b]).map(s => {
+    const g = L.filter(c => c.status === s);
+    if (!g.length) return '';
+    const open = CS.fold[s] !== true;
+    return `<div class="cs-grp${open ? ' open' : ''}" data-csg="${s}">
+      <div class="cs-gh">${s} <em>(${g.length})</em><span class="cv">${ICON2.chev}</span></div>
+      <div class="cs-gb">${g.map(card).join('')}</div>
+    </div>`;
+  }).join('');
 
   $('#menuView').innerHTML = `
     <div class="mn-panel mn-narrow">
@@ -7038,16 +7068,31 @@ function renderCsView() {
           <button class="mn-chip${CS.status ? '' : ' on'}" data-csf="">전체</button>
           ${CS_STATUS.map(s => `<button class="mn-chip${CS.status === s ? ' on' : ''}" data-csf="${s}">${s}</button>`).join('')}
         </div>
+        <!-- 사양 2-1) 등록일 필터 : 사건 최초 등록일 기준 (Default 전체) -->
+        <div class="cs-period">
+          <div class="select xs" id="csPeriod" data-value="${CS.period || '전체'}">
+            <button class="select-btn">${CS.period || '전체'}<i class="i i-16 i-chevron i-down caret"></i></button>
+            <div class="select-menu">${CS_PERIODS.map(v => `<div data-v="${v}">${v}</div>`).join('')}</div>
+          </div>
+        </div>
         <div class="mn-count">총 <em>${L.length}</em>개</div>
       </div>
-      <div class="mn-body">${L.length ? cards : '<div class="mn-empty">등록한 사건이 없습니다.</div>'}</div>
+      <div class="mn-body">${cards}</div>
     </div>
     <div class="mn-panel mn-list">${CS.mode === 'edit' && CS.form ? csEditHTML()
-      : (cur ? csDetailHTML(cur) : '<div class="mn-head"><h3>사건 상세</h3></div><div class="mn-empty">선택된 사건이 없습니다.</div>')}</div>`;
+      : (cur ? csDetailHTML(cur)
+        /* 사양 2-3) : 등록된 사건이 없으면 **우측 상세**에 안내문구 */
+        : '<div class="mn-head"><h3>사건 상세</h3></div><div class="mn-empty">등록한 사건이 없어요.</div>')}</div>`;
 
   const q = $('#csQ');
   q.oninput = e => { CS.q = e.target.value; const s = e.target.selectionStart; renderCsView(); const n = $('#csQ'); n.focus(); n.setSelectionRange(s, s); };
   $$('#menuView [data-csf]').forEach(b => b.onclick = () => { CS.status = b.dataset.csf || null; renderCsView(); });
+  bindSelect('#csPeriod', v => { CS.period = v === '전체' ? null : v; CS.sel = null; renderCsView(); });
+  /* 상태 묶음 접기/펴기 */
+  $$('#menuView .cs-gh').forEach(h => h.onclick = () => {
+    const s = h.closest('[data-csg]').dataset.csg;
+    CS.fold[s] = !CS.fold[s]; renderCsView();
+  });
   $$('#menuView [data-cs]').forEach(c => c.onclick = () => { CS.sel = c.dataset.cs; renderCsView(); });
   $('#csNew').onclick = () => openCase();
   if (CS.mode === 'edit' && CS.form) bindCsEdit(); else bindCsDetail(cur);
@@ -7091,49 +7136,75 @@ function csDetailHTML(c) {
       <button class="btn-ghost sm ev-btn" data-csvid="${i}">원본 영상 보기</button>
     </div>`).join('');
 
-  const zones = [...new Set(c.path.map(p => p.place))];
-  const pth = `<div style="display:flex;gap:10px">
-      <div style="flex:1;min-width:0">
-        <div class="pth-list">${c.path.slice().sort((a, b) => a.t < b.t ? -1 : 1).map(p => `
+  /* 사양서 Case_002 3-5) : 이동경로는 **탐지 구역별 아코디언**이다.
+     구역명 (N건) 으로 적고, 구역이 1개면 펼친 채로 · 2개 이상이면 모두 접은 채로 시작한다.
+     구역 안에 지도와 그 구역의 영상 카드(무결성 검증 Chip 포함)를 함께 둔다.
+     종전에는 구역 구분 없이 한 덩어리였고 영상은 별도 아코디언이었다. */
+  const byZone = {};
+  c.path.forEach(p => { (byZone[p.place] = byZone[p.place] || []).push(p); });
+  const zoneNames = Object.keys(byZone);
+  const zoneOpen = z => (CS.zone[z] !== undefined) ? CS.zone[z] : (zoneNames.length === 1);
+  const pth = zoneNames.map(z => {
+    const rows = byZone[z].slice().sort((a, b) => a.t < b.t ? -1 : 1);
+    const vids = c.videos.filter(v => v.place === z);
+    return `<div class="cs-zone${zoneOpen(z) ? ' open' : ''}" data-cszone="${z}">
+      <div class="cs-zh">${z} <em>(${rows.length}건)</em><span class="cv">${ICON2.chev}</span></div>
+      <div class="cs-zb">
+        <div class="cs-zmap">
+          <img src="assets/img/map.png?v=202609221052" alt="">
+          ${rows.map((p, i) => {
+            const x = 18 + (i * 27) % 64, y = 24 + (i * 19) % 52;
+            return `<span class="zp" style="left:${x}%;top:${y}%;background:${whoColor(c, p.who)}"></span>
+              <span class="zn" style="left:${x}%;top:${y}%">${i + 1}</span>`;
+          }).join('')}
+          <button class="btn-ghost sm cs-zfull" data-csmap>전체 보기</button>
+        </div>
+        <div class="pth-list">${rows.map((p, i) => `
           <div class="pth-row"><span class="t">${p.t}</span>
             <span class="dot" style="background:${whoColor(c, p.who)}"></span>
-            <span>${p.place}</span><span class="cm">${p.cam}</span></div>`).join('')}</div>
+            <span>${i + 1}. ${p.place}</span><span class="cm">${p.cam}</span></div>`).join('')}</div>
+        ${vids.length ? `<div class="cs-zev">${vids.map(v => `
+          <div class="cs-zcard">
+            <div class="th"><img src="${v.img}" alt="">
+              <button class="cs-zplay" data-cszv="${c.videos.indexOf(v)}" title="영상 전체보기">▶</button></div>
+            <div class="zi">
+              <b>${c.videos.indexOf(v) + 1}. ${v.cam}</b>
+              <span>${v.at}</span>
+              ${v.ok ? `<span class="ev-hash">${ICON2.shield}무결성 검증</span>` : ''}
+            </div>
+          </div>`).join('')}</div>` : ''}
         <div class="legend">${c.targets.map((t, i) =>
           `<span><i style="background:${CS_COLORS[i % 4]}"></i>${t.name} 출현 지점</span>`).join('')}</div>
       </div>
-      <div style="width:300px;flex:0 0 300px">
-        <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
-          <span class="mn-count" style="padding:0">구역 <em>${zones[0] || '-'}</em> (${c.path.length}건)</span>
-          <button class="btn-ghost sm" style="margin-left:auto" data-csmap>전체 보기</button>
-        </div>
-        <div style="position:relative;height:196px;border-radius:6px;overflow:hidden;background:var(--bg-1);border:1px solid var(--ln-subtle)">
-          <img src="assets/img/map.png?v=202609221010" style="width:100%;height:100%;object-fit:cover;opacity:.85" alt="">
-          ${c.path.map((p, i) => {
-            const x = 16 + (i * 23) % 68, y = 22 + (i * 17) % 54;
-            return `<span style="position:absolute;left:${x}%;top:${y}%;width:9px;height:9px;border-radius:50%;
-              background:${whoColor(c, p.who)};box-shadow:0 0 0 3px rgba(0,0,0,.45)"></span>`;
-          }).join('')}
-        </div>
-      </div>
     </div>`;
+  }).join('');
 
   return `<div class="cs-dt-head">
       <div class="cs-title">
         <h2>${c.name}</h2><span class="st-chip ${stClass(c.status)}">${c.status}</span>
+        <!-- 사양 3-1) 사건 코드 : 시스템이 자동으로 매기는 고유 ID -->
+        <span class="cs-code">${csCode(c)}</span>
         <span class="dt">${c.reg}</span><span class="sp"></span>
         <button class="btn-ghost sm" data-csact="del">삭제</button>
         <button class="btn-ghost sm" data-csact="edit">편집</button>
         <button class="btn-primary sm" data-csact="export">내보내기</button>
       </div>
-      <div class="cs-metaline"><span>${c.kind}</span><span class="mono">${c.from} ~ ${c.to}</span></div>
+      <!-- 사양 3-3) 사건 개요 : **작성자** · 사건 발생 일시 · 분류 -->
+      <div class="cs-metaline"><span>작성자 ${CS_WRITERS[c.id] || '-'}</span><span>${c.kind}</span><span class="mono">${c.from} ~ ${c.to}</span></div>
       <div class="cs-desc">${c.desc}</div>
     </div>
     <div class="mn-body" style="padding:0">
       ${accHTML('rep', '<i class="i-ai" style="width:13px;height:13px"></i>', 'AI 생성 보고서', rep, CS.acc.rep)}
-      ${accHTML('tg', ICON2.person, `대상 정보 (${c.targets.length})`, tg, CS.acc.tg)}
-      ${accHTML('ev', ICON2.cam, `증거 영상 (${c.videos.length})`, ev, CS.acc.ev)}
+      ${accHTML('tg', ICON2.person, `인물 (${c.targets.length})`, tg, CS.acc.tg)}
       ${accHTML('pth', ICON2.cctv, '이동 경로', pth, CS.acc.pth)}
     </div>`;
+  /* 아카이브 : 증거 영상 아코디언은 사양(3-5)대로 **구역 안**으로 들어갔다.
+     종전 마크업은 위 ev 변수에 그대로 남아 있다. */
+}
+/* 사건 코드 — 등록 연도 + 등록 순번으로 만든다 (사양 3-1 : 시스템 자동 부여) */
+function csCode(c) {
+  const i = CASE_DB.findIndex(x => x.id === c.id);
+  return `SVMS-${String(c.reg).slice(0, 4)}-${String((i < 0 ? 0 : i) + 1).padStart(4, '0')}`;
 }
 
 function bindCsDetail(c) {
@@ -7142,6 +7213,16 @@ function bindCsDetail(c) {
     a.querySelector('.acc-h').onclick = () => { CS.acc[a.dataset.acc] = !CS.acc[a.dataset.acc]; renderCsView(); };
   });
   $$('#menuView [data-csvid]').forEach(b => b.onclick = () => openVideoView(c.videos[+b.dataset.csvid].img));
+  /* 구역 아코디언 접기/펴기 · 구역 안 영상 플레이 → 영상 전체보기 (사양 3-5) */
+  $$('#menuView .cs-zh').forEach(h => h.onclick = () => {
+    const z = h.closest('[data-cszone]').dataset.cszone;
+    const zones = [...new Set(c.path.map(p => p.place))];
+    if (CS.zone[z] === undefined) CS.zone[z] = zones.length === 1;
+    CS.zone[z] = !CS.zone[z]; renderCsView();
+  });
+  $$('#menuView [data-cszv]').forEach(b => b.onclick = e => {
+    e.stopPropagation(); openVideoView(c.videos[+b.dataset.cszv].img);
+  });
   const mp = $('#menuView [data-csmap]'); if (mp) mp.onclick = () => openMapView();
   $$('#menuView [data-csact]').forEach(b => b.onclick = () => {
     const a = b.dataset.csact;
@@ -9066,7 +9147,7 @@ function renderZoneMap(host, pts, color) {
   /* 경로 비교면 경로 묶음([{ slot, pts, off }])을 받아 인물마다 선·지점을 그린다 */
   const groups = Array.isArray(pts) && pts[0] && pts[0].pts ? pts : [{ slot: '', pts, off: false }];
   const col = g => (g.slot ? slotColor(g.slot) : color);
-  zm.innerHTML = `<div class="zm-stage"><img src="assets/img/map.png?v=202609221010" alt="외부 지도" draggable="false">
+  zm.innerHTML = `<div class="zm-stage"><img src="assets/img/map.png?v=202609221052" alt="외부 지도" draggable="false">
       <svg class="zm-path" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${groups.map(g => {
         const seq = g.pts.slice().sort((a, b) => a.n - b.n);
         return seq.length > 1 ? `<polyline points="${seq.map(t => `${t.x},${t.y}`).join(' ')}" fill="none" stroke="${col(g)}" stroke-width="2.5"
@@ -9165,7 +9246,7 @@ function renderFloorPane(host, pts, color) {
   const mine = pts.filter(t => m3FloorOf(t.cam) === fl).sort((a, b) => a.n - b.n);
   const flb = (M3_FLOORS.find(f => f.key === fl) || {}).label || fl;
   /* GUI 260914 : 도면은 원본 비율로 가운데(흰 판) — 좌표는 flatU 로 도면 기준 */
-  fp.innerHTML = `<div class="zp-stage"><img src="assets/img/floor.png?v=202609221010" alt=""><span class="dt-floor">${flb}</span>
+  fp.innerHTML = `<div class="zp-stage"><img src="assets/img/floor.png?v=202609221052" alt=""><span class="dt-floor">${flb}</span>
     <svg class="zp-path" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${mine.length > 1
       ? `<polyline points="${mine.map(t => `${flatU(t.x)},${t.y}`).join(' ')}" fill="none" stroke="${color}" stroke-width="2" vector-effect="non-scaling-stroke"/>` : ''}</svg>
     ${mine.map(t => `<span class="map-wp" data-cam="${t.cam}" data-hh="${t.hh}" data-x="${flatU(t.x)}" data-y="${t.y}"
